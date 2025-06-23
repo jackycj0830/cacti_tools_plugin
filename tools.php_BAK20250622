@@ -1,0 +1,683 @@
+<?php
+/*
+ +-------------------------------------------------------------------------+
+ | Copyright (C) 2024 Jacky Zou                                           |
+ | This plugin is fully rewritten and maintained by Jacky Zou.             |
+ |                                                                         |
+ | Version: V1.0.0                                                         |
+ | Description: Tools plugin for Cacti, provides integrated tools browsing  |
+ | and management utilities.                                               |
+ +-------------------------------------------------------------------------+
+*/
+
+
+chdir('../../');
+include_once('./include/auth.php');
+include_once('./include/global_arrays.php');
+
+set_default_action();
+
+general_header();
+
+$selectedTheme = get_selected_theme();
+
+print '<link type="text/css" href="' . $config['url_path'] . 'plugins/tools/themes/common.css" rel="stylesheet">';
+print '<link type="text/css" href="' . $config['url_path'] . 'plugins/tools/themes/' . $selectedTheme . '.css" rel="stylesheet">';
+
+if (read_config_option('dsstats_enable') != 'on')	{
+	print 'Please enable and configure <a href="' . $config['url_path'] .'settings.php?tab=data">DS stats</a>'; 
+	bottom_footer();
+	die();
+}
+
+function human_readable ($bytes, $decimal = false) {  // for unsupported ds
+
+        if ($decimal) {
+                $factor = 1000;
+        } else {
+                $factor = 1024;
+        }
+
+        if ($bytes === 0 || is_null($bytes)) {
+                return 0;
+        } elseif ($bytes  < 1) {
+                $sizes = array(-1 => 'm', -2 => 'µ',- 3 => 'n', -4 => 'p');
+        } else {
+                $sizes = array(0 => '', 1 => 'K', 2 => 'M', 3 => 'G', 4 => 'T', 5=> 'P');
+        }
+
+        $i = (int) floor(log(abs($bytes)) / log($factor));
+        $d = pow($factor, $i);
+
+        if (!array_key_exists ($i, $sizes)) {
+                if (function_exists('cacti_log')) {
+                        cacti_log('INTROPAGE WARNING: Bytes = [' . $bytes  .'], Factor = [' . $factor . '], i = [' . $i . '] d = [' . $d . ']');
+                        cacti_debug_backtrace('intropage-hr');
+                } else {
+                        print 'INTROPAGE WARNING: Bytes = [' . $bytes  .'], Factor = [' . $factor . '], i = [' . $i . '] d = [' . $d . ']';
+                }
+                $size = '<unknown>';
+                $i = 1;
+        } else {
+                $size = $sizes[$i];
+        }
+
+        return round(empty($d)?0:($bytes / pow($factor, $i)), 2).' '.$size;
+}
+
+
+
+function final_operation ($value,$final_operation,$final_unit,$final_number) {
+
+	if ( $final_operation == "strip") {	// only round
+		$value = round($value,$final_number) . " " . $final_unit;
+	}
+	elseif ( $final_operation == "/") { // kmgt + time
+		$num = explode ("/",$final_number);
+		$suf = explode ("/",$final_unit);
+
+		$num = array_reverse ($num,TRUE);
+		$suf = array_reverse ($suf, TRUE);
+
+		for ($f = count($num) -1; $f >=0; $f--) {
+			$xvalue = $value/$num[$f];
+
+			if ($xvalue > 1) {
+				$value = round($xvalue,2) . " " . $suf[$f];
+				break;
+			}
+		}
+	}
+// MARK2
+/*	else {	// empty final operation
+		// without round
+	}
+*/
+	return ($value);
+
+
+}
+
+$ar_age = array ('hour' => 'Last Hour', 'day' => 'Last Day', 'week' => 'Last Week', 'month' => 'Last Month', 'year' => 'Last year');
+$ar_tools = array ('5' => 'Top 5', '10' => 'Top 10', '20' => 'Top 20', '50' => 'Top 50', '0' => 'All');
+$ar_sort = array ('asc' => 'Normal', 'desc' => 'Reverse');
+$ar_what = array ('average' => 'Average', 'peak' => 'Peak');
+
+
+/* if the user pushed the 'clear' button */
+if (get_request_var('clear_x')) {
+    unset($_SESSION['age']);
+    unset($_SESSION['tools']);
+    unset($_SESSION['sort']);
+    unset($_SESSION['what']);
+}
+
+// supported first
+//$ds_sup = db_fetch_assoc ('SELECT DISTINCT(CONCAT("supported - ",t1.name)) AS dsname, t1.id AS dsid, count(t1.id) AS dscount, "true" AS sup 
+$ds_sup = db_fetch_assoc ('SELECT distinct(t3.dt_name) AS dsname, t1.id AS dsid, count(t1.id) AS dscount, "true" AS sup 
+	FROM data_template AS t1
+	JOIN data_template_data AS t2 ON t1.id=t2.data_template_id
+	JOIN plugin_tools_source AS t3 on t1.hash = t3.hash
+	GROUP BY data_template_id ORDER BY dsname');
+
+$ds_unsup = db_fetch_assoc ('SELECT DISTINCT(CONCAT("unsupported - ",t1.name)) AS dsname, t1.id AS dsid, count(t1.id) AS dscount, "false" AS sup 
+	FROM data_template AS t1
+	JOIN data_template_data AS t2 ON t1.id=t2.data_template_id
+	GROUP BY data_template_id ORDER BY dsname');
+	
+$ds_all = array_merge ($ds_sup,$ds_unsup);
+
+foreach ($ds_all as $ds)	{
+	if ($ds['sup'] == 'true') {
+		$tmp = -1 * $ds['dsid'];
+	} else {
+	   $tmp = $ds['dsid'];
+	}
+
+	$ar_ds[$tmp]['key']   = $tmp;
+	$ar_ds[$tmp]['name']  = $ds['dsname'];
+	$ar_ds[$tmp]['count'] = $ds['dscount'];
+	$ar_ds[$tmp]['supported'] = $ds['sup'];
+}
+
+
+if ( isset_request_var ('ds') && array_key_exists (get_nfilter_request_var ('ds'), $ar_ds))	
+	$_SESSION['ds'] = get_filter_request_var('ds');
+if (!isset($_SESSION['ds']))	{
+	$_SESSION['ds'] = key($ar_ds);
+}
+if ( isset_request_var ('age') && array_key_exists (get_nfilter_request_var ('age'), $ar_age))
+	$_SESSION['age'] = get_nfilter_request_var ('age');
+if (!isset($_SESSION['age']))
+	$_SESSION['age'] = 'hour';
+
+if ( isset_request_var ('tools') && array_key_exists (get_nfilter_request_var ('tools'), $ar_tools))
+	$_SESSION['tools'] = get_filter_request_var('tools');
+if (!isset($_SESSION['tools']))
+	$_SESSION['tools'] = 5;
+
+if ( isset_request_var ('sort') && array_key_exists (get_nfilter_request_var ('sort'), $ar_sort))
+	$_SESSION['sort'] = get_nfilter_request_var ('sort');
+if (!isset($_SESSION['sort']))
+	$_SESSION['sort'] = 'desc';
+
+if ( isset_request_var ('what') && array_key_exists (get_nfilter_request_var ('what'), $ar_what))
+	$_SESSION['what'] = get_nfilter_request_var ('what');
+if (!isset($_SESSION['what']))
+	$_SESSION['what'] = key($ar_what);
+
+?>
+
+<script type="text/javascript">
+<!--
+function applyViewAgeFilterChange(objForm) {
+	strURL = '?ds=' + objForm.ds.value;
+	strURL = strURL + '&age=' + objForm.age.value;
+	strURL = strURL + '&tools=' + objForm.tools.value;
+	strURL = strURL + '&sort=' + objForm.sort.value;
+	strURL = strURL + '&what=' + objForm.what.value;
+	document.location = strURL;
+}
+-->
+</script>
+<?php
+
+html_start_box('<strong>tools</strong>', '100%', '', '3', 'center', '');
+
+?>
+
+<tr>
+ <td>
+  <form name='form_tools' action='tools.php'>
+   <table width='100%' cellpadding='0' cellspacing='0'>
+    <tr class='navigate_form'>
+     <td nowrap style='white-space: nowrap;' width='50'>
+      Data source:&nbsp;
+     </td>
+     <td width='1'>
+      <select name='ds' onChange='applyViewAgeFilterChange(document.form_tools)' id='ds'>
+
+<?php
+
+foreach ($ar_ds as $ds)	{
+	if ($_SESSION['ds'] == $ds['key'])
+		print '<option value="' . $ds['key'] . '" selected="selected">' . $ds['name'] . ' (' . $ds['count'] . ')</option>';
+	else    
+		print '<option value="' . $ds['key'] . '">' . $ds['name'] . ' (' . $ds['count'] . ')</option>';
+}
+?>
+
+      </select>
+     </td>
+     <td nowrap style='white-space: nowrap;' width='50'>
+      Age:&nbsp;
+     </td>
+     <td width='1'>
+      <select name='age' onChange='applyViewAgeFilterChange(document.form_tools)'>
+
+<?php
+foreach ($ar_age as $key=>$value)	{
+    if ($_SESSION['age'] == $key)
+	print '<option value="' . $key . '" selected="selected">' . $value . '</option>';
+    else    
+	print '<option value="' . $key . '">' . $value .'</option>';
+}
+?>
+
+      </select>
+     </td>
+     <td nowrap style='white-space: nowrap;' width='50'>
+      &nbsp;Number of records:&nbsp;
+     </td>
+     <td width='1'>
+      <select name='tools' onChange='applyViewAgeFilterChange(document.form_tools)'>
+
+<?php
+foreach ($ar_tools as $key=>$value)	{
+    if ($_SESSION['tools'] == $key)
+	print '<option value="' . $key . '" selected="selected">' . $value . '</option>';
+    else
+	print '<option value="' . $key . '">' . $value . '</option>';
+}
+?>
+
+      </select>
+     </td>
+     <td nowrap style='white-space: nowrap;' width='20'>
+      &nbsp;Order:&nbsp;
+     </td>
+     <td width='1'>
+      <select name='sort' onChange='applyViewAgeFilterChange(document.form_tools)'>
+<?php
+foreach ($ar_sort as $key=>$value)	{
+    if ($_SESSION['sort'] == $key)
+	print '<option value="' . $key . '" selected="selected">' . $value . '</option>';
+    else
+	print '<option value="' . $key . '">' . $value . '</option>';
+}
+?>
+      </select>
+
+     </td>
+     <td nowrap style='white-space: nowrap;' width='20'>
+      &nbsp;What:&nbsp;
+     </td>
+     <td width='1'>
+      <select name='what' onChange='applyViewAgeFilterChange(document.form_tools)'>
+<?php
+foreach ($ar_what as $key=>$value)	{
+    if ($_SESSION['what'] == $key)
+	print '<option value="' . $key . '" selected="selected">' . $value . '</option>';
+    else
+	print '<option value="' . $key . '">' . $value . '</option>';
+}
+?>
+     </select>
+     </td>
+     <td nowrap>
+      &nbsp;<input type='submit' value='Go' title='Set/Refresh Filters'>
+      <input type='submit' name='clear_x' value='Clear' title='Clear Filters'>
+     </td>
+    </tr>
+  </table>
+ </form>
+</td>
+</tr>
+
+<?php
+
+html_end_box();
+
+$graph = array();
+$label = array();
+
+switch ($_SESSION['age'])	{
+    case 'hour':
+	$table = 'data_source_stats_hourly ';
+    break;
+    case 'day':
+	$table = 'data_source_stats_daily ';
+    break;
+    case 'week':
+	$table = 'data_source_stats_weekly ';
+    break;
+    case 'month':
+	$table = 'data_source_stats_monthly ';
+    break;
+    case 'year':
+	$table = 'data_source_stats_yearly ';
+    break;
+}
+
+$id = $_SESSION['ds'];
+if ($ar_ds[$_SESSION['ds']]['supported'] == 'true') {
+	$id *= -1;
+}
+
+if ($ar_ds[$_SESSION['ds']]['supported'] == 'true') {
+
+	$source = db_fetch_row_prepared('SELECT plugin_tools_source.* FROM plugin_tools_source JOIN data_template 
+		ON plugin_tools_source.hash = data_template.hash  WHERE data_template.id = ?',
+		array($id));
+ 
+// MARK3
+	if (strpos($source['operation'],'=') !== false)	{	// only one value ----------------------------
+
+		$columns = " t1.local_data_id as ldid, concat(t1.name_cache,' - ', t2.rrd_name) as name, t2.average as xvalue, t2.peak as xpeak  ";
+		$query = ' FROM data_template_data AS t1 LEFT JOIN ' . $table . ' ' ;
+		$query .= ' AS t2 ON t1.local_data_id = t2.local_data_id 
+		WHERE t1.data_template_id = ' . $id . ' ';
+
+		$avg = db_fetch_cell ('SELECT avg(average)' . $query);
+
+		$query .= 'ORDER BY t2.' . $_SESSION['what'] . ' ';
+		$query .= $_SESSION['sort'] . ' ' ;
+
+		if ($_SESSION['tools'] > 0)    
+			$query .= 'LIMIT ' . $_SESSION['tools'];
+
+		$result = db_fetch_assoc("SELECT $columns $query");
+	}
+	if (strpos($source['operation'],'/') !== false)	{	// only one value/number ------------------------
+
+		$columns = " t1.local_data_id AS ldid, concat(t1.name_cache,' - ', t2.rrd_name) AS name, t2.average AS xvalue, t2.peak AS xpeak ";
+		$query = ' FROM data_template_data AS t1 LEFT JOIN ' . $table . ' ';
+		$query .= ' AS t2 ON t1.local_data_id = t2.local_data_id 
+		WHERE t1.data_template_id = ' . $id . ' ';
+
+		$avg = db_fetch_cell ('SELECT avg(average)' . $query);
+
+		$query .= 'ORDER BY t2.' . $_SESSION['what'] . ' ';
+
+		$query .= $_SESSION['sort'] . ' ' ;
+
+		if ($_SESSION['tools'] > 0) {
+			$query .= 'LIMIT ' . $_SESSION['tools'];
+		}
+		
+		$result = db_fetch_assoc("SELECT $columns $query");
+	}
+	elseif (strpos($source['operation'],'%') !== false)	{	// hdd_total%hdd_used ----------------------
+
+		$columns = " name_cache AS name, t2.local_data_id AS ldid,  
+		100*average/(SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name='hdd_total' ) AS xvalue,
+		100*peak/(SELECT peak FROM $table WHERE local_data_id = ldid AND rrd_name='hdd_total') AS xpeak ";
+		$query = ' FROM data_template_data AS t1 LEFT JOIN ' . $table . '  AS t2 ON t1.local_data_id = t2.local_data_id 
+		WHERE t1.data_template_id = ' . $id . ' 
+		AND rrd_name=\'hdd_used\' ';
+
+		if ($_SESSION['what'] == 'average') {
+			$query .= 'ORDER BY xvalue ';
+		} else {
+			$query .= 'ORDER BY xpeak ';
+		}
+    
+		$query .= $_SESSION['sort'] . ' ' ;
+
+		if ($_SESSION['tools'] > 0)    
+			$query .= 'LIMIT ' . $_SESSION['tools'];
+
+		$result = db_fetch_assoc("SELECT $columns $query");
+
+		// avg zde musim takto
+		$columns = " t1.local_data_id as ldid,100*average/(select average from $table where local_data_id = ldid and rrd_name='hdd_total') as xvalue ";
+		$query = ' FROM data_template_data AS t1 LEFT JOIN ' . $table . ' AS t2 ON t1.local_data_id = t2.local_data_id 
+		WHERE t1.data_template_id = ' . $id . ' AND rrd_name=\'hdd_used\'';
+    
+		$xavg = db_fetch_assoc ('SELECT ' . $columns . $query);
+		$avg = 0;
+		foreach ($xavg as $row)	{
+			$avg+=$row['xvalue'];
+		}
+		
+		if (count($xavg) > 0) {
+			$avg = $avg/count($xavg);
+		} else {
+			$avg = 0;
+		}
+	}
+	elseif ($source['operation'] == 'discards_in+errors_in')	{		// discards_in+errors_in
+		
+		$columns = " name_cache AS name, t2.local_data_id AS ldid, 
+		average + (SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name='discards_in' ) AS xvalue,
+		peak + (SELECT peak FROM $table WHERE local_data_id = ldid AND rrd_name='discards_in') AS xpeak ";
+		$query = ' FROM data_template_data AS t1 LEFT JOIN ' . $table . '  AS t2 ON t1.local_data_id = t2.local_data_id 
+		WHERE t1.data_template_id = ' . $id . ' 
+		AND rrd_name=\'errors_in\' ';
+
+		if ($_SESSION['what'] == 'average') {
+			$query .= 'ORDER BY xvalue ';
+		} else {
+			$query .= 'ORDER BY xpeak ';
+		}
+
+		$query .= $_SESSION['sort'] . ' ' ;
+
+		if ($_SESSION['tools'] > 0)    
+			$query .= 'LIMIT ' . $_SESSION['tools'];
+
+		$result = db_fetch_assoc("SELECT $columns $query");
+
+		// avg zde musim takto
+		$columns = " t1.local_data_id AS ldid, average/(SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name='discards_in' ) as xvalue ";
+		$query = ' FROM data_template_data AS t1 LEFT JOIN ' . $table . ' AS t2 ON t1.local_data_id = t2.local_data_id 
+		WHERE t1.data_template_id = ' . $id . ' AND rrd_name=\'errors_in\'';
+    
+		$xavg = db_fetch_assoc ('SELECT ' . $columns . $query);
+
+		$avg = 0;
+		foreach ($xavg as $row)	{
+			$avg+=$row['xvalue'];
+		}
+
+		if (count($xavg) > 0) {
+			$avg = $avg/count($xavg);
+		} else {
+			$avg = 0;
+		}
+	}
+	elseif ($source['operation'] == 'discards_out+errors_out')	{		// discards_out+errors_out
+		
+		$columns = " name_cache AS name, t2.local_data_id AS ldid, 
+		average + (SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name='discards_out' ) AS xvalue,
+		peak + (SELECT peak FROM $table WHERE local_data_id = ldid AND rrd_name='discards_out') AS xpeak ";
+		$query = ' FROM data_template_data AS t1 LEFT JOIN ' . $table . '  AS t2 ON t1.local_data_id = t2.local_data_id 
+		WHERE t1.data_template_id = ' . $id . ' 
+		AND rrd_name=\'errors_out\' ';
+
+		if ($_SESSION['what'] == 'average') {
+			$query .= 'ORDER BY xvalue ';
+		} else {
+			$query .= 'ORDER BY xpeak ';
+		}
+
+		$query .= $_SESSION['sort'] . ' ' ;
+
+		if ($_SESSION['tools'] > 0)    
+			$query .= 'LIMIT ' . $_SESSION['tools'];
+
+		$result = db_fetch_assoc("SELECT $columns $query");
+
+		// avg zde musim takto
+		$columns = " t1.local_data_id AS ldid, average/(SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name='discards_out' ) as xvalue ";
+		$query = ' FROM data_template_data AS t1 LEFT JOIN ' . $table . ' AS t2 ON t1.local_data_id = t2.local_data_id 
+		WHERE t1.data_template_id = ' . $id . ' AND rrd_name=\'errors_out\'';
+    
+		$xavg = db_fetch_assoc ('SELECT ' . $columns . $query);
+
+		$avg = 0;
+		foreach ($xavg as $row)	{
+			$avg+=$row['xvalue'];
+		}
+
+		if (count($xavg) > 0) {
+			$avg = $avg/count($xavg);
+		} else {
+			$avg = 0;
+		}
+	}
+	elseif ($source['operation'] == 'traffic_in+traffic_out')	{		// traffic_in+traffic_out - it is in bytes!
+		
+		$columns = " name_cache AS name, t2.local_data_id AS ldid, 
+		8*average + 8*(SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name='traffic_in' ) AS xvalue,
+		8*peak + 8*(SELECT peak FROM $table WHERE local_data_id = ldid AND rrd_name='traffic_in') AS xpeak ";
+		$query = ' FROM data_template_data AS t1 LEFT JOIN ' . $table . '  AS t2 ON t1.local_data_id = t2.local_data_id 
+		WHERE t1.data_template_id = ' . $id . ' 
+		AND rrd_name=\'traffic_out\' ';
+
+		if ($_SESSION['what'] == 'average') {
+			$query .= 'ORDER BY xvalue ';
+		} else {
+			$query .= 'ORDER BY xpeak ';
+		}
+    
+		$query .= $_SESSION['sort'] . ' ' ;
+
+		if ($_SESSION['tools'] > 0)    
+			$query .= 'LIMIT ' . $_SESSION['tools'];
+
+		$result = db_fetch_assoc("SELECT $columns $query");
+
+		// avg zde musim takto
+		$columns = " t1.local_data_id AS ldid, average/(SELECT average FROM $table WHERE local_data_id = ldid AND rrd_name='traffic_in' ) as xvalue ";
+		$query = ' FROM data_template_data AS t1 LEFT JOIN ' . $table . ' AS t2 ON t1.local_data_id = t2.local_data_id 
+		WHERE t1.data_template_id = ' . $id . ' AND rrd_name=\'traffic_out\'';
+    
+		$xavg = db_fetch_assoc ('SELECT ' . $columns . $query);
+
+		$avg = 0;
+		foreach ($xavg as $row)	{
+			$avg+=$row['xvalue'];
+		}
+
+		if (count($xavg) > 0) {
+			$avg = 8*($avg/count($xavg));
+		} else {
+			$avg = 0;
+		}
+	}
+
+// common part - supported
+	$pie_title = $source['unit'] . ' [ ' . $source['final_unit'] . ' ] ';
+
+	print '<table  class="tools_table">';
+	print '<tr><th>Data source</th><th>Avg. value [' . $source['final_unit'] . ']</th><th>Peak [' . $source['final_unit'] . ']</th></tr>';
+
+	$avg_count = 0;
+
+	foreach ($result as $row)	{
+		$graph_id = db_fetch_cell ('SELECT DISTINCT(local_graph_id) FROM graph_templates_item
+                                        LEFT JOIN data_template_rrd ON (graph_templates_item.task_item_id=data_template_rrd.id)
+                                        LEFT JOIN data_local ON (data_template_rrd.local_data_id=data_local.id)
+                                        LEFT JOIN data_template_data ON (data_local.id=data_template_data.local_data_id)
+                                        WHERE data_template_data.local_data_id=' . $row['ldid']);
+
+		// sometimes I need operation with all numbers
+		if (strpos($source['operation'],'/') !== false)	{	// x/number
+			$val = (int) substr($source['operation'],strpos($source['operation'],'/')+1);
+			$row['xvalue'] = $row['xvalue']/$val;
+			$row['xpeak'] = $row['xpeak']/$val;
+
+			if ($avg_count == 0)	{ // ugly, i know ... i need call this only once
+				$avg = $avg/$val;
+				$avg_count++;
+			}
+		}
+		if (strpos($source['operation'],'+') !== false)	{	// x+y
+		}
+		else	{ // x=x
+		}
+// MARK4
+    		array_push ($graph,$row['xvalue']);
+		array_push ($label,$row['name']);
+
+		$row['xvalue'] = is_null($row['xvalue']) ? 0 : $row['xvalue'];
+		$row['xpeak'] = is_null($row['xpeak']) ? 0 : $row['xpeak'];
+
+		print '<tr><td><a href="' .  htmlspecialchars($config['url_path']) . 'graphs.php?action=graph_edit&id=' . $graph_id . '">' . $row['name'] . '</a></td>' .
+			'<td>' . final_operation($row['xvalue'],$source['final_operation'],$source['final_unit'],$source['final_number']) . '</td>' .
+			'<td>' . final_operation($row['xpeak'],$source['final_operation'],$source['final_unit'],$source['final_number'])  . '</td>';
+	}
+
+	array_push($graph,$avg);
+	array_push($label,'Average all');
+	
+	echo '<tr><td>Average all DS</td><td colspan="2">' . final_operation($avg,$source['final_operation'],$source['final_unit'],$source['final_number']) . '</td></tr>';
+	print '</table>';
+	
+}
+else	{	// unsupported
+
+	print 'Unsupported = plain data without units only with decimal unit conversion';
+
+	$columns = " t1.local_data_id AS ldid, concat(t1.name_cache,' - ', t2.rrd_name) AS name, t2.average AS xvalue, t2.peak AS xpeak ";
+	$query = ' FROM data_template_data AS t1 LEFT JOIN ' . $table . ' AS t2 ON t1.local_data_id = t2.local_data_id 
+		WHERE t1.data_template_id = ' . $id . ' ';
+
+	$avg = db_fetch_cell ('SELECT avg(average)' . $query);
+
+	if ($_SESSION['what'] == 'average') {
+		$query .= 'ORDER BY xvalue ';
+	} else {
+		$query .= 'ORDER BY xpeak ';
+	}
+
+	$query .= $_SESSION['sort'] . ' ' ;
+
+
+	if ($_SESSION['tools'] > 0) {
+ 		$query .= 'LIMIT ' . $_SESSION['tools'];
+	}
+
+		
+	array_push($label,'Average all');
+	array_push($graph,$avg);
+	$pie_title = ''; 
+
+	$result = db_fetch_assoc("SELECT $columns $query");
+
+	print '<table  class="tools_table">';
+	print '<tr><th>Data source</th><th>Avg. value</th><th>Peak</th></tr>';
+
+	foreach ($result as $row)	{
+    		$graph_id = db_fetch_cell ('SELECT DISTINCT(local_graph_id) FROM graph_templates_item
+                                        LEFT JOIN data_template_rrd ON (graph_templates_item.task_item_id=data_template_rrd.id)
+                                        LEFT JOIN data_local ON (data_template_rrd.local_data_id=data_local.id)
+                                        LEFT JOIN data_template_data ON (data_local.id=data_template_data.local_data_id)
+                                        WHERE data_template_data.local_data_id=' . $row['ldid']);
+
+    		array_push ($graph,$row['xvalue']);
+    		array_push ($label,$row['name']);
+
+
+		print '<tr><td><a href="' .  htmlspecialchars($config['url_path']) . 'graphs.php?action=graph_edit&id=' . $graph_id . '">' . $row['name'] . '</a></td>' .
+			'<td>' . human_readable($row['xvalue']) . '</td>' .
+			'<td>' . human_readable($row['xpeak']) . '</td>';
+
+	}
+	echo '<tr><td>Average all DS</td><td colspan="2">' . human_readable($avg,'decimal') . '</td></tr>';
+	print '</table>';
+
+}
+
+// graph
+if ($_SESSION['tools'] > 0) {
+	$xid = 'x' . uniqid();
+	print '<div class="tools_graph"><br/><br/><canvas id="pie_' . $xid . '" width="800" height="' . (20+$_SESSION['tools']*25 ). '"></canvas>';
+	print "<script type='text/javascript' src='js/chartjs-plugin-annotation.min.js'></script>";
+	print "<script type='text/javascript'>";
+
+	$pie_labels = implode('","',$label);
+	$pie_values = implode(',',$graph);
+
+print <<<EOF
+var $xid = document.getElementById("pie_$xid").getContext("2d");
+new Chart($xid, {
+	type: 'horizontalBar',
+	data: {
+        	labels: ["$pie_labels"],
+        	datasets: [{
+            		backgroundColor: [ "#555555"],
+            		data: [$pie_values]
+        	}],
+    	},
+    	options: {
+        	responsive: false,
+        	legend: {
+            		display: false
+         	},
+	 	scales: {
+			xAxes: [{
+				display: true,
+				scaleLabel: {
+			    		display: true,
+			    		labelString: "$pie_title"
+				}
+			}], 
+		},        
+        	tooltipTemplate: "<%= label %>",
+      		annotation: {
+        		annotations: [{
+            			type: "line",
+            			mode: "vertical",
+            			scaleID: "x-axis-0",
+            			value: $avg,
+            			borderColor: "red",
+          		}]
+      		},
+	},
+});
+EOF;
+
+	print "</script></div>";
+} else {
+	print "<br/><br/>Displaying all records, graph will not be displayed. It will be displayed only for 50 or less records.<br/>";
+}
+// end of graph
+
+
+print '<br/><br/>';
+print 'DS stats last major run time: ' .  read_config_option('dsstats_last_major_run_time') . '<br/>';
+print 'DS stats last daily run time: ' .  read_config_option('dsstats_last_daily_run_time') . '<br/>';
+
+bottom_footer();

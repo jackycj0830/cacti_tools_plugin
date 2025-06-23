@@ -1,0 +1,30 @@
+[
+    {
+        "type": "Warnings",
+        "status": "SYSTEM",
+        "message_en": "Disk usage is high.",
+        "message_zh": "磁碟使用率高。",
+        "ai_solution": "磁碟使用率高。"
+    },
+    {
+        "type": "Errors",
+        "status": "Thold",
+        "message_en": "Threshold exceeded.",
+        "message_zh": "超出閾值。",
+        "ai_solution": "超出閾值。"
+    },
+    {
+        "type": "Debug",
+        "status": "FlowView",
+        "message_en": "Flow data debug started.",
+        "message_zh": "流量數據調試開始。",
+        "ai_solution": "流量數據調試開始。"
+    },
+    {
+        "type": "Warnings",
+        "status": "Monitor",
+        "message_en": "Ping latency is high.",
+        "message_zh": "Ping延遲高。",
+        "ai_solution": "Ping延遲高。"
+    }
+]
