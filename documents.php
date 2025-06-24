@@ -1,81 +1,67 @@
 <?php
-$dir = __DIR__ . '/Documents';
-$files = scandir($dir);
+// 設定根目錄
+$base_dir = __DIR__ . '/docs';
+$rel = isset($_GET['f']) ? $_GET['f'] : '';
+$path = realpath($base_dir . '/' . $rel);
 
-// 過濾允許的副檔名
-$allowed = ['pdf', 'docx', 'xlsx', 'pptx', 'png', 'jpg', 'jpeg', 'gif', 'bmp'];
-$list = [];
+// 防止路徑穿越
+if (!$path || strpos($path, realpath($base_dir)) !== 0) {
+    die("非法路徑");
+}
 
-foreach ($files as $file) {
-    if ($file === '.' || $file === '..') continue;
-    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-    if (in_array($ext, $allowed)) {
-        $list[] = $file;
+// 如果是資料夾，列出所有內容
+if (is_dir($path)) {
+    echo "<h2>知識庫瀏覽器</h2>";
+    echo "<p><b>當前路徑：</b> /docs/" . htmlspecialchars($rel) . "</p>";
+    // 上層目錄
+    if ($rel) {
+        $parent = dirname($rel);
+        echo '<a href="?f=' . urlencode($parent === '.' ? '' : $parent) . '">🔙 上一層</a><br><br>';
+    }
+    $files = scandir($path);
+    echo "<ul>";
+    foreach ($files as $file) {
+        if ($file === '.' || $file === '..') continue;
+        $file_rel = $rel ? "$rel/$file" : $file;
+        $file_path = "$path/$file";
+        if (is_dir($file_path)) {
+            echo '<li>📁 <a href="?f=' . urlencode($file_rel) . '">' . htmlspecialchars($file) . '</a></li>';
+        } else {
+            echo '<li>📄 <a href="?f=' . urlencode($file_rel) . '">' . htmlspecialchars($file) . '</a></li>';
+        }
+    }
+    echo "</ul>";
+    echo "<hr><small style='color:#888'>放你的Cacti/GIOS文件到 docs/ 目錄，自動顯示！</small>";
+}
+// 如果是檔案，根據副檔名顯示
+else {
+    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    echo '<p><a href="?f=' . urlencode(dirname($rel)) . '">🔙 返回資料夾</a></p>';
+    echo "<h3>檔案：" . htmlspecialchars(basename($path)) . "</h3><hr>";
+    if ($ext === 'md' || $ext === 'txt') {
+        // 支援markdown簡易轉換
+        $txt = file_get_contents($path);
+        if ($ext === 'md') {
+            $txt = htmlspecialchars($txt);
+            // Markdown換行與標題
+            $txt = preg_replace('/^# (.*?)$/m', '<h1>$1</h1>', $txt);
+            $txt = preg_replace('/^## (.*?)$/m', '<h2>$1</h2>', $txt);
+            $txt = preg_replace('/^### (.*?)$/m', '<h3>$1</h3>', $txt);
+            $txt = nl2br($txt);
+        } else {
+            $txt = nl2br(htmlspecialchars($txt));
+        }
+        echo "<div style='background:#f4f4f4;padding:1em;border-radius:8px;font-size:16px'>$txt</div>";
+    }
+    elseif ($ext === 'pdf') {
+        echo "<embed src='docs/" . htmlspecialchars($rel) . "' type='application/pdf' width='100%' height='800px'>";
+    }
+    elseif (in_array($ext, ['png','jpg','jpeg','gif'])) {
+        echo "<img src='docs/" . htmlspecialchars($rel) . "' style='max-width:90%;max-height:700px'>";
+    }
+    else {
+        // 其他類型直接下載
+        echo "<a href='docs/" . htmlspecialchars($rel) . "' download>下載此檔案</a>";
     }
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Document Browser</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; }
-        .container { max-width: 800px; margin: 40px auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px #0001; padding: 30px; }
-        h1 { font-size: 2em; }
-        ul { list-style: none; padding: 0; }
-        li { margin: 0.5em 0; }
-        a { text-decoration: none; color: #2062a8; }
-        a:hover { text-decoration: underline; }
-        #viewer { margin-top: 30px; min-height: 400px; background: #eee; padding: 20px; border-radius: 8px; }
-        .refresh { float: right; font-size: 0.9em; cursor: pointer; color: #007c3c; }
-    </style>
-    <script>
-        function openFile(file) {
-            let viewer = document.getElementById('viewer');
-            let ext = file.split('.').pop().toLowerCase();
-            let url = 'Documents/' + encodeURIComponent(file);
-
-            // 檔案類型預覽方式
-            if(['png','jpg','jpeg','gif','bmp'].includes(ext)) {
-                viewer.innerHTML = `<img src="${url}" style="max-width:100%; max-height:600px;" alt="${file}">`;
-            } else if(ext === 'pdf') {
-                viewer.innerHTML = `<embed src="${url}" type="application/pdf" width="100%" height="600px">`;
-            } else if(['docx','xlsx','pptx'].includes(ext)) {
-                // 使用 Office Web Viewer 預覽
-                let link = encodeURIComponent(window.location.origin + '/' + url);
-                viewer.innerHTML = `<iframe src="https://view.officeapps.live.com/op/embed.aspx?src=${link}" width="100%" height="600px" frameborder="0"></iframe>`;
-            } else {
-                viewer.innerHTML = 'Preview not supported.';
-            }
-        }
-
-        function refreshList() {
-            location.reload();
-        }
-    </script>
-</head>
-<body>
-    <div class="container">
-        <h1>
-            Cacti Documents
-            <span class="refresh" onclick="refreshList()">&#x21bb; Refresh</span>
-        </h1>
-        <ul>
-        <?php foreach ($list as $file): ?>
-            <li>
-                <a href="javascript:void(0)" onclick="openFile('<?php echo addslashes($file); ?>')">
-                    <?php echo htmlspecialchars($file); ?>
-                </a>
-            </li>
-        <?php endforeach; ?>
-        </ul>
-
-        <div id="viewer">
-            <!-- 文件預覽區域 -->
-            <em>Please select a file to preview.</em>
-        </div>
-    </div>
-</body>
-</html>

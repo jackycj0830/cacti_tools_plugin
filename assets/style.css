@@ -1,0 +1,25 @@
+
+body {
+    background: #f9faf8;
+}
+.navbar {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+ul {
+    list-style-type: none;
+    padding-left: 20px;
+}
+#fileTree ul li {
+    margin: 4px 0;
+}
+#fileTree b {
+    color: #009966;
+}
+.file-link {
+    color: #333;
+    text-decoration: none;
+}
+.file-link:hover {
+    color: #009966;
+    text-decoration: underline;
+}
