@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+
+<!-- Mirrored from cacti.campus-rv.net/docs/convert-from-package-to-source-debian-ubuntu.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 28 Jun 2025 16:43:56 GMT -->
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Cacti – Converting from Debian/Ubuntu Package Install to Cacti Source-Based Install</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="Cacti-Github.css" />
+</head>
+<body>
+<h1 id="converting-from-debianubuntu-package-install-to-cacti-source-based-install">Converting from Debian/Ubuntu Package Install to Cacti Source-Based Install</h1>
+<p>This guide outlines the steps to convert from a Debian/Ubuntu package install of Cacti to a source-based install.</p>
+<p>If you are looking to run the latest version of Cacti a source based installation is the way to go Often the cacti team releases feature and updates that the packages lag behind on also source based installs provide more control for administrators than a package installation</p>
+<p>This document will provide the steps on how to convert a system that has been installed via package on a Debian/Ubuntu system while retaining your settings and data</p>
+<h3 id="important--before-running-these-steps-ensure-you-have-a-system-backup-">Important ! Before running these steps ensure you have a system backup !</h3>
+<h4 id="note-these-steps-can-vary-between-ubuntudebian-versions-however-the-process-flow-would-be-the-same">Note these steps can vary between Ubuntu/Debian versions however the process flow would be the same</h4>
+<h2 id="step-1-stop-croncactid-daemon">Step 1: Stop Cron/cactid Daemon</h2>
+<p>ensure that cron is stopped to prevent any conflicts during the transition and to prevent the poller from running while backing up the system systemctl stop cron If you have installed the cactid daemon</p>
+<pre class="shell"><code>systemctl stop cactid
+</code></pre>
+<h2 id="step-2-backup-configuration-file">Step 2: Backup Configuration File</h2>
+<pre class="shell"><code>cp /usr/share/cacti/site/include/config.php /path/to/backup/config.php
+</code></pre>
+<h2 id="step-3-backup-graph-files">Step 3: Backup Graph Files</h2>
+<p>You can copy all of the graph files in <code>/usr/share/cacti/site/rra</code> to another folder so you can copy them back later.</p>
+<pre class="shell"><code>cp -r /usr/share/cacti/site/rra /path/to/backup/rra
+</code></pre>
+<h2 id="step-4-dump-the-database">Step 4: Dump the Database</h2>
+<p>Create a backup of the Cacti database.</p>
+<pre class="shell"><code>mysqldump cacti &gt; cacti.sql
+</code></pre>
+<h2 id="step-5-uninstall-the-package-version-of-cacti">Step 5: Uninstall the Package Version of Cacti</h2>
+<p>Remove and purge the Cacti package to ensure no conflicts with the source-based install.</p>
+<pre class="shell"><code>apt-get remove cacti &amp;&amp; apt-get purge cacti
+</code></pre>
+<h2 id="step-6-install-cacti-via-source">Step 6: Install Cacti via Source</h2>
+<p>Follow the appropriate steps to install Cacti from source. Refer to the official Cacti <a href="https://github.com/bmfmancini/documentation/blob/develop/Installing-Under-Ubuntu-Debian.html">https://github.com/bmfmancini/documentation/blob/develop/Installing-Under-Ubuntu-Debian.md</a></p>
+<h2 id="step-7-re-import-the-database">Step 7: Re-import the Database</h2>
+<p>Once Cacti is installed from source, restore your previous settings by re-importing the database.</p>
+<pre class="shell"><code>mysql cacti &lt; cacti.sql
+</code></pre>
+<h2 id="step-8-restore-graph-files">Step 8: Restore Graph Files</h2>
+<p>Copy the backed-up RRA files to the new RRA folder directory in your source installation.</p>
+<pre class="shell"><code>cp -r /path/to/backup/rra /new/cacti/source/path/rra
+</code></pre>
+<hr />
+<p>Once these steps are completed, your Cacti installation will be switched from a package-based install to a source-based one, while retaining your configurations and graphs.</p>
+</body>
+
+<!-- Mirrored from cacti.campus-rv.net/docs/convert-from-package-to-source-debian-ubuntu.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 28 Jun 2025 16:43:56 GMT -->
+</html>

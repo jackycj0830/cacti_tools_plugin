@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+
+<!-- Mirrored from cacti.campus-rv.net/docs/Upgrading-Cacti.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 28 Jun 2025 16:41:30 GMT -->
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Cacti – Upgrading Cacti Under UNIX Compatible Operating Systems</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="Cacti-Github.css" />
+</head>
+<body>
+<h1 id="upgrading-cacti-under-unix-compatible-operating-systems">Upgrading Cacti Under UNIX Compatible Operating Systems</h1>
+<p>To upgrade Cacti under UNIX-style operating systems is very straightforward. To upgrade Cacti on Windows, you should use the instructions in the link below:</p>
+<p><a href="Upgrading-Cacti-Under-Windows.html">Upgrading in Windows</a></p>
+<p>Before you begin, ensure that both your Apache/NGINX and your Crontab or systemd-based pollers run as the same account. In most Linux operating systems, this will be the apache account. Under SLES, it will be www-run. For this guide, we will use the apache account, but please adjust accordingly.</p>
+<ol>
+<li><p>Disable Polling:</p>
+<p>Go to Console &gt;&gt; Settings &gt;&gt; Poller &gt;&gt; Data Collection Enabled and switch it off.</p></li>
+<li><p>Backup the Cacti Configuration File:</p>
+<p>Backup the config.php file located in &lt;cacti_dir&gt;/include/.</p>
+<pre class="shell"><code>shell&gt; cp &lt;cacti_dir&gt;/include/config.php &lt;backup_location&gt;
+</code></pre></li>
+<li><p>Backup the Old Cacti Database:</p>
+<p>Create a backup of the current Cacti database.</p>
+<pre class="shell"><code>shell&gt; mysqldump -l --add-drop-table --lock-tables=false cacti &gt; mysql.cacti
+</code></pre>
+<p>On newer versions of MariaDB</p>
+<pre class="shell"><code>shell&gt; mariadb-dump   -l --add-drop-table --lock-tables=false cacti &gt; mysql.cacti
+
+</code></pre>
+<p>You will probably have to specify the -u and -p flags for the MySQL username and password. This user must have permission to read from Cacti's database or you will end up with an empty backup.</p></li>
+<li><p>Backup the Old Cacti Directory:</p>
+<p>Backup the old Cacti directory with the exception of the RRD files, which should not need backup.</p>
+<pre class="shell"><code>shell&gt; tar --exclude=*.rrd -zcf cacti_backup_YYYYMMDD.tgz cacti
+</code></pre></li>
+<li><p>Extract the Distribution Tarball:</p>
+<pre class="shell"><code>shell&gt; tar -xzvf cacti-version.tar.gz
+</code></pre></li>
+<li><p>Copy the Distribution Tarball Over the Existing Installation:</p>
+<pre class="shell"><code>shell&gt; /bin/cp -rpf cacti-version cacti
+</code></pre></li>
+<li><p>Set Appropriate Permissions:</p>
+<p>Set the appropriate permissions on Cacti's directories for graph/log generation. Execute these commands from inside Cacti's directory to change the permissions.</p>
+<pre class="shell"><code>shell&gt; chown -R apache:apache rra/ log/
+</code></pre></li>
+<li><p>Recreate the Cache Folder (Optional):</p>
+<p>If you are using Performance &gt; Image Caching or Realtime Graphing, recreate the cache folder and correct the permissions.</p>
+<pre class="shell"><code>shell&gt; mkdir cache
+shell&gt; chown -R apache:apache cache
+</code></pre></li>
+<li><p>Point Your Browser:</p></li>
+</ol>
+<p>Point your web browser to <a href="http://your-server/cacti/">http://your-server/cacti/</a> and follow the on-screen instructions to update your database to the new version.</p>
+<ol start="11">
+<li><p>Re-enable Polling:</p>
+<p>Go to the console and re-enable the poller. It will take two polling cycles to update the remote pollers.</p></li>
+<li><p>If Remote Pollers Fail to Update:</p>
+<p>Try to rebuild the Resource Cache by going to Console &gt;&gt; Utilities and wait 2 polling cycles.</p>
+<p>If that fails, update the remote pollers that have failed to update.</p></li>
+</ol>
+</body>
+
+<!-- Mirrored from cacti.campus-rv.net/docs/Upgrading-Cacti.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 28 Jun 2025 16:41:30 GMT -->
+</html>

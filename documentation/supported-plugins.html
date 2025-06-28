@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+
+<!-- Mirrored from cacti.campus-rv.net/docs/supported-plugins.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 28 Jun 2025 16:43:02 GMT -->
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Cacti – Supported plugins</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="Cacti-Github.css" />
+</head>
+<body>
+<h1 id="supported-plugins">Supported plugins</h1>
+<p>Cacti group has developed and is still developing a large number of plugins extending cacti. Some of them are adopted from the community.</p>
+<p>Of course plugins can be developed by anyone, our documentation contains everything needed. We do our best to keep the plugins we support working with current versions of cacti.</p>
+<p>Here is a list of the plugins we support and a short description of them.</p>
+<ul>
+<li><p><strong>Thold</strong></p>
+<p>The Cacti thold plugin is designed to be a fault management system driven by Cacti's Graph information. It provides the facility to inspect data in a Cacti Graph and the underlying RRDfile, and generate alerts for management and operations personnel. It provides Email, Syslog, and SNMP Trap or Inform escalations. In addition, it also can notify personnel of Cacti Device status changes.</p>
+<ul>
+<li>Hi/Low, Time Based and Baseline deviation thresholds</li>
+<li>Realerting</li>
+<li>Multiple Data Manipulation types, including: Exact Value, CDEF, Percentage, and RPN Expression</li>
+<li>Ability to Generate Tickets to Ticketing Systems through Script Execution</li>
+<li>Acknowledgment levels</li>
+</ul>
+<p><a href="https://github.com/Cacti/plugin_thold">Thold plugin homepage</a></p></li>
+<li><p><strong>Intropage</strong></p>
+<p>User defined dashboards for Cacti. Each user can create own dashboards.</p>
+<ul>
+<li>Displays useful information about Cacti</li>
+<li>Add graphs to dashboard</li>
+<li>Support plugins like thold, syslog, ...</li>
+<li>Share dashboards between users</li>
+<li>Respects Cacti's user permissions</li>
+</ul>
+<p><a href="https://github.com/Cacti/plugin_intropage">Intropage plugin homepage</a></p></li>
+<li><p><strong>Maint</strong></p>
+<p>Plugin is for the scheduling of maintenance so that Thold/Servcheck and other plugins will not alert during that time period.</p>
+<ul>
+<li>One time or Recurring schedule</li>
+</ul>
+<p><a href="https://github.com/Cacti/plugin_maint">Maint plugin homepage</a></p></li>
+<li><p><strong>Monitor</strong></p>
+<p>This plugin allows you to view at a glance all your critical Cacti hosts, and will alert you audibly and via Email when a Device or Devices go down.</p>
+<ul>
+<li>Data Center Dashboard</li>
+<li>Audible and Visual Alerting</li>
+<li>Respects Cacti's user permissions</li>
+<li>Monitoring can be enabled or disabled at the Device level</li>
+<li>Supports Monitoring Devices by Criticality</li>
+</ul>
+<p><a href="https://github.com/Cacti/plugin_monitor">Monitor plugin homepage</a></p></li>
+<li><p><strong>Mikrotik</strong></p>
+<p>This plugin provides support for the MikroTik RouterOS available from MikroTik and other router and switch hardware suppliers. It is not a replacement for MikroTik's GUI interface, but provides nice Cacti Graphs.</p>
+<ul>
+<li>Automatic Discovery of Cacti Devices that are MikroTik's</li>
+<li>Enhanced Traffic Graphs</li>
+<li>Graphs of Wireless and PPPoE Users</li>
+<li>Table views of Wireless and PPPoE User utilization</li>
+<li>Graphs of MikroTik environmental data such as temperature and voltage</li>
+<li>Viewing of Devices and summary statistics, Users, Queue Trees, Access Points, HotSpots, Interfaces, and Wireless Station information</li>
+</ul>
+<p><a href="https://github.com/Cacti/plugin_mikrotik">Mikrotik plugin homepage</a></p></li>
+<li><p><strong>Routerconfigs</strong></p>
+<p>The routerconfigs plugin is designed to receive and create backups from your network devices. It also provides the ability to view and diff those router configurations as they change over time. It is designed primarily for Cisco device types, but may work with other device types.</p>
+<p><a href="https://github.com/Cacti/plugin_routerconfigs">Routerconfigs plugin homepage</a></p></li>
+<li><p><strong>ReportIt</strong></p>
+<p>This plugin creates tabular reports which can be exported to CSV, SML and XML as well.</p>
+<ul>
+<li>Definition of individual report templates by using measurands and variables in a mathematical way</li>
+<li>Individual configuration of working days, working time, timezone and subheads per data item</li>
+<li>Scheduled reporting with sliding time frames</li>
+<li>Export to CSV, SML and XML</li>
+<li>Different ways of connecting RRDtool</li>
+<li>Scheduled reports via email</li>
+</ul>
+<p><a href="https://github.com/Cacti/plugin_reportit">Reportit plugin homepage</a></p></li>
+<li><p><strong>Evidence</strong></p>
+<p>Plugin provides information about device serial numbers, software/firmware versions and much more information from SNMP Entity MIB</p>
+<ul>
+<li>Search serial number, problematic firmware version</li>
+<li>Email notification when changes</li>
+<li>Saves past configurations, ability to view changes in time</li>
+<li>Vendor specific information</li>
+</ul>
+<p><a href="https://github.com/Cacti/plugin_evidence">Evidence plugin homepage</a></p></li>
+<li><p><strong>Mactrack</strong></p>
+<p>Scan network devices (switches, routers, ..) for connected devices</p>
+<ul>
+<li>Find MACs, IPs, VLANs</li>
+<li>Associate IP and MAC</li>
+<li>Where is device connected</li>
+<li>ARPwatch support</li>
+<li>Finds Stolen/Lost PC's</li>
+<li>Tells you when someone is connected who shouldn't be</li>
+</ul>
+<p><a href="https://github.com/Cacti/plugin_mactrack">Mactrack plugin homepage</a></p></li>
+<li><p><strong>FlowView</strong></p>
+<p>This plugin allows you to view NetFlow data from inside of Cacti and to generate Email based reports of the data.</p>
+<ul>
+<li>Ability to view Flow Data in Table Form or three Chart Forms</li>
+<li>Parallel Query Execution to increase the speed of report generation</li>
+<li>Support for Shard Query and Horizontal Scaling through use of technologies such as MariaDB MaxScale</li>
+<li>Tracking of IP addresses that do not resolve through DNS by using ARIN's whois service</li>
+<li>Customizable Scheduled Reports</li>
+</ul>
+<p><a href="https://github.com/Cacti/plugin_flowview">Flowview plugin homepage</a></p></li>
+<li><p><strong>Servcheck</strong></p>
+<p>Internet services (http, imap, ldap, ...) monitoring plugin. This plugin allows you to add service monitoring to Cacti. You simply add service check, allow service specific test (like certificate test) and you can add the expected response. Servcheck periodically runs test and notifies if a service check fails. The plugin records statistics about the connection, it's response, and can alert when the status changes.</p>
+<ul>
+<li>tests for scp, tftp, ftp, smb, ..</li>
+<li>import own certificate for test</li>
+<li>notify about soon certificate expiration</li>
+<li>notify when last result is different</li>
+</ul>
+<p><a href="https://github.com/Cacti/plugin_servcheck">Servcheck plugin homepage</a></p></li>
+<li><p><strong>HMIB</strong></p>
+<p>The hmib plugin is designed to collect SNMP information from Cacti Devices that support the SNMP Host Resources Mib structure. This SNMP information includes performance metrics like CPU utilization, running processes and applications, hardware details, ...</p>
+<p><a href="https://github.com/Cacti/plugin_hmib">Hmib plugin homepage</a></p></li>
+<li><p><strong>Weathermap</strong></p>
+<p>Weathermap is one of many implementations of the same basic idea - take data from your network devices and use it to provide a single-page overview of the current state of network, like the one to the right.</p>
+<p><a href="https://github.com/Cacti/plugin_weathermap">Weathermap plugin homepage</a></p></li>
+<li><p><strong>Syslog</strong></p>
+<p>It provides a simple Syslog event search an Alert generation and notification interface that can generate both HTML and SMS messages for operations personnel who wish to receive notifications inside of a data or network operations center. When combined by the Linux SNMPTT package, it can be converted into an SNMP Trap and Inform receiver and notification engine as the SNMPTT tool will receive SNMP Traps and Informs and convert them into Syslog messages on your log server. These syslog messages can then be consumed by the syslog plugin. So, this tool is quite handy</p>
+<ul>
+<li>Message filtering</li>
+<li>Message searching</li>
+<li>Message Alerting</li>
+<li>Alert Methods of Individual and Threshold Based</li>
+<li>Remote Log Server connection capabilities</li>
+<li>Ability to Generate Tickets to Ticketing Systems through Script Execution</li>
+<li>Ability to run alert specific commands at Alert and Re-alert times</li>
+</ul>
+<p><a href="https://github.com/Cacti/plugin_syslog">Syslog plugin homepage</a></p></li>
+<li><p><strong>Slowlog</strong></p>
+<p>The plugin will allow a Cacti Administrator to import their slow Query log and perform analysis of that slow log.</p>
+<p><a href="https://github.com/Cacti/plugin_slowlog">Slowlog plugin homepage</a></p></li>
+<li><p><strong>Apcupsd</strong></p>
+<p>This plugin is to be used to track UPS status from the apcupsd daemon as well as SNMP enabled UPS. The apcupsd daemon is able to provide information on APC and other types of UPS' over various network typologies such as USB, Modbus, Ethernet, etc. We have added basic SNMP support in order to provide direct access to certain models over the SNMP protocol thus removing the need for an apcupsd host to provide the monitoring details as well.</p>
+<ul>
+<li>Track UPS status</li>
+<li>Log information to Cacti database</li>
+</ul>
+<p><a href="https://github.com/Cacti/plugin_apcupsd">Apcupsd plugin homepage</a></p></li>
+<li><p><strong>WMI</strong></p>
+<p>The WMI Plugin provides data collection services for devices that support the WMI protocol. It operates asyncrhonously to the Cacti data collection and stores the resulting information into cache tables. These cache tables can then be used to generate graphs, thresholds and alerts. It relies on the 'wmic' command in Linux, and WMI services via Microsofts COM protocol from Windows Cacti servers.</p>
+<p><a href="https://github.com/Cacti/plugin_wmi">WMI plugin homepage</a></p></li>
+</ul>
+</body>
+
+<!-- Mirrored from cacti.campus-rv.net/docs/supported-plugins.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 28 Jun 2025 16:43:02 GMT -->
+</html>

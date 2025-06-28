@@ -3,10 +3,10 @@ function html_escape($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
 }
 
-$currentPath = isset($_GET['path']) ? $_GET['path'] : '../rra/';
+$currentPath = isset($_GET['path']) ? $_GET['path'] : '../../rra/';
 $currentPath = realpath($currentPath);
 
-if ($currentPath === false || strpos($currentPath, realpath('../rra/')) !== 0) {
+if ($currentPath === false || strpos($currentPath, realpath('../../rra/')) !== 0) {
     die("非法的目錄路徑。\n");
 }
 

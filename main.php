@@ -20,7 +20,7 @@
  +-------------------------------------------------------------------------+
  | http://www.cacti.net/                                                   |
  +-------------------------------------------------------------------------+
- | Customized PHP Pages (By Jacky.zou editor)  v.1.0.2_20250627            |
+ | Customized PHP Pages (By Jacky.zou editor)  v.1.0.3_20250629            |
  +-------------------------------------------------------------------------+
 */
 ?>
@@ -35,8 +35,14 @@
                 <button class="button-spacing" onclick="showFrame('frameStatus')">
                     <font face="Verdana" size="1" color="#757575"> Status </font>
                 </button>
+                <button class="button-spacing" onclick="showFrame('frameRrdviewer')">
+                    <font face="Verdana" size="1" color="#757575"> RRD Viewer </font>
+                </button>
                 <button class="button-spacing" onclick="showFrame('frameDocuments')">
                     <font face="Verdana" size="1" color="#757575"> Documents </font>
+                </button>
+                <button class="button-spacing" onclick="showFrame('frameDocumentation')">
+                    <font face="Verdana" size="1" color="#757575"> Documentation </font>
                 </button>
                 <button class="button-spacing" onclick="showFrame('frameManageTholdCacti')">
                     <font face="Verdana" size="1" color="#757575"> Manage </font>
@@ -52,7 +58,9 @@
 <!-- 內容切換的 frame 區 -->
 <iframe id="frameHome" class="frame" src="/cacti/plugins/tools/home.php"></iframe>
 <iframe id="frameStatus" class="frame" src="/cacti/plugins/tools/status.php"></iframe>
+<iframe id="frameRrdviewer" class="frame" src="/cacti/plugins/tools/rrd_viewer.php"></iframe>
 <iframe id="frameDocuments" class="frame" src="/cacti/plugins/tools/documents.php"></iframe>
+<iframe id="frameDocumentation" class="frame" src="/cacti/plugins/tools/documentation/documentation.html"></iframe>
 <iframe id="frameManageTholdCacti" class="frame" src="/cacti/plugins/tools/manage_thold_cacti.php"></iframe>
 <iframe id="frameUpdater" class="frame" src="/cacti/plugins/tools/updater.php"></iframe>
 
@@ -60,7 +68,7 @@
 <style>
     .frame { display: none; width: 100%; height: 650px; border: 0px solid #000; margin-top: 0px; }
     #frameHome { display: block; }
-    #frameStatus, #frameDocuments, #frameManageTholdCacti, #frameUpdater { display: none; }
+    #frameStatus, #frameRrdviewer, #frameDocuments, #frameDocumentation, #frameManageTholdCacti, #frameUpdater { display: none; }
     .button-spacing { margin-right: 2.5px; }
 </style>
 
