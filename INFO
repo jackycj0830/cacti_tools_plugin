@@ -2,7 +2,7 @@
 name = tools
 version = 1.0.0
 longname = Tools
-author = Jacky Zou
+author = Jacky Zou and TPV IT Global Infrastructure Team
 email = jacky.zou@tpv-tech.com
 homepage = http://172.17.32.18/cacti/
 compat = 1.0.0

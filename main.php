@@ -20,7 +20,7 @@
  +-------------------------------------------------------------------------+
  | http://www.cacti.net/                                                   |
  +-------------------------------------------------------------------------+
- | Customized PHP Pages (By Jacky.zou editor)  v.1.0.1_20250623            |
+ | Customized PHP Pages (By Jacky.zou editor)  v.1.0.2_20250627            |
  +-------------------------------------------------------------------------+
 */
 ?>
@@ -41,6 +41,9 @@
                 <button class="button-spacing" onclick="showFrame('frameManageTholdCacti')">
                     <font face="Verdana" size="1" color="#757575"> Manage </font>
                 </button>
+                <button class="button-spacing" onclick="showFrame('frameUpdater')">
+                    <font face="Verdana" size="1" color="#757575"> Updater </font>
+                </button>
             </td>
         </tr>
     </tbody>
@@ -51,12 +54,13 @@
 <iframe id="frameStatus" class="frame" src="/cacti/plugins/tools/status.php"></iframe>
 <iframe id="frameDocuments" class="frame" src="/cacti/plugins/tools/documents.php"></iframe>
 <iframe id="frameManageTholdCacti" class="frame" src="/cacti/plugins/tools/manage_thold_cacti.php"></iframe>
+<iframe id="frameUpdater" class="frame" src="/cacti/plugins/tools/updater.php"></iframe>
 
 <!-- CSS 直接寫在 style 標籤，嵌入式最安全 -->
 <style>
     .frame { display: none; width: 100%; height: 650px; border: 0px solid #000; margin-top: 0px; }
     #frameHome { display: block; }
-    #frameStatus, #frameDocuments, #frameManageTholdCacti { display: none; }
+    #frameStatus, #frameDocuments, #frameManageTholdCacti, #frameUpdater { display: none; }
     .button-spacing { margin-right: 2.5px; }
 </style>
 
