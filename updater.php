@@ -1,20 +1,103 @@
 <?php
-// 只要直接存取本檔（無 $_FILES）時，回傳 HTML 表單
+// ======= 前端頁面輸出 (GET 或未上傳時) =======
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_FILES)) {
-    ?>
+?>
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>上傳 ZIP 並預覽內容</title>
+    <title>Cacti 更新系統</title>
+    <style>
+        body {
+            background: #f5f5f5;
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .cacti-header {
+            background: #51a351;
+            color: #fff;
+            padding: 16px 24px;
+            font-size: 1.4em;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+        .cacti-container {
+            max-width: 600px;
+            background: #fff;
+            margin: 30px auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px #b2b2b270;
+            padding: 32px 24px 16px 24px;
+        }
+        .cacti-box {
+            background: #eaf5ea;
+            border-left: 6px solid #51a351;
+            color: #2d572c;
+            padding: 16px 20px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+            font-size: 1.08em;
+        }
+        .cacti-btn {
+            background: #51a351;
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            font-size: 1.1em;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .cacti-btn:disabled {
+            background: #b7d9b7;
+            cursor: not-allowed;
+        }
+        input[type="file"] {
+            border: 1px solid #b5b5b5;
+            background: #f9f9f9;
+            padding: 7px 10px;
+            border-radius: 4px;
+        }
+        #fileList {
+            margin: 12px 0 6px 0;
+            padding-left: 18px;
+        }
+        #progress {
+            margin-top: 6px;
+            color: #19591d;
+        }
+        #message {
+            margin-top: 16px;
+            padding: 10px;
+            background: #f6fff6;
+            border-radius: 4px;
+            border: 1px solid #d4edd4;
+            min-height: 28px;
+            color: #2d572c;
+            font-size: 1.05em;
+            word-break: break-all;
+        }
+    </style>
 </head>
 <body>
-    <h2>上傳 ZIP 檔案</h2>
-    <input type="file" id="zipFile" accept=".zip">
-    <ul id="fileList"></ul>
-    <button id="uploadBtn" type="button" onclick="uploadFile()" disabled>確認並上傳</button>
-    <div id="progress"></div>
-    <div id="message"></div>
+    <div class="cacti-header">Cacti 系統插件/資源上傳與更新</div>
+    <div class="cacti-container">
+        <div class="cacti-box">
+            <b>操作說明與注意事項：</b><br>
+            1. 本功能僅限上傳經認證的 Cacti 套件、插件或更新檔案（ZIP 格式）。<br>
+            2. 上傳後，系統會自動將內容解壓縮並傳送到對應 Cacti 伺服器目錄。<br>
+            3. <b>請勿上傳來源不明、未經測試之檔案！</b><br>
+            4. 傳送完成後請至 <u>插件管理或更新頁</u> 檢查狀態，如需重啟 Cacti 服務請手動操作。<br>
+            5. <b>安全提醒：</b> 請確認檔案內容無惡意程式，且檔名無中文或特殊符號。<br>
+        </div>
+        <h2 style="color:#51a351;">上傳更新檔案（ZIP）</h2>
+        <input type="file" id="zipFile" accept=".zip">
+        <ul id="fileList"></ul>
+        <button id="uploadBtn" class="cacti-btn" type="button" onclick="uploadFile()" disabled>確認並上傳</button>
+        <div id="progress"></div>
+        <div id="message"></div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/jszip/dist/jszip.min.js"></script>
     <script>
         let selectedFile;
@@ -68,27 +151,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_FILES)) {
                         return;
                     }
                     if (resp.success) {
-                        document.getElementById('message').innerHTML = '上傳成功！<br>檔案清單：<br>' + (resp.files || []).join('<br>');
+                        document.getElementById('message').innerHTML = '✅ 上傳成功！<br>檔案清單：<br>' + (resp.files || []).join('<br>');
                     } else {
-                        let msg = '錯誤：' + resp.error + ' (錯誤代碼:' + resp.code + ')';
-                        // 若為 ZipArchive 未安裝，顯示解決方案
+                        let msg = '❌ 錯誤：' + resp.error + ' (錯誤代碼:' + resp.code + ')';
                         if (resp.code == 900) {
                             msg += `<br><br>
                             <b>解決方法：</b><br>
-                            1. <b>安裝 Zip 擴展</b><br>
-                            <u>Linux (Debian/Ubuntu)</u><br>
+                            <u>Linux (Debian/Ubuntu)</u>：<br>
                             <code>sudo apt-get install php-zip<br>sudo systemctl restart apache2</code><br>
-                            <u>CentOS/RHEL</u><br>
+                            <u>CentOS/RHEL</u>：<br>
                             <code>sudo yum install php-zip<br>sudo systemctl restart httpd</code><br>
-                            <u>Windows</u><br>
-                            通常 PHP 已內建 zip.dll，只需確認 php.ini 有啟用：<br>
-                            <code>extension=zip</code><br>
-                            重啟 Apache 或 Nginx。<br><br>
-                            2. <b>確認 extension 啟用</b><br>
-                            查看 phpinfo() 頁面，搜尋有無 Zip。<br>
-                            或用指令：<br>
-                            <code>php -m | grep zip</code><br>
-                            有看到 zip 就代表已啟用。
+                            <u>Windows</u>：請於 php.ini 啟用 <code>extension=zip</code> 並重啟 Web 服務。
                             `;
                         }
                         document.getElementById('message').innerHTML = msg;
@@ -109,11 +182,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_FILES)) {
     exit;
 }
 
-// -------------- 以下為 PHP 處理流程 --------------
+// ========== 後端 PHP 處理區段 ==========
+
 header('Content-Type: application/json; charset=utf-8');
 date_default_timezone_set("Asia/Taipei");
 
-// === 基本參數，請依你的實際環境調整 ===
+// === 依實際需求設定目標參數 ===
 $ssh_host    = '172.17.32.15';
 $ssh_user    = 'root';
 $ssh_pass    = '';
@@ -206,3 +280,4 @@ try {
 } catch (Throwable $e) {
     json_exit(['success'=>false, 'error'=>'Exception: '.$e->getMessage(), 'code'=>999, 'files'=>[]]);
 }
+?>
