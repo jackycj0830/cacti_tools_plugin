@@ -58,7 +58,7 @@ function generate_rrd_url($data_source_path) {
     if (preg_match('#(\d+)/(\d+)\.rrd$#', $data_source_path, $m)) {
         $file_path = "/var/lib/cacti/rra/{$m[1]}/{$m[2]}.rrd";
         $url_path = urlencode($file_path);
-        return "rrd_viewer.php?file={$url_path}";
+        return "rrd_viewer_daily.php?file={$url_path}";
     }
     return "#";
 }

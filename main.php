@@ -35,6 +35,9 @@
                 <button class="button-spacing" onclick="showFrame('frameStatus')">
                     <font face="Verdana" size="1" color="#757575"> Status </font>
                 </button>
+                <button class="button-spacing" onclick="showFrame('frameGraphs')">
+                    <font face="Verdana" size="1" color="#757575"> Graphs </font>
+                </button>
                 <button class="button-spacing" onclick="showFrame('frameRrdviewer')">
                     <font face="Verdana" size="1" color="#757575"> RRD Viewer </font>
                 </button>
@@ -56,19 +59,20 @@
 </table>
 
 <!-- 內容切換的 frame 區 -->
-<iframe id="frameHome" class="frame" src="/cacti/plugins/tools/home.php"></iframe>
-<iframe id="frameStatus" class="frame" src="/cacti/plugins/tools/status.php"></iframe>
-<iframe id="frameRrdviewer" class="frame" src="/cacti/plugins/tools/rrd_viewer.php"></iframe>
-<iframe id="frameDocuments" class="frame" src="/cacti/plugins/tools/documents.php"></iframe>
-<iframe id="frameDocumentation" class="frame" src="/cacti/plugins/tools/documentation/documentation.html"></iframe>
-<iframe id="frameManageTholdCacti" class="frame" src="/cacti/plugins/tools/manage_thold_cacti.php"></iframe>
-<iframe id="frameUpdater" class="frame" src="/cacti/plugins/tools/updater.php"></iframe>
+<iframe id="frameHome" class="frame" src="/cacti/plugins/tools/home.php" sandbox="allow-scripts allow-same-origin"></iframe>
+<iframe id="frameStatus" class="frame" src="/cacti/plugins/tools/status.php" sandbox="allow-scripts allow-same-origin"></iframe>
+<iframe id="frameGraphs" class="frame" src="/cacti/plugins/tools/graph_view.php" sandbox="allow-scripts allow-same-origin"></iframe>
+<iframe id="frameRrdviewer" class="frame" src="/cacti/plugins/tools/rrd_graph_viewer_daily.php" sandbox="allow-scripts allow-same-origin"></iframe>
+<iframe id="frameDocuments" class="frame" src="/cacti/plugins/tools/documents.php" sandbox="allow-scripts allow-same-origin"></iframe>
+<iframe id="frameDocumentation" class="frame" src="/cacti/plugins/tools/documentation/documentation.html" sandbox="allow-scripts allow-same-origin"></iframe>
+<iframe id="frameManageTholdCacti" class="frame" src="/cacti/plugins/tools/manage_thold_cacti.php" sandbox="allow-scripts allow-same-origin"></iframe>
+<iframe id="frameUpdater" class="frame" src="/cacti/plugins/tools/updater.php" sandbox="allow-scripts allow-same-origin"></iframe>
 
 <!-- CSS 直接寫在 style 標籤，嵌入式最安全 -->
 <style>
     .frame { display: none; width: 100%; height: 650px; border: 0px solid #000; margin-top: 0px; }
     #frameHome { display: block; }
-    #frameStatus, #frameRrdviewer, #frameDocuments, #frameDocumentation, #frameManageTholdCacti, #frameUpdater { display: none; }
+    #frameStatus, #frameGraphs , #frameRrdviewer, #frameDocuments, #frameDocumentation, #frameManageTholdCacti, #frameUpdater { display: none; }
     .button-spacing { margin-right: 2.5px; }
 </style>
 
