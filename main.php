@@ -35,6 +35,9 @@
                 <button class="button-spacing" onclick="showFrame('frameStatus')">
                     <font face="Verdana" size="1" color="#757575"> Status </font>
                 </button>
+                <button class="button-spacing" onclick="showFrame('frameSharepoint')">
+                    <font face="Verdana" size="1" color="#757575"> Sharepoint </font>
+                </button>
                 <button class="button-spacing" onclick="showFrame('frameGraphs')">
                     <font face="Verdana" size="1" color="#757575"> Graphs </font>
                 </button>
@@ -61,6 +64,7 @@
 <!-- 內容切換的 frame 區 -->
 <iframe id="frameHome" class="frame" src="/cacti/plugins/tools/home.php" sandbox="allow-scripts allow-same-origin"></iframe>
 <iframe id="frameStatus" class="frame" src="/cacti/plugins/tools/status.php" sandbox="allow-scripts allow-same-origin"></iframe>
+<iframe id="frameSharepoint" class="frame" src="https://tpvtech3.sharepoint.com/sites/CactiUpgrade328/SitePages/en/Home.aspx" sandbox="allow-scripts allow-same-origin"></iframe>
 <iframe id="frameGraphs" class="frame" src="/cacti/plugins/tools/graph_view.php" sandbox="allow-scripts allow-same-origin"></iframe>
 <iframe id="frameRrdviewer" class="frame" src="/cacti/plugins/tools/rrd_graph_viewer_daily.php" sandbox="allow-scripts allow-same-origin"></iframe>
 <iframe id="frameDocuments" class="frame" src="/cacti/plugins/tools/documents.php" sandbox="allow-scripts allow-same-origin"></iframe>
@@ -72,7 +76,7 @@
 <style>
     .frame { display: none; width: 100%; height: 650px; border: 0px solid #000; margin-top: 0px; }
     #frameHome { display: block; }
-    #frameStatus, #frameGraphs , #frameRrdviewer, #frameDocuments, #frameDocumentation, #frameManageTholdCacti, #frameUpdater { display: none; }
+    #frameStatus, #frameSharepoint, #frameGraphs , #frameRrdviewer, #frameDocuments, #frameDocumentation, #frameManageTholdCacti, #frameUpdater { display: none; }
     .button-spacing { margin-right: 2.5px; }
 </style>
 
