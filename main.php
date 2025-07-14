@@ -61,10 +61,10 @@
     </tbody>
 </table>
 
-<!-- 內容切換的 frame 區 -->
+<!-- 內容切換的 frame 區（已移除 frameSharepoint）-->
 <iframe id="frameHome" class="frame" src="/cacti/plugins/tools/home.php" sandbox="allow-scripts allow-same-origin"></iframe>
 <iframe id="frameStatus" class="frame" src="/cacti/plugins/tools/status.php" sandbox="allow-scripts allow-same-origin"></iframe>
-<iframe id="frameSharepoint" class="frame" src="https://tpvtech3.sharepoint.com/sites/CactiUpgrade328/SitePages/en/Home.aspx" sandbox="allow-scripts allow-same-origin"></iframe>
+<!-- <iframe id="frameSharepoint" class="frame" src="" sandbox="allow-scripts allow-same-origin"></iframe>  這行可刪除 -->
 <iframe id="frameGraphs" class="frame" src="/cacti/plugins/tools/graph_view.php" sandbox="allow-scripts allow-same-origin"></iframe>
 <iframe id="frameRrdviewer" class="frame" src="/cacti/plugins/tools/rrd_graph_viewer_daily.php" sandbox="allow-scripts allow-same-origin"></iframe>
 <iframe id="frameDocuments" class="frame" src="/cacti/plugins/tools/documents.php" sandbox="allow-scripts allow-same-origin"></iframe>
@@ -76,13 +76,19 @@
 <style>
     .frame { display: none; width: 100%; height: 650px; border: 0px solid #000; margin-top: 0px; }
     #frameHome { display: block; }
-    #frameStatus, #frameSharepoint, #frameGraphs , #frameRrdviewer, #frameDocuments, #frameDocumentation, #frameManageTholdCacti, #frameUpdater { display: none; }
+    #frameStatus, #frameGraphs , #frameRrdviewer, #frameDocuments, #frameDocumentation, #frameManageTholdCacti, #frameUpdater { display: none; }
     .button-spacing { margin-right: 2.5px; }
 </style>
 
-<!-- 加入正確的 JavaScript 切換邏輯 -->
+<!-- JavaScript 切換邏輯 -->
 <script>
     function showFrame(frameId) {
+        // 特別處理 Sharepoint，開新視窗並結束
+        if (frameId === 'frameSharepoint') {
+            window.open('https://tpvtech3.sharepoint.com/sites/CactiUpgrade328/', '_blank');
+            return;
+        }
+        // 其餘 frame 按照原本的顯示邏輯
         var frames = document.getElementsByClassName('frame');
         for (var i = 0; i < frames.length; i++) {
             frames[i].style.display = 'none';

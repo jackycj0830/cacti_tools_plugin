@@ -14,7 +14,7 @@
             padding: 20px;
             background-color: #f5f5f5;
         }
-        h1, h2, h3 {
+        h2, h3 {
             color: #2d4b23;
         }
         .lang-switch {
@@ -35,32 +35,31 @@
             color: #fff;
             background: #2d4b23;
         }
-        p {
-            line-height: 1.8;
-            font-size: 1.1em;
+        .function-list {
+            margin-top: 10px;
+            padding: 15px 25px;
+            background: #f1f1f1;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px #ddd;
         }
-        pre {
-            background-color: #e8e8e8;
-            padding: 10px;
-            border-radius: 5px;
+        .copyright {
+            text-align: center;
+            color: #888;
+            margin-top: 50px;
+            font-size: 0.95em;
         }
     </style>
     <script>
         function showLang(lang) {
-            // 切換語言顯示
             document.querySelectorAll('.lang-content').forEach(function(div) {
                 div.style.display = 'none';
             });
             document.getElementById('lang-' + lang).style.display = 'block';
-
-            // 更新按鈕狀態
             document.querySelectorAll('.lang-switch button').forEach(function(btn) {
                 btn.classList.remove('active');
             });
             document.getElementById('btn-' + lang).classList.add('active');
         }
-
-        // 頁面加載後預設顯示English
         window.onload = function() {
             showLang('en');
         };
@@ -77,58 +76,73 @@
     <div id="lang-en" class="lang-content" style="display:none;">
         <h2>Welcome to Cacti Tools</h2>
         <p>
-            This tool is designed for viewing Cacti system logs, including real-time log status and local file log checking, making it convenient for administrators to monitor and troubleshoot.
+            This toolset provides Cacti administrators with a collection of essential functions, making system monitoring and management more efficient and user-friendly.<br>
+            Please make sure you have installed the <b>SSHPASS</b> tool before using. Refer to <a href="install_sshpass.php">this document</a> for setup instructions.
         </p>
-        <p>
-            Please make sure you have installed the SSHPASS tool before using. Refer to <a href="install_sshpass.php">this document</a> for setup instructions.
-        </p>
-        <h3>Features:</h3>
-        <ul>
-            <li><b>Real-time Log Status</b>: View the current system log status for real-time monitoring.</li>
-            <li><b>Local File Log Check</b>: Check local system log files for detailed analysis.</li>
-            <li><b>Log Knowledge Base</b>: Analyze and reference system log content.</li>
-            <li><b>Log Analysis Prompts</b>: Get tips for log file analysis.</li>
-            <li><b>RRD File Browser</b>: Explore local RRD files for system insights.</li>
-        </ul>
+        <h3>Features Overview</h3>
+        <div class="function-list">
+            <ul>
+                <li><b>Home</b>: Overview of Cacti Tools and quick access to all features.</li>
+                <li><b>Status</b>: View current system and Cacti status, including service health and availability.</li>
+                <li><b>Sharepoint</b>: Manage and access shared resources for Cacti monitoring data.</li>
+                <li><b>Graphs</b>: Visualize network and server data in interactive graphs.</li>
+                <li><b>RRD Viewer</b>: Browse and inspect local RRD files for data insights.</li>
+                <li><b>Documents</b>: Access important documents and user guides.</li>
+                <li><b>Documentation</b>: Official Cacti and plugin documentation reference.</li>
+                <li><b>Manage</b>: System management, configuration, and tool settings.</li>
+                <li><b>Updater</b>: Check and apply updates for Cacti Tools and related plugins.</li>
+            </ul>
+        </div>
     </div>
 
-    <!-- 簡體中文 -->
+    <!-- 简体中文 -->
     <div id="lang-zhHans" class="lang-content" style="display:none;">
         <h2>欢迎使用 Cacti Tools</h2>
         <p>
-            本工具用于查看 Cacti 系统日志，包括实时日志状态与本地文件日志检查功能，方便系统管理员进行监控与排错。
+            本工具集为 Cacti 管理员提供了常用功能，简化系统监控与管理流程。<br>
+            请确保已安装 <b>SSHPASS</b> 工具。安装参考<a href="install_sshpass.php">此文档</a>。
         </p>
-        <p>
-            本工具需要先安装 SSHPASS 工具，请参考<a href="install_sshpass.php">此文档</a>进行设置安装。
-        </p>
-        <h3>功能说明：</h3>
-        <ul>
-            <li><b>实时日志状态</b>：查看当前系统日志状态，进行实时监控。</li>
-            <li><b>本地文件日志检查</b>：检查系统记录的本地日志文件，分析具体内容。</li>
-            <li><b>日志内容知识库</b>：分析和参考系统日志内容。</li>
-            <li><b>日志分析提示词</b>：获取日志文件分析的提示和建议。</li>
-            <li><b>RRD 文件浏览器</b>：浏览本地 RRD 文件以获取系统信息。</li>
-        </ul>
+        <h3>功能一览</h3>
+        <div class="function-list">
+            <ul>
+                <li><b>首页</b>：Cacti 工具欢迎页，快速入口导航。</li>
+                <li><b>状态</b>：查看当前系统与 Cacti 服务状态，包括服务健康与可用性。</li>
+                <li><b>共享资源</b>：管理和访问 Cacti 监控数据的共享资源。</li>
+                <li><b>图表</b>：可视化网络与服务器数据，展示交互式图形。</li>
+                <li><b>RRD 查看器</b>：浏览并分析本地 RRD 文件，获取数据洞察。</li>
+                <li><b>文档</b>：访问重要文档和用户指南。</li>
+                <li><b>官方文档</b>：Cacti 及插件官方文档参考。</li>
+                <li><b>管理</b>：系统管理、配置与工具设置。</li>
+                <li><b>更新器</b>：检测并应用 Cacti 工具及相关插件的更新。</li>
+            </ul>
+        </div>
     </div>
 
     <!-- 繁體中文 -->
     <div id="lang-zhHant" class="lang-content" style="display:none;">
         <h2>歡迎使用 Cacti Tools</h2>
         <p>
-            本工具用於查看 Cacti 系統日誌，包括即時日誌狀態與本地文件日誌檢查功能，方便系統管理員進行監控與除錯。
+            本工具組為 Cacti 管理員提供多項實用功能，簡化系統監控與管理。<br>
+            請確認已安裝 <b>SSHPASS</b> 工具，安裝說明請參考<a href="install_sshpass.php">此文件</a>。
         </p>
-        <p>
-            本工具須要先安裝SSHPASS工具，請參考<a href="install_sshpass.php">此篇文件</a>進行設定安裝。
-        </p>
-        <h3>功能說明：</h3>
-        <ul>
-            <li><b>即時日誌狀態</b>：查看當前系統日誌狀態，進行即時監控。</li>
-            <li><b>本地文件日誌檢查</b>：檢查系統記錄的本地日誌文件，分析具體內容。</li>
-            <li><b>日誌內容知識庫</b>：檢查系統記錄的本地日誌文件，分析具體內容。</li>
-            <li><b>日誌分析提示詞</b>：檢查系統記錄的本地日誌文件，分析具體內容。</li>
-            <li><b>RRD 檔案瀏覽器</b>：檢查系統記錄的本地日誌文件，分析具體內容。</li>
-        </ul>
+        <h3>功能總覽</h3>
+        <div class="function-list">
+            <ul>
+                <li><b>首頁</b>：Cacti 工具歡迎頁與快速導航。</li>
+                <li><b>狀態</b>：檢視目前系統與 Cacti 服務狀態，包括服務健康與可用性。</li>
+                <li><b>共享資源</b>：管理與存取 Cacti 監控數據的共享資源。</li>
+                <li><b>圖形</b>：可視化網路與伺服器數據，互動式圖表顯示。</li>
+                <li><b>RRD 檔案檢視</b>：瀏覽本地 RRD 檔案，深入瞭解數據。</li>
+                <li><b>文件</b>：存取重要文件與使用手冊。</li>
+                <li><b>官方文件</b>：Cacti 及擴充套件官方文件查詢。</li>
+                <li><b>管理</b>：系統管理、設定與工具選項。</li>
+                <li><b>更新器</b>：檢查及更新 Cacti 工具及外掛程式。</li>
+            </ul>
+        </div>
     </div>
 
+    <div class="copyright">
+        &copy; <?php echo date("Y"); ?> Cacti Tools. All rights reserved. | Powered by Jacky Zou and TPV IT Global Infrastructure Team
+    </div>
 </body>
 </html>
