@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Translation Test - All Languages</title>
+  <link rel="stylesheet" href="Cacti-Github.css" />
+  <style>
+    .test-section {
+      border: 1px solid #ddd;
+      margin: 20px 0;
+      padding: 15px;
+      background: #f9f9f9;
+    }
+    .test-section h3 {
+      margin-top: 0;
+      color: #333;
+    }
+    .translation-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .lang-column {
+      padding: 10px;
+      border: 1px solid #ccc;
+      background: white;
+    }
+    .lang-column h4 {
+      margin-top: 0;
+      text-align: center;
+    }
+    .test-item {
+      margin: 5px 0;
+      padding: 5px;
+      border-left: 3px solid #007cba;
+      background: #f0f8ff;
+    }
+  </style>
+</head>
+<body>
+
+<h1 data-i18n="translation_test_title">Translation Test - All Languages</h1>
+
+<p data-i18n="translation_test_desc">This page tests all available translations. Switch languages using the selector in the top-right corner to see the translations in action.</p>
+
+<!-- Main Navigation Test -->
+<div class="test-section">
+    <h3>Main Navigation & Documentation Structure</h3>
+    <div class="test-item">
+        <strong data-i18n="main_title">Cacti (tm) Documentation</strong>
+    </div>
+    <div class="test-item">
+        <span data-i18n="table_of_contents">Table of Contents</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="cacti_installation">Cacti Installation</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="cacti_overview">Cacti Overview</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="advanced_operations">Advanced Operations</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="plugin_development">Plugin Development</span>
+    </div>
+</div>
+
+<!-- Installation & Requirements Test -->
+<div class="test-section">
+    <h3>Installation & Requirements</h3>
+    <div class="test-item">
+        <span data-i18n="requirements">Requirements</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="general_installing">General Installing Instructions</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="installing_linux">Installing Cacti on Linux</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="installing_windows">Installing Under Windows</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="upgrading_linux">Upgrading Cacti Under Linux/UNIX</span>
+    </div>
+</div>
+
+<!-- Management Features Test -->
+<div class="test-section">
+    <h3>Management Features</h3>
+    <div class="test-item">
+        <span data-i18n="devices">Devices</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="graphs">Graphs</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="data_sources">Data Sources</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="templates">Templates</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="settings">Settings</span>
+    </div>
+</div>
+
+<!-- Common UI Elements Test -->
+<div class="test-section">
+    <h3>Common UI Elements</h3>
+    <div class="test-item">
+        <span data-i18n="introduction">Introduction</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="getting_started">Getting Started</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="prerequisites">Prerequisites</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="installation_steps">Installation Steps</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="troubleshooting">Troubleshooting</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="examples">Examples</span>
+    </div>
+</div>
+
+<!-- Requirements Specific Test -->
+<div class="test-section">
+    <h3>Requirements Page Specific</h3>
+    <div class="test-item">
+        <span data-i18n="requirements_intro">Cacti requires that the following software is installed on your system.</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="web_server_req">Web Server that supports PHP e.g. Apache, Nginx, or IIS</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="php_req">PHP 5.4 or greater, 5.5+ recommended</span>
+    </div>
+    <div class="test-item">
+        <span data-i18n="mysql_req">MySQL 5.6 or MariaDB 5.5 or greater</span>
+    </div>
+</div>
+
+<!-- Navigation Links Test -->
+<div class="test-section">
+    <h3>Navigation Links</h3>
+    <p>
+        <a href="documentation.html" data-i18n="back_to_main">← Back to Main Documentation</a> |
+        <a href="Requirements.html" data-i18n="requirements">Requirements</a> |
+        <a href="debug-multilingual.html" data-i18n="debug_page">Debug Page</a>
+    </p>
+</div>
+
+<!-- Translation Status -->
+<div class="test-section">
+    <h3>Translation Status</h3>
+    <p>Current Language: <span id="currentLanguage">Loading...</span></p>
+    <p>Total Translated Elements: <span id="translatedCount">Loading...</span></p>
+    <p>Missing Translations: <span id="missingCount">Loading...</span></p>
+    <div id="missingTranslations"></div>
+</div>
+
+<hr />
+<p data-i18n="copyright">Copyright (c) 2004-2024 The Cacti Group</p>
+
+<!-- Multi-language Support Scripts -->
+<script type="text/javascript" src="js/i18n.js"></script>
+<script type="text/javascript" src="js/common.js"></script>
+<script type="text/javascript">
+// Page-specific translations
+const pageTranslations = {
+    'en': {
+        'translation_test_title': 'Translation Test - All Languages',
+        'translation_test_desc': 'This page tests all available translations. Switch languages using the selector in the top-right corner to see the translations in action.',
+        'debug_page': 'Debug Page',
+        'back_to_main': '← Back to Main Documentation'
+    },
+    'zh-cn': {
+        'translation_test_title': '翻译测试 - 所有语言',
+        'translation_test_desc': '此页面测试所有可用的翻译。使用右上角的选择器切换语言以查看翻译效果。',
+        'debug_page': '调试页面',
+        'back_to_main': '← 返回主文档'
+    },
+    'zh-tw': {
+        'translation_test_title': '翻譯測試 - 所有語言',
+        'translation_test_desc': '此頁面測試所有可用的翻譯。使用右上角的選擇器切換語言以查看翻譯效果。',
+        'debug_page': '調試頁面',
+        'back_to_main': '← 返回主文件'
+    }
+};
+
+// Merge page translations with global translations
+Object.keys(pageTranslations).forEach(lang => {
+    if (!translations[lang]) {
+        translations[lang] = {};
+    }
+    Object.assign(translations[lang], pageTranslations[lang]);
+});
+
+// Function to check translation status
+function checkTranslationStatus() {
+    const currentLang = getCurrentLanguage();
+    const elements = document.querySelectorAll('[data-i18n]');
+    let translatedCount = 0;
+    let missingTranslations = [];
+    
+    elements.forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        if (translations[currentLang] && translations[currentLang][key]) {
+            translatedCount++;
+        } else {
+            missingTranslations.push(key);
+        }
+    });
+    
+    document.getElementById('currentLanguage').textContent = currentLang;
+    document.getElementById('translatedCount').textContent = translatedCount + '/' + elements.length;
+    document.getElementById('missingCount').textContent = missingTranslations.length;
+    
+    if (missingTranslations.length > 0) {
+        document.getElementById('missingTranslations').innerHTML = 
+            '<h4>Missing Translations:</h4><ul>' + 
+            missingTranslations.map(key => '<li>' + key + '</li>').join('') + 
+            '</ul>';
+    } else {
+        document.getElementById('missingTranslations').innerHTML = '<p style="color: green;">✓ All translations available!</p>';
+    }
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Translation test page loaded, initializing...');
+    
+    // Initialize language system
+    initializeLanguage();
+    
+    // Update page title
+    const lang = getCurrentLanguage();
+    if (pageTranslations[lang] && pageTranslations[lang]['translation_test_title']) {
+        document.title = pageTranslations[lang]['translation_test_title'];
+    }
+    
+    // Check translation status
+    setTimeout(checkTranslationStatus, 500);
+    
+    console.log('Translation test page initialization complete');
+});
+
+// Global function for language change
+function changeLanguage() {
+    const selector = document.getElementById('languageSelector');
+    if (selector) {
+        const selectedLang = selector.value;
+        console.log('Translation test page: Language changed to:', selectedLang);
+        setLanguage(selectedLang);
+        
+        // Update page title immediately
+        if (pageTranslations[selectedLang] && pageTranslations[selectedLang]['translation_test_title']) {
+            document.title = pageTranslations[selectedLang]['translation_test_title'];
+        }
+        
+        // Update translation status
+        setTimeout(checkTranslationStatus, 100);
+    }
+}
+</script>
+</body>
+</html>

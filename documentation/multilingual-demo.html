@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Cacti Documentation - Multilingual System Demo</title>
+  <link rel="stylesheet" href="Cacti-Github.css" />
+  <style>
+    .demo-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .hero-section {
+      background: linear-gradient(135deg, #007cba 0%, #005a87 100%);
+      color: white;
+      padding: 40px 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    
+    .hero-section h1 {
+      margin: 0 0 10px 0;
+      font-size: 2.5em;
+      font-weight: 300;
+    }
+    
+    .hero-section p {
+      margin: 0;
+      font-size: 1.2em;
+      opacity: 0.9;
+    }
+    
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 25px;
+      margin: 30px 0;
+    }
+    
+    .feature-card {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      border-left: 5px solid #007cba;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .feature-card h3 {
+      margin-top: 0;
+      color: #007cba;
+      font-size: 1.3em;
+    }
+    
+    .feature-card .icon {
+      font-size: 2em;
+      margin-bottom: 15px;
+      display: block;
+    }
+    
+    .test-section {
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 10px;
+      margin: 30px 0;
+      border: 2px solid #e9ecef;
+    }
+    
+    .test-section h3 {
+      margin-top: 0;
+      color: #495057;
+    }
+    
+    .translation-showcase {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+    }
+    
+    .translation-example {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+    }
+    
+    .translation-example h4 {
+      margin-top: 0;
+      color: #007cba;
+      border-bottom: 2px solid #007cba;
+      padding-bottom: 5px;
+    }
+    
+    .status-panel {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+    }
+    
+    .status-panel h3 {
+      margin-top: 0;
+    }
+    
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    
+    .status-item {
+      background: rgba(255,255,255,0.2);
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .status-value {
+      font-size: 1.5em;
+      font-weight: bold;
+      display: block;
+    }
+    
+    .navigation-demo {
+      background: #e3f2fd;
+      padding: 25px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border-left: 5px solid #2196f3;
+    }
+    
+    .btn-demo {
+      display: inline-block;
+      background: #007cba;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 6px;
+      text-decoration: none;
+      margin: 5px;
+      transition: background 0.3s ease;
+    }
+    
+    .btn-demo:hover {
+      background: #005a87;
+      color: white;
+      text-decoration: none;
+    }
+    
+    @media (max-width: 768px) {
+      .hero-section h1 {
+        font-size: 2em;
+      }
+      
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .translation-showcase {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="demo-container">
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <h1>🌍 Multilingual Documentation System</h1>
+    <p>Comprehensive translation system for Cacti documentation with real-time language switching</p>
+  </div>
+
+  <!-- Feature Overview -->
+  <div class="feature-grid">
+    <div class="feature-card">
+      <span class="icon">⚡</span>
+      <h3>Real-time Translation</h3>
+      <p>Instant translation without page reload. Switch languages and watch content change immediately with smooth animations and visual feedback.</p>
+    </div>
+    
+    <div class="feature-card">
+      <span class="icon">🌐</span>
+      <h3>Three Languages</h3>
+      <p>Full support for English, Simplified Chinese (简体中文), and Traditional Chinese (繁體中文) with accurate technical terminology.</p>
+    </div>
+    
+    <div class="feature-card">
+      <span class="icon">💾</span>
+      <h3>Persistent Selection</h3>
+      <p>Language choice is automatically saved and synchronized across all documentation pages using localStorage technology.</p>
+    </div>
+    
+    <div class="feature-card">
+      <span class="icon">📱</span>
+      <h3>Responsive Design</h3>
+      <p>Optimized for desktop, tablet, and mobile devices with adaptive UI controls and touch-friendly interfaces.</p>
+    </div>
+    
+    <div class="feature-card">
+      <span class="icon">🧠</span>
+      <h3>Smart Translation</h3>
+      <p>Intelligent text detection with 300+ Cacti-specific terms, technical phrases, and context-aware translations.</p>
+    </div>
+    
+    <div class="feature-card">
+      <span class="icon">♿</span>
+      <h3>Accessibility</h3>
+      <p>Full accessibility support with ARIA labels, keyboard navigation, screen reader compatibility, and semantic markup.</p>
+    </div>
+  </div>
+
+  <!-- Translation Showcase -->
+  <div class="test-section">
+    <h3>🎯 Translation Showcase</h3>
+    <p>The following content demonstrates the translation system in action. Use the language selector in the top-right corner to see real-time translation:</p>
+    
+    <div class="translation-showcase">
+      <div class="translation-example">
+        <h4>System Components</h4>
+        <ul>
+          <li>Requirements</li>
+          <li>Installation</li>
+          <li>Configuration</li>
+          <li>Templates</li>
+          <li>Devices</li>
+          <li>Graphs</li>
+          <li>Data Sources</li>
+          <li>Management</li>
+        </ul>
+      </div>
+      
+      <div class="translation-example">
+        <h4>Cacti Terminology</h4>
+        <ul>
+          <li>RRDtool</li>
+          <li>SNMP</li>
+          <li>Poller</li>
+          <li>Spine</li>
+          <li>Data Query</li>
+          <li>Graph Template</li>
+          <li>Device Template</li>
+          <li>Threshold</li>
+        </ul>
+      </div>
+      
+      <div class="translation-example">
+        <h4>User Actions</h4>
+        <ul>
+          <li>Add</li>
+          <li>Edit</li>
+          <li>Delete</li>
+          <li>Save</li>
+          <li>Configure</li>
+          <li>Enable</li>
+          <li>Disable</li>
+          <li>Export</li>
+        </ul>
+      </div>
+      
+      <div class="translation-example">
+        <h4>Status Terms</h4>
+        <ul>
+          <li>Active</li>
+          <li>Inactive</li>
+          <li>Online</li>
+          <li>Offline</li>
+          <li>Running</li>
+          <li>Stopped</li>
+          <li>Connected</li>
+          <li>Error</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- System Status -->
+  <div class="status-panel">
+    <h3>📊 System Status</h3>
+    <div class="status-grid">
+      <div class="status-item">
+        <span class="status-value" id="current-language">Loading...</span>
+        <div>Current Language</div>
+      </div>
+      <div class="status-item">
+        <span class="status-value" id="translation-status">Checking...</span>
+        <div>Translation Status</div>
+      </div>
+      <div class="status-item">
+        <span class="status-value" id="elements-count">Counting...</span>
+        <div>Translatable Elements</div>
+      </div>
+      <div class="status-item">
+        <span class="status-value" id="performance-time">Measuring...</span>
+        <div>Translation Time (ms)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Demo -->
+  <div class="navigation-demo">
+    <h3>🔗 Navigation Test</h3>
+    <p>Test cross-page language persistence by navigating to different documentation pages. Your language selection will be maintained across all pages.</p>
+    <div>
+      <a href="documentation.html" class="btn-demo">Main Documentation</a>
+      <a href="Requirements.html" class="btn-demo">Requirements</a>
+      <a href="Table-of-Contents.html" class="btn-demo">Table of Contents</a>
+      <a href="instant-translation-demo.html" class="btn-demo">Translation Demo</a>
+    </div>
+  </div>
+
+  <!-- Technical Information -->
+  <div class="test-section">
+    <h3>🔧 Technical Implementation</h3>
+    <p>This multilingual system uses advanced JavaScript techniques for optimal performance and user experience:</p>
+    <ul>
+      <li><strong>Intelligent Text Detection:</strong> Smart algorithms identify and translate only relevant content</li>
+      <li><strong>Performance Optimization:</strong> Batch processing and caching for fast translation</li>
+      <li><strong>Cross-page Synchronization:</strong> localStorage ensures language consistency</li>
+      <li><strong>Fallback Mechanisms:</strong> Multiple translation strategies for maximum compatibility</li>
+      <li><strong>Responsive UI:</strong> Adaptive controls for all device types</li>
+      <li><strong>Accessibility:</strong> Full WCAG compliance with ARIA labels and keyboard support</li>
+    </ul>
+  </div>
+
+  <!-- Instructions -->
+  <div class="test-section">
+    <h3>📋 How to Use</h3>
+    <ol>
+      <li><strong>Language Selection:</strong> Click the language dropdown in the top-right corner</li>
+      <li><strong>Choose Language:</strong> Select English, 简体中文, or 繁體中文</li>
+      <li><strong>Watch Translation:</strong> Content translates instantly without page reload</li>
+      <li><strong>Navigate Pages:</strong> Visit other documentation pages to see persistent language selection</li>
+      <li><strong>Use Back Button:</strong> Click the back button (top-left) for easy navigation</li>
+    </ol>
+  </div>
+
+</div>
+
+<hr />
+<p style="text-align: center; margin-top: 40px;">Copyright (c) 2004-2024 The Cacti Group</p>
+
+<!-- ================================================================ -->
+<!-- Cacti Documentation Multilingual Translation System v2.0       -->
+<!-- Supports: English, Simplified Chinese, Traditional Chinese     -->
+<!-- Features: Real-time translation, Persistent selection,         -->
+<!--           Responsive UI, 300+ technical terms, Accessibility   -->
+<!-- ================================================================ -->
+<script type="text/javascript" src="js/universal-translator.js"></script>
+<script type="text/javascript" src="js/auto-translator.js"></script>
+
+<script type="text/javascript">
+// Demo page specific functionality
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎪 Multilingual demo page loaded');
+    
+    // Update status display
+    updateStatusDisplay();
+    
+    // Update status every 2 seconds
+    setInterval(updateStatusDisplay, 2000);
+    
+    // Monitor translation events
+    if (window.autoTranslator) {
+        console.log('🤖 Advanced auto-translator detected');
+    } else {
+        console.log('📝 Using basic translation system');
+    }
+});
+
+function updateStatusDisplay() {
+    // Current language
+    const currentLang = localStorage.getItem('selectedLanguage') || 'en';
+    const langNames = {
+        'en': 'English',
+        'zh-cn': '简体中文',
+        'zh-tw': '繁體中文'
+    };
+    document.getElementById('current-language').textContent = langNames[currentLang];
+    
+    // Translation status
+    const hasTranslator = typeof window.changeLanguage !== 'undefined';
+    document.getElementById('translation-status').textContent = hasTranslator ? 'Active' : 'Inactive';
+    
+    // Count translatable elements
+    const walker = document.createTreeWalker(
+        document.body,
+        NodeFilter.SHOW_TEXT,
+        {
+            acceptNode: function(node) {
+                const text = node.textContent.trim();
+                return text.length > 2 ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+            }
+        }
+    );
+    
+    let count = 0;
+    while (walker.nextNode()) {
+        count++;
+    }
+    document.getElementById('elements-count').textContent = count;
+    
+    // Performance metrics
+    if (window.autoTranslator && window.autoTranslator.performanceMetrics) {
+        const metrics = window.autoTranslator.performanceMetrics;
+        document.getElementById('performance-time').textContent = 
+            metrics.translationTime ? metrics.translationTime.toFixed(2) : '0.00';
+    } else {
+        document.getElementById('performance-time').textContent = 'N/A';
+    }
+}
+
+// Test function for manual language switching
+function testLanguageSwitch(lang) {
+    console.log(`🧪 Testing language switch to: ${lang}`);
+    if (typeof window.changeLanguage === 'function') {
+        window.changeLanguage(lang);
+    } else {
+        console.warn('⚠️ changeLanguage function not available');
+    }
+}
+
+// Export test function for console access
+window.testLanguageSwitch = testLanguageSwitch;
+</script>
+
+</body>
+</html>

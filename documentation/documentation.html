@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 
 <!-- Mirrored from cacti.campus-rv.net/docs/ by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 28 Jun 2025 16:40:51 GMT -->
 <!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
@@ -13,17 +13,78 @@
       span.smallcaps{font-variant: small-caps;}
       span.underline{text-decoration: underline;}
       div.column{display: inline-block; vertical-align: top; width: 50%;}
+
+      /* Language selector and navigation styles */
+      .header-controls {
+          position: fixed;
+          top: 10px;
+          right: 10px;
+          z-index: 1000;
+          display: flex;
+          gap: 10px;
+          align-items: center;
+      }
+
+      .back-button {
+          position: fixed;
+          top: 10px;
+          left: 10px;
+          z-index: 1000;
+          background: #007cba;
+          color: white;
+          border: none;
+          padding: 8px 12px;
+          border-radius: 4px;
+          cursor: pointer;
+          text-decoration: none;
+          font-size: 14px;
+          display: none;
+      }
+
+      .back-button:hover {
+          background: #005a87;
+      }
+
+      .language-selector {
+          background: white;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          padding: 5px 10px;
+          font-size: 14px;
+          cursor: pointer;
+      }
+
+      .language-selector:hover {
+          background: #f5f5f5;
+      }
+
+      body {
+          padding-top: 50px;
+      }
   </style>
   <link rel="stylesheet" href="Cacti-Github.css" />
 </head>
 <body>
-<h1 id="cacti-tm-documentation">Cacti (tm) Documentation</h1>
+<!-- Navigation and Language Controls -->
+<a href="javascript:history.back()" class="back-button" id="backButton" style="display: none;">
+    <span data-i18n="back">← Back</span>
+</a>
+
+<div class="header-controls">
+    <select class="language-selector" id="languageSelector" onchange="changeLanguage()">
+        <option value="en">English</option>
+        <option value="zh-cn">简体中文</option>
+        <option value="zh-tw">繁體中文</option>
+    </select>
+</div>
+
+<h1 id="cacti-tm-documentation" data-i18n="main_title">Cacti (tm) Documentation</h1>
 <p><img src="images/logo.svg" alt="Cacti" /></p>
-<p>Cacti is designed to be a complete graphing solution based on the RRDtool's framework. Its goal is to make a network administrator's job easier by taking care of all the necessary details necessary to create meaningful graphs.</p>
-<p>Please see the official Cacti website for information, support, and updates.</p>
-<h2 id="core-developers---both-active-and-emeritus">Core Developers - Both active and emeritus</h2>
-<p>Active Developers</p>
-<h3 id="developers-working-on-cacti-its-architecture-documentation-and-future-releases">Developers working on Cacti, its Architecture, Documentation and Future Releases.</h3>
+<p data-i18n="cacti_desc">Cacti is designed to be a complete graphing solution based on the RRDtool's framework. Its goal is to make a network administrator's job easier by taking care of all the necessary details necessary to create meaningful graphs.</p>
+<p data-i18n="official_website">Please see the official Cacti website for information, support, and updates.</p>
+<h2 id="core-developers---both-active-and-emeritus" data-i18n="core_developers">Core Developers - Both active and emeritus</h2>
+<p data-i18n="active_developers">Active Developers</p>
+<h3 id="developers-working-on-cacti-its-architecture-documentation-and-future-releases" data-i18n="developers_working">Developers working on Cacti, its Architecture, Documentation and Future Releases.</h3>
 <ul>
 <li>Larry Adams (TheWitness)</li>
 <li>Mark Brugnoli-Vinten (netniV)</li>
@@ -33,7 +94,7 @@
 <li>Thomas Urban (phalek)</li>
 <li>Jing Chen (ddb4github)</li>
 </ul>
-<h3 id="contributors-to-docuemntation-qa-packaging-the-forums-and-our-youtube-page">Contributors to Docuemntation, QA, Packaging, the Forums and our YouTube page.</h3>
+<h3 id="contributors-to-docuemntation-qa-packaging-the-forums-and-our-youtube-page" data-i18n="contributors_doc">Contributors to Documentation, QA, Packaging, the Forums and our YouTube page.</h3>
 <ul>
 <li>Sean Mancini (bmfmancini)</li>
 <li>J.P. Pasnak, CD (Linegod)</li>
@@ -41,82 +102,82 @@
 <li>Paul Gevers (Debian) (paulgevers)</li>
 <li>Morten Stevens (Fedora) (mortenstevens)</li>
 </ul>
-<h3 id="members-of-the-original-cacti-group-that-have-since-moved-on-in-their-careers">Members of the original Cacti Group that have since moved on in their careers.</h3>
-<h3 id="we-continue-to-wish-them-the-best">We continue to wish them the best.</h3>
+<h3 id="members-of-the-original-cacti-group-that-have-since-moved-on-in-their-careers" data-i18n="original_members">Members of the original Cacti Group that have since moved on in their careers.</h3>
+<h3 id="we-continue-to-wish-them-the-best" data-i18n="wish_best">We continue to wish them the best.</h3>
 <ul>
 <li>Ian Berry (raX)</li>
 <li>Reinhard Scheck (gandalf)</li>
 <li>Tony Roman (rony)</li>
 <li>Andy Blyler (ablyler)</li>
 </ul>
-<h2 id="thanks">Thanks</h2>
-<p>A very special thanks to Tobi Oetiker, the creator of RRDtool and the very popular MRTG. The users of Cacti - especially anyone who has taken the time to create a bug report, or otherwise help fix a Cacti related problem. Also to anyone who has contributed to supporting Cacti.</p>
-<p>Cacti is licensed under the GNU GPL:</p>
-<p>This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.</p>
-<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
-<h2 id="table-of-contents">Table of Contents</h2>
+<h2 id="thanks" data-i18n="thanks">Thanks</h2>
+<p data-i18n="thanks_text">A very special thanks to Tobi Oetiker, the creator of RRDtool and the very popular MRTG. The users of Cacti - especially anyone who has taken the time to create a bug report, or otherwise help fix a Cacti related problem. Also to anyone who has contributed to supporting Cacti.</p>
+<p data-i18n="license_text">Cacti is licensed under the GNU GPL:</p>
+<p data-i18n="gpl_text1">This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.</p>
+<p data-i18n="gpl_text2">This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
+<h2 id="table-of-contents" data-i18n="table_of_contents">Table of Contents</h2>
 <ol>
-<li><p><a href="Table-of-Contents.html#cacti-installation">Cacti Installation</a></p>
-<p>This section contains information on how to install and/or upgrade the Cacti system. It covers requirements, different platforms and the steps needed to get your system working under normal circumstances.</p></li>
-<li><p><a href="Table-of-Contents.html#cacti-overview">Cacti Overview</a></p>
-<p>This section describes Cacti components and their purpose as well as providing examples including on how to create <strong>Templates</strong> in Cacti.</p></li>
-<li><p><a href="Table-of-Contents.html#advanced-operations">Advanced Operations</a></p>
-<p>This section covers more advanced material such as using a advanced data collection and replacement variables that can be used within <strong>Templates</strong>, etc.</p></li>
-<li><p><a href="Table-of-Contents.html#plugin-development">Plugin Development</a></p>
-<p>This section contains all Plugin development related information. Guidelines, hooks, references, etc. More information can be found on the <a href="https://forums.cacti.net/viewforum.php?f=6">Cacti Forums</a>.</p></li>
-<li><p><a href="Table-of-Contents.html#how-tos">How To's</a></p>
-<p>This section contains how to's for several topics.</p></li>
-<li><p><a href="Table-of-Contents.html#contributing">Contributing</a></p>
-<p>This section contains information on how to contribute to Cacti.</p></li>
-<li><p><a href="Table-of-Contents.html#development-standards">Development Standards</a></p>
-<p>This section contains the relevant information on how to ensure that any contribution is kept to the same standards that are applied for the Cacti Group. It should be noted that non-compliance does not mean automatically exclusion of proposed changes.</p></li>
+<li><p><a href="Table-of-Contents.html#cacti-installation" data-i18n="cacti_installation">Cacti Installation</a></p>
+<p data-i18n="installation_desc">This section contains information on how to install and/or upgrade the Cacti system. It covers requirements, different platforms and the steps needed to get your system working under normal circumstances.</p></li>
+<li><p><a href="Table-of-Contents.html#cacti-overview" data-i18n="cacti_overview">Cacti Overview</a></p>
+<p data-i18n="overview_desc">This section describes Cacti components and their purpose as well as providing examples including on how to create <strong>Templates</strong> in Cacti.</p></li>
+<li><p><a href="Table-of-Contents.html#advanced-operations" data-i18n="advanced_operations">Advanced Operations</a></p>
+<p data-i18n="advanced_desc">This section covers more advanced material such as using a advanced data collection and replacement variables that can be used within <strong>Templates</strong>, etc.</p></li>
+<li><p><a href="Table-of-Contents.html#plugin-development" data-i18n="plugin_development">Plugin Development</a></p>
+<p data-i18n="plugin_desc">This section contains all Plugin development related information. Guidelines, hooks, references, etc. More information can be found on the <a href="https://forums.cacti.net/viewforum.php?f=6">Cacti Forums</a>.</p></li>
+<li><p><a href="Table-of-Contents.html#how-tos" data-i18n="how_tos">How To's</a></p>
+<p data-i18n="howto_desc">This section contains how to's for several topics.</p></li>
+<li><p><a href="Table-of-Contents.html#contributing" data-i18n="contributing">Contributing</a></p>
+<p data-i18n="contributing_desc">This section contains information on how to contribute to Cacti.</p></li>
+<li><p><a href="Table-of-Contents.html#development-standards" data-i18n="development_standards">Development Standards</a></p>
+<p data-i18n="standards_desc">This section contains the relevant information on how to ensure that any contribution is kept to the same standards that are applied for the Cacti Group. It should be noted that non-compliance does not mean automatically exclusion of proposed changes.</p></li>
 </ol>
-<h3 id="known-issues">Known Issues</h3>
-<p><a href="Known-Issues.html">List of Known issues</a></p>
-<h3 id="cacti-installation">Cacti Installation</h3>
+<h3 id="known-issues" data-i18n="known_issues">Known Issues</h3>
+<p><a href="Known-Issues.html" data-i18n="list_known_issues">List of Known issues</a></p>
+<h3 id="cacti-installation" data-i18n="cacti_installation">Cacti Installation</h3>
 <ol>
-<li><p><a href="Requirements.html">Requirements</a></p></li>
-<li><p><a href="General-Installing-Instructions.html">General Installing Instructions</a></p></li>
-<li><p>Installing Cacti on Linux</p>
-<p>3.1. <a href="Install-Under-CentOS_LAMP.html">Installation Under CentOS 7 - LAMP Stack</a></p>
-<p>3.2. <a href="Install-Under-CentOS_LEMP.html">Installation Under CentOS 7 - LEMP Stack</a></p>
-<p>3.3. <a href="Installing-Under-Ubuntu-Debian.html">Installation Under Ubuntu/Debian - LAMP Stack</a></p></li>
-<li><p><a href="Installing-Under-Windows.html">Installing Under Windows</a></p></li>
-<li><p><a href="Upgrading-Cacti.html">Upgrading Cacti Under Linux/UNIX</a></p></li>
-<li><p><a href="Upgrading-Cacti-Under-Windows.html">Upgrading Cacti Under Windows</a></p></li>
-<li><p><a href="Upgrading-Cacti-Under-FreeBSD.html">Upgrading Cacti Under FreeBSD</a></p></li>
+<li><p><a href="Requirements.html" data-i18n="requirements">Requirements</a></p></li>
+<li><p><a href="General-Installing-Instructions.html" data-i18n="general_installing">General Installing Instructions</a></p></li>
+<li><p data-i18n="installing_linux">Installing Cacti on Linux</p>
+<p>3.1. <a href="Install-Under-CentOS_LAMP.html" data-i18n="installing_centos_lamp">Installation Under CentOS 7 - LAMP Stack</a></p>
+<p>3.2. <a href="Install-Under-CentOS_LEMP.html" data-i18n="installing_centos_lemp">Installation Under CentOS 7 - LEMP Stack</a></p>
+<p>3.3. <a href="Installing-Under-Ubuntu-Debian.html" data-i18n="installing_ubuntu">Installation Under Ubuntu/Debian - LAMP Stack</a></p></li>
+<li><p><a href="Installing-Under-Windows.html" data-i18n="installing_windows">Installing Under Windows</a></p></li>
+<li><p><a href="Upgrading-Cacti.html" data-i18n="upgrading_linux">Upgrading Cacti Under Linux/UNIX</a></p></li>
+<li><p><a href="Upgrading-Cacti-Under-Windows.html" data-i18n="upgrading_windows">Upgrading Cacti Under Windows</a></p></li>
+<li><p><a href="Upgrading-Cacti-Under-FreeBSD.html" data-i18n="upgrading_freebsd">Upgrading Cacti Under FreeBSD</a></p></li>
 </ol>
-<h3 id="cacti-overview">Cacti Overview</h3>
+<h3 id="cacti-overview" data-i18n="cacti_overview">Cacti Overview</h3>
 <ol>
-<li><p>Overview</p>
-<p>1.1. <a href="Navigating-The-User-Interface.html">Navigating the User Interface</a></p>
-<p>1.2. <a href="Principles-of-Operation.html">Principles of Operation</a></p>
-<p>1.3. <a href="Graph-Overview.html">Graph Overview</a></p>
-<p>1.4. <a href="How-to-Graph-Your-Network.html">How to Graph Your Network</a></p>
-<p>1.5. <a href="Viewing-Graphs.html">Viewing Graphs</a></p></li>
-<li><p>Management</p>
-<p>2.1. <a href="Devices.html">Devices</a></p>
-<p>2.2. <a href="Sites.html">Sites</a></p>
-<p>2.3. <a href="Trees.html">Trees</a></p>
-<p>2.4. <a href="Graphs.html">Graphs</a></p>
-<p>2.5. <a href="Data-Sources.html">Data Sources</a></p>
-<p>2.6. <a href="Aggregates.html">Aggregates</a></p></li>
-<li><p>Data Collection</p>
-<p>3.1. <a href="Data-Collectors.html">Data Collectors</a></p>
-<p>3.2. <a href="Spine.html">Spine Data Collection</a></p>
-<p>3.3. <a href="Data-Input-Methods.html">Data Input Methods</a></p>
-<p>3.4. <a href="Data-Queries.html">Data Queries</a></p></li>
-<li><p><a href="Templates.html">Templates</a></p>
-<p>4.1. <a href="Device-Templates.html">Device</a></p>
-<p>4.2. <a href="Graph-Templates.html">Graph</a></p>
-<p>4.3. <a href="Data-Source-Templates.html">Data Source</a></p>
-<p>4.4. <a href="Aggregate-Templates.html">Aggregate</a></p>
-<p>4.5. <a href="Color-Templates.html">Color</a></p></li>
-<li><p>Automation</p>
-<p>5.1. <a href="Automation-Networks.html">Networks</a></p>
-<p>5.2. <a href="Discovered-Devices.html">Discovered Devices</a></p>
-<p>5.3. <a href="Device-Rules.html">Device Rules</a></p>
-<p>5.4. <a href="Graph-Rules.html">Graph Rules</a></p>
+<li><p data-i18n="overview">Overview</p>
+<p>1.1. <a href="Navigating-The-User-Interface.html" data-i18n="navigating_ui">Navigating the User Interface</a></p>
+<p>1.2. <a href="Principles-of-Operation.html" data-i18n="principles_operation">Principles of Operation</a></p>
+<p>1.3. <a href="Graph-Overview.html" data-i18n="graph_overview">Graph Overview</a></p>
+<p>1.4. <a href="How-to-Graph-Your-Network.html" data-i18n="how_to_graph">How to Graph Your Network</a></p>
+<p>1.5. <a href="Viewing-Graphs.html" data-i18n="viewing_graphs">Viewing Graphs</a></p></li>
+<li><p data-i18n="management">Management</p>
+<p>2.1. <a href="Devices.html" data-i18n="devices">Devices</a></p>
+<p>2.2. <a href="Sites.html" data-i18n="sites">Sites</a></p>
+<p>2.3. <a href="Trees.html" data-i18n="trees">Trees</a></p>
+<p>2.4. <a href="Graphs.html" data-i18n="graphs">Graphs</a></p>
+<p>2.5. <a href="Data-Sources.html" data-i18n="data_sources">Data Sources</a></p>
+<p>2.6. <a href="Aggregates.html" data-i18n="aggregates">Aggregates</a></p></li>
+<li><p data-i18n="data_collection">Data Collection</p>
+<p>3.1. <a href="Data-Collectors.html" data-i18n="data_collectors">Data Collectors</a></p>
+<p>3.2. <a href="Spine.html" data-i18n="spine_collection">Spine Data Collection</a></p>
+<p>3.3. <a href="Data-Input-Methods.html" data-i18n="data_input_methods">Data Input Methods</a></p>
+<p>3.4. <a href="Data-Queries.html" data-i18n="data_queries">Data Queries</a></p></li>
+<li><p><a href="Templates.html" data-i18n="templates">Templates</a></p>
+<p>4.1. <a href="Device-Templates.html" data-i18n="device_templates">Device Templates</a></p>
+<p>4.2. <a href="Graph-Templates.html" data-i18n="graph_templates">Graph Templates</a></p>
+<p>4.3. <a href="Data-Source-Templates.html" data-i18n="data_source_templates">Data Source Templates</a></p>
+<p>4.4. <a href="Aggregate-Templates.html" data-i18n="aggregate_templates">Aggregate Templates</a></p>
+<p>4.5. <a href="Color-Templates.html" data-i18n="color_templates">Color Templates</a></p></li>
+<li><p data-i18n="automation">Automation</p>
+<p>5.1. <a href="Automation-Networks.html" data-i18n="networks">Networks</a></p>
+<p>5.2. <a href="Discovered-Devices.html" data-i18n="discovered_devices">Discovered Devices</a></p>
+<p>5.3. <a href="Device-Rules.html" data-i18n="device_rules">Device Rules</a></p>
+<p>5.4. <a href="Graph-Rules.html" data-i18n="graph_rules">Graph Rules</a></p>
 <p>5.5. <a href="Tree-Rules.html">Tree Rules</a></p>
 <p>5.6. <a href="SNMP-Options.html">SNMP Options</a></p></li>
 <li><p>Presets</p>
@@ -233,7 +294,11 @@
 <li><p><a href="template_esxi_config.html">ESXi/VMWare Template</a></p></li>
 </ol>
 <hr />
-<p>Copyright (c) 2004-2024 The Cacti Group</p>
+<p data-i18n="copyright">Copyright (c) 2004-2024 The Cacti Group</p>
+
+<!-- Universal Translator - Automatic Translation System -->
+<!-- Supports English, Simplified Chinese, Traditional Chinese -->
+<script type="text/javascript" src="js/universal-translator.js"></script>
 <script type="text/javascript">CsrfMagic.end();</script></body>
 
 <!-- Mirrored from cacti.campus-rv.net/docs/ by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 28 Jun 2025 16:41:29 GMT -->

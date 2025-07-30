@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Multi-language Test Page</title>
+  <link rel="stylesheet" href="Cacti-Github.css" />
+</head>
+<body>
+
+<h1 data-i18n="test_title">Multi-language Test Page</h1>
+
+<p data-i18n="test_description">This is a test page to demonstrate the multi-language functionality. You can switch between English, Simplified Chinese, and Traditional Chinese using the language selector in the top-right corner.</p>
+
+<h2 data-i18n="features_title">Features</h2>
+<ul>
+    <li data-i18n="feature_1">Language selector in top-right corner</li>
+    <li data-i18n="feature_2">Back button in top-left corner</li>
+    <li data-i18n="feature_3">Persistent language selection</li>
+    <li data-i18n="feature_4">Automatic content translation</li>
+</ul>
+
+<h2 data-i18n="instructions_title">Instructions</h2>
+<ol>
+    <li data-i18n="instruction_1">Click the language dropdown in the top-right corner</li>
+    <li data-i18n="instruction_2">Select your preferred language</li>
+    <li data-i18n="instruction_3">Watch the content change automatically</li>
+    <li data-i18n="instruction_4">Navigate to other pages to see the language persist</li>
+</ol>
+
+<p><a href="documentation.html" data-i18n="back_to_main">← Back to Main Documentation</a></p>
+
+<hr />
+<p data-i18n="copyright">Copyright (c) 2004-2024 The Cacti Group</p>
+
+<!-- Multi-language Support Scripts -->
+<script type="text/javascript" src="js/i18n.js"></script>
+<script type="text/javascript" src="js/common.js"></script>
+<script type="text/javascript">
+// Page-specific translations
+const pageTranslations = {
+    'en': {
+        'test_title': 'Multi-language Test Page',
+        'test_description': 'This is a test page to demonstrate the multi-language functionality. You can switch between English, Simplified Chinese, and Traditional Chinese using the language selector in the top-right corner.',
+        'features_title': 'Features',
+        'feature_1': 'Language selector in top-right corner',
+        'feature_2': 'Back button in top-left corner',
+        'feature_3': 'Persistent language selection',
+        'feature_4': 'Automatic content translation',
+        'instructions_title': 'Instructions',
+        'instruction_1': 'Click the language dropdown in the top-right corner',
+        'instruction_2': 'Select your preferred language',
+        'instruction_3': 'Watch the content change automatically',
+        'instruction_4': 'Navigate to other pages to see the language persist',
+        'back_to_main': '← Back to Main Documentation'
+    },
+    'zh-cn': {
+        'test_title': '多语言测试页面',
+        'test_description': '这是一个演示多语言功能的测试页面。您可以使用右上角的语言选择器在英语、简体中文和繁体中文之间切换。',
+        'features_title': '功能特性',
+        'feature_1': '右上角的语言选择器',
+        'feature_2': '左上角的返回按钮',
+        'feature_3': '持久的语言选择',
+        'feature_4': '自动内容翻译',
+        'instructions_title': '使用说明',
+        'instruction_1': '点击右上角的语言下拉菜单',
+        'instruction_2': '选择您偏好的语言',
+        'instruction_3': '观察内容自动变化',
+        'instruction_4': '导航到其他页面查看语言保持不变',
+        'back_to_main': '← 返回主文档'
+    },
+    'zh-tw': {
+        'test_title': '多語言測試頁面',
+        'test_description': '這是一個演示多語言功能的測試頁面。您可以使用右上角的語言選擇器在英語、簡體中文和繁體中文之間切換。',
+        'features_title': '功能特性',
+        'feature_1': '右上角的語言選擇器',
+        'feature_2': '左上角的返回按鈕',
+        'feature_3': '持久的語言選擇',
+        'feature_4': '自動內容翻譯',
+        'instructions_title': '使用說明',
+        'instruction_1': '點擊右上角的語言下拉選單',
+        'instruction_2': '選擇您偏好的語言',
+        'instruction_3': '觀察內容自動變化',
+        'instruction_4': '導航到其他頁面查看語言保持不變',
+        'back_to_main': '← 返回主文件'
+    }
+};
+
+// Merge page translations with global translations
+Object.keys(pageTranslations).forEach(lang => {
+    if (!translations[lang]) {
+        translations[lang] = {};
+    }
+    Object.assign(translations[lang], pageTranslations[lang]);
+});
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Test page loaded, initializing...'); // Debug log
+
+    // Initialize language system (this will load saved language and apply translations)
+    initializeLanguage();
+
+    // Update page title based on current language
+    const lang = getCurrentLanguage();
+    if (pageTranslations[lang] && pageTranslations[lang]['test_title']) {
+        document.title = pageTranslations[lang]['test_title'];
+    }
+
+    console.log('Test page initialization complete'); // Debug log
+});
+
+// Global function for language change (called by selector onchange)
+function changeLanguage() {
+    const selector = document.getElementById('languageSelector');
+    if (selector) {
+        const selectedLang = selector.value;
+        console.log('Test page: Language changed to:', selectedLang); // Debug log
+        setLanguage(selectedLang);
+
+        // Update page title immediately
+        if (pageTranslations[selectedLang] && pageTranslations[selectedLang]['test_title']) {
+            document.title = pageTranslations[selectedLang]['test_title'];
+        }
+    }
+}
+</script>
+</body>
+</html>

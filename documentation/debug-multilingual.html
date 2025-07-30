@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Debug Multi-language Test</title>
+  <link rel="stylesheet" href="Cacti-Github.css" />
+  <style>
+    .debug-panel {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 12px;
+      max-width: 400px;
+      z-index: 1001;
+    }
+    .debug-log {
+      max-height: 200px;
+      overflow-y: auto;
+      background: white;
+      padding: 5px;
+      margin-top: 5px;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+
+<h1 data-i18n="debug_title">Debug Multi-language Test</h1>
+
+<p data-i18n="debug_description">This debug page helps identify language synchronization issues. Check the debug panel below for detailed logs.</p>
+
+<h2 data-i18n="current_status">Current Status</h2>
+<ul>
+    <li>Current Language: <span id="currentLang">Loading...</span></li>
+    <li>Saved Language: <span id="savedLang">Loading...</span></li>
+    <li>Selector Value: <span id="selectorValue">Loading...</span></li>
+    <li>Page Title: <span id="pageTitle">Loading...</span></li>
+</ul>
+
+<h2 data-i18n="test_actions">Test Actions</h2>
+<button onclick="testLanguageChange('en')">Set English</button>
+<button onclick="testLanguageChange('zh-cn')">Set 简体中文</button>
+<button onclick="testLanguageChange('zh-tw')">Set 繁體中文</button>
+<button onclick="clearStorage()">Clear Storage</button>
+<button onclick="refreshStatus()">Refresh Status</button>
+
+<h2 data-i18n="navigation_test">Navigation Test</h2>
+<p>
+    <a href="documentation.html" data-i18n="link_main">Go to Main Documentation</a> |
+    <a href="Requirements.html" data-i18n="link_requirements">Go to Requirements</a> |
+    <a href="test-multilingual.html" data-i18n="link_test">Go to Test Page</a>
+</p>
+
+<!-- Debug Panel -->
+<div class="debug-panel">
+    <strong>Debug Log:</strong>
+    <div class="debug-log" id="debugLog"></div>
+    <button onclick="clearLog()">Clear Log</button>
+</div>
+
+<hr />
+<p data-i18n="copyright">Copyright (c) 2004-2024 The Cacti Group</p>
+
+<!-- Multi-language Support Scripts -->
+<script type="text/javascript" src="js/i18n.js"></script>
+<script type="text/javascript" src="js/common.js"></script>
+<script type="text/javascript">
+// Debug logging function
+function debugLog(message) {
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = `[${timestamp}] ${message}`;
+    console.log(logEntry);
+    
+    const debugLogDiv = document.getElementById('debugLog');
+    if (debugLogDiv) {
+        debugLogDiv.innerHTML += logEntry + '<br>';
+        debugLogDiv.scrollTop = debugLogDiv.scrollHeight;
+    }
+}
+
+// Page-specific translations
+const pageTranslations = {
+    'en': {
+        'debug_title': 'Debug Multi-language Test',
+        'debug_description': 'This debug page helps identify language synchronization issues. Check the debug panel below for detailed logs.',
+        'current_status': 'Current Status',
+        'test_actions': 'Test Actions',
+        'navigation_test': 'Navigation Test',
+        'link_main': 'Go to Main Documentation',
+        'link_requirements': 'Go to Requirements',
+        'link_test': 'Go to Test Page'
+    },
+    'zh-cn': {
+        'debug_title': '调试多语言测试',
+        'debug_description': '此调试页面帮助识别语言同步问题。请查看下方的调试面板获取详细日志。',
+        'current_status': '当前状态',
+        'test_actions': '测试操作',
+        'navigation_test': '导航测试',
+        'link_main': '转到主文档',
+        'link_requirements': '转到系统要求',
+        'link_test': '转到测试页面'
+    },
+    'zh-tw': {
+        'debug_title': '調試多語言測試',
+        'debug_description': '此調試頁面幫助識別語言同步問題。請查看下方的調試面板獲取詳細日誌。',
+        'current_status': '目前狀態',
+        'test_actions': '測試操作',
+        'navigation_test': '導航測試',
+        'link_main': '轉到主文件',
+        'link_requirements': '轉到系統要求',
+        'link_test': '轉到測試頁面'
+    }
+};
+
+// Merge page translations with global translations
+Object.keys(pageTranslations).forEach(lang => {
+    if (!translations[lang]) {
+        translations[lang] = {};
+    }
+    Object.assign(translations[lang], pageTranslations[lang]);
+});
+
+// Test functions
+function testLanguageChange(lang) {
+    debugLog(`Manual language change to: ${lang}`);
+    setLanguage(lang);
+    refreshStatus();
+}
+
+function clearStorage() {
+    debugLog('Clearing localStorage');
+    localStorage.removeItem('selectedLanguage');
+    refreshStatus();
+}
+
+function refreshStatus() {
+    const currentLang = getCurrentLanguage();
+    const savedLang = localStorage.getItem('selectedLanguage') || 'none';
+    const selector = document.getElementById('languageSelector');
+    const selectorValue = selector ? selector.value : 'no selector';
+    
+    document.getElementById('currentLang').textContent = currentLang;
+    document.getElementById('savedLang').textContent = savedLang;
+    document.getElementById('selectorValue').textContent = selectorValue;
+    document.getElementById('pageTitle').textContent = document.title;
+    
+    debugLog(`Status - Current: ${currentLang}, Saved: ${savedLang}, Selector: ${selectorValue}`);
+}
+
+function clearLog() {
+    document.getElementById('debugLog').innerHTML = '';
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    debugLog('Debug page loaded, initializing...');
+    
+    // Initialize language system
+    initializeLanguage();
+    
+    // Update page title
+    const lang = getCurrentLanguage();
+    if (pageTranslations[lang] && pageTranslations[lang]['debug_title']) {
+        document.title = pageTranslations[lang]['debug_title'];
+    }
+    
+    // Refresh status display
+    setTimeout(refreshStatus, 100);
+    
+    debugLog('Debug page initialization complete');
+});
+
+// Global function for language change
+function changeLanguage() {
+    const selector = document.getElementById('languageSelector');
+    if (selector) {
+        const selectedLang = selector.value;
+        debugLog(`Selector changed to: ${selectedLang}`);
+        setLanguage(selectedLang);
+        
+        // Update page title immediately
+        if (pageTranslations[selectedLang] && pageTranslations[selectedLang]['debug_title']) {
+            document.title = pageTranslations[selectedLang]['debug_title'];
+        }
+        
+        setTimeout(refreshStatus, 100);
+    }
+}
+
+// Listen for storage events
+window.addEventListener('storage', function(e) {
+    if (e.key === 'selectedLanguage') {
+        debugLog(`Storage event detected: ${e.oldValue} -> ${e.newValue}`);
+        setTimeout(refreshStatus, 100);
+    }
+});
+</script>
+</body>
+</html>
