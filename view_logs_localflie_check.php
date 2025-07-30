@@ -1,6 +1,7 @@
 
-<title>Cacti Log Viewer Localfile Check</title>
 <?php
+require_once 'includes/lang_nav.php';
+
 // 設置日志目錄路徑
 $log_dir = "/var/www/html/remote_logs/log/";
 
@@ -8,18 +9,84 @@ $log_dir = "/var/www/html/remote_logs/log/";
 $log_files = glob($log_dir . "*.log");
 
 // 獲取用戶選擇的日誌文件和參數
-$selected_file = isset($_GET['log_file']) ? $_GET['log_file'] : null;
-$search_keyword = isset($_GET['keyword']) ? $_GET['keyword'] : null;
+$selected_file = $_GET['log_file'] ?? null;
+$search_keyword = $_GET['keyword'] ?? null;
 $max_lines = isset($_GET['max_lines']) ? intval($_GET['max_lines']) : 5000;
 
 // 限制最大行數為 50000
 $max_lines = min($max_lines, 50000);
 
 // 預設按最後一筆最新數據排序
-$display_order = isset($_GET['display_order']) ? $_GET['display_order'] : 'newest';
+$display_order = $_GET['display_order'] ?? 'newest';
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cacti Log Viewer Localfile Check</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .page-header {
+            background-color: #2d4b23;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .page-header h1 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        .form-group {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        .form-group label {
+            min-width: 120px;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <?php outputLangNav(true, 'index.php'); ?>
 
-// 顯示日誌選擇界面
-echo "<h1>Cacti Log Viewer (最新備份檔檢查)</h1>";
+    <div class="page-header">
+        <h1 data-lang-key="backupLogCheck">Backup Latest Log Check</h1>
+    </div>
+
+<?php
 
 // 選擇文件表單
 echo "<form method='GET'>";
