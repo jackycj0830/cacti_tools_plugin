@@ -165,6 +165,20 @@ if exist "Spine-Data-Collection.php" (
     set missing_files=1
 )
 
+if exist "Data-Input-Methods.php" (
+    echo ✅ Data-Input-Methods.php - Found
+) else (
+    echo ❌ Data-Input-Methods.php - Missing
+    set missing_files=1
+)
+
+if exist "Data-Queries.php" (
+    echo ✅ Data-Queries.php - Found
+) else (
+    echo ❌ Data-Queries.php - Missing
+    set missing_files=1
+)
+
 if exist "test-multilingual-system.php" (
     echo ✅ test-multilingual-system.php - Found
 ) else (
@@ -339,6 +353,22 @@ if errorlevel 1 (
     echo ✅ Spine-Data-Collection.php syntax OK
 )
 
+php -l Data-Input-Methods.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Data-Input-Methods.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Data-Input-Methods.php syntax OK
+)
+
+php -l Data-Queries.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Data-Queries.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Data-Queries.php syntax OK
+)
+
 echo.
 
 if defined syntax_errors (
@@ -376,6 +406,8 @@ echo   📊 Data Source Management: http://localhost:8000/Data-Sources.php
 echo   📈 Aggregate Graphs:    http://localhost:8000/Aggregates.php
 echo   🔄 Data Collectors:    http://localhost:8000/Data-Collectors.php
 echo   ⚡ Spine Data Collection: http://localhost:8000/Spine-Data-Collection.php
+echo   📝 Data Input Methods:  http://localhost:8000/Data-Input-Methods.php
+echo   🔍 Data Queries:       http://localhost:8000/Data-Queries.php
 echo.
 echo 🔧 Test Instructions:
 echo   1. Open the URLs above in your web browser
