@@ -370,6 +370,255 @@ $lang = array(
 
     // Beyond Graphs section
     'beyond_graphs_title' => '超越图形',
-    'beyond_graphs_desc' => 'Cacti 不仅仅是一个图形平台，它也是一个网络运营框架。通过数十个插件和用户贡献的图形模板，使用 Cacti 框架可以做的事情是无限的。它在开源世界中已经经受了 19 年的时间考验。'
+    'beyond_graphs_desc' => 'Cacti 不仅仅是一个图形平台，它也是一个网络运营框架。通过数十个插件和用户贡献的图形模板，使用 Cacti 框架可以做的事情是无限的。它在开源世界中已经经受了 19 年的时间考验。',
+
+    // Graph Overview page specific
+    'page_title_graph_overview' => 'Cacti - 图形概述',
+    'graph_overview_title' => '图形概述',
+    'graph_overview_intro' => 'Cacti 中的几乎所有内容都与**图形**有某种关系。您可以随时通过点击 `控制台 > 管理 > 图形` 菜单选项来列出所有可用的**图形**。虽然可以通过此界面手动创建图形，但新用户应该按照下一章中提供的说明在 Cacti 中创建**新图形**。',
+    'graph_rrdtool_relation' => '对于熟悉 RRDtool 的用户，您会立即认识到 Cacti 中的**图形**是紧密模仿 RRDtool 图形的。这是有道理的，因为 Cacti 为 RRDtool 提供了用户友好的界面，而不需要用户了解 RRDtool 的工作原理。考虑到这一点，Cacti 中的每个**图形**都有某些设置和至少一个与之关联的**图形项目**。虽然图形设置定义了**图形**的整体属性，但**图形项目**定义了要在**图形**上表示的数据。因此，**图形项目**定义了要显示哪些数据以及应该如何显示，还定义了应该在图例上显示什么。',
+    'graph_templates_benefit' => '每个**图形**和**图形项目**都有一组参数来控制**图形**的各个方面。幸运的是，通过使用**图形模板**，不需要了解每个字段的功能就可以为您的网络创建**图形**。当您准备承担创建自己的**图形模板**的任务时，手册的该部分提供了**图形**和**图形项目**的详细字段描述。',
+    'graph_management_interface' => '下面，您可以看到通过转到 `控制台 > 管理 > 图形` 找到的图形管理界面的简单版本',
+    'graph_management_features' => '从此界面，您可以看到**图形**的名称和 ID、源**图形模板**及其大小。在页面底部，有一个可以对**图形**执行的操作列表。这些操作相当广泛，并且随着您向 Cacti 添加**插件**而扩展。',
+    'graph_edit_page' => '当您点击**图形**的名称时，您将被带到如下所示的 `图形编辑` 页面。',
+    'graph_template_limitations' => '在大多数情况下，当**图形**由**图形模板**拥有时，您在此页面上无法做太多事情。但是，如果**图形**不由模板管理，如下图所示，您在使用**图形**时将有更多选项。不利用**图形模板**为您的**图形**的缺点是您必须为创建的每个**图形**重复工作。',
+    'non_templated_graph_control' => '查看非模板化**图形**时，您可以完全控制**图形**画布和所有**图形项目**，就像在**图形模板**中一样，以及如下所示的图形配置。',
+    'graph_settings_reference' => '**图形**的画布和配置组件中的设置将在手册的**图形模板**部分中介绍，这里不涉及。',
+
+    // Graph related terms
+    'graph_item' => '图形项目',
+    'graph_items' => '图形项目',
+    'graph_template_single' => '图形模板',
+    'graph_edit' => '图形编辑',
+    'graph_management' => '图形管理',
+    'graph_configuration' => '图形配置',
+    'graph_canvas' => '图形画布',
+    'non_templated_graph' => '非模板化图形',
+    'templated_graph' => '模板化图形',
+    'new_graphs' => '新图形',
+    'console_management_graphs' => '控制台 > 管理 > 图形',
+
+    // How to Graph Your Network page specific
+    'page_title_how_to_graph' => 'Cacti - 如何绘制您的网络图形',
+    'how_to_graph_title' => '如何绘制您的网络图形',
+    'how_to_graph_intro' => '此时，您可能意识到图形化是 Cacti 的最大优势。Cacti 具有许多强大的功能，提供复杂的图形化和数据采集，其中一些有轻微的学习曲线。但是不要让这阻止您，因为绘制您的网络图形非常简单。',
+    'basic_steps_intro' => '接下来的两个部分将概述通常为大多数**设备**或**设备类型**创建**图形**所需的两个基本步骤。',
+    'automation_note' => '**注意**：下面描述的过程是您创建和管理**设备**和**图形**的经典方式。但是，Cacti 现在允许您在控制台的**自动化**部分自动化许多这些任务。该主题在自动化章节中介绍。',
+
+    // Creating a Device section
+    'creating_device_title' => '创建设备',
+    'creating_device_intro' => '为您的网络创建**图形**的第一步是为您想要创建**图形**的每个网络设备添加一个**设备**。**设备**包含重要的详细信息，如网络主机名、SNMP 参数和**设备类型**（又名**设备模板**）。',
+    'device_management_intro' => '要在 Cacti 中管理**设备**，请点击设备菜单项。点击添加将弹出一个新的设备表单。前两个字段，描述和主机名是除了默认值之外唯一需要您输入的两个字段。如果您的主机类型在主机模板下拉菜单中定义，请确保在此处选择它。如果您只是绘制流量图，您总是可以选择"通用启用 SNMP 的主机"，或者如果您不确定，可以选择"无"。重要的是要记住，您选择的主机模板不会将您锁定到任何特定配置，它只会为该类型的主机提供更智能的默认值。',
+
+    // Device Field Definitions
+    'device_field_definitions' => '设备字段定义',
+    'description_field' => '描述',
+    'description_field_desc' => '此描述将显示在设备列表的第一列中。您可以在图形标题中引用它。',
+    'hostname_field' => '主机名',
+    'hostname_field_desc' => 'IP 地址或主机名。主机名将使用标准主机解析机制解析，例如动态名称服务（DNS）',
+    'host_template_field' => '主机模板',
+    'host_template_field_desc' => '主机模板是与此主机相关的图形模板列表的容器。',
+    'notes_field' => '备注',
+    'notes_field_desc' => '给定设备的备注。',
+    'disable_host_field' => '禁用主机',
+    'disable_host_field_desc' => '排除此主机被轮询。如果设备不再可用，但应保留作为参考，这特别有价值。',
+
+    // Availability/Reachability Options
+    'availability_reachability_options' => '可用性/可达性选项',
+    'downed_device_detection' => '宕机设备检测',
+    'detection_none' => '无',
+    'detection_none_desc' => '停用宕机主机检测',
+    'detection_ping_snmp' => 'PING 和 SNMP 正常运行时间',
+    'detection_ping_snmp_desc' => 'Ping 然后也检查 SNMP 正常运行时间',
+    'detection_ping_or_snmp' => 'PING 或 SNMP 正常运行时间',
+    'detection_ping_or_snmp_desc' => 'Ping，如果成功则继续，如果不成功则检查 SNMP 正常运行时间',
+    'detection_snmp_uptime' => 'SNMP 正常运行时间',
+    'detection_snmp_uptime_desc' => '仅验证 SNMP 正常运行时间',
+    'detection_snmp_desc' => 'SNMP 描述',
+    'detection_snmp_desc_desc' => '验证 SNMP 系统描述',
+    'detection_snmp_getnext' => 'SNMP GetNext',
+    'detection_snmp_getnext_desc' => '验证 .1.3 之后的下一个 SNMP OID',
+    'detection_ping' => 'PING',
+    'detection_ping_desc' => '执行 ping 测试，见下文',
+
+    'ping_method' => 'Ping 方法',
+    'ping_method_desc' => '仅适用于 **PING 和 SNMP** 或 **PING**',
+    'ping_icmp' => 'ICMP',
+    'ping_icmp_desc' => '执行 ICMP 测试。需要权限',
+    'ping_udp' => 'UDP',
+    'ping_udp_desc' => '执行 UDP 测试',
+    'ping_tcp' => 'TCP',
+    'ping_tcp_desc' => '执行 TCP 测试',
+
+    'ping_port' => 'Ping 端口',
+    'ping_port_desc' => '仅适用于 UDP/TCP PING 测试类型。请在此处定义要测试的端口。确保没有防火墙拦截测试 ping。',
+    'timeout_value' => '超时值',
+    'timeout_value_desc' => '在此时间后，测试失败。以毫秒为单位测量。',
+    'ping_retry_count' => 'Ping 重试次数',
+    'ping_retry_count_desc' => 'Cacti 在失败之前尝试 ping 主机的次数。',
+
+    // SNMP Options
+    'snmp_options_title' => 'SNMP 选项',
+    'snmp_version' => 'SNMP 版本',
+    'snmp_version_1' => '版本 1',
+    'snmp_version_1_desc' => '使用 SNMP 版本 1。请注意，此 SNMP 版本不支持 64 位计数器。',
+    'snmp_version_2' => '版本 2',
+    'snmp_version_2_desc' => '在大多数 SNMP 文档中称为 SNMP V2c',
+    'snmp_version_3' => '版本 3',
+    'snmp_version_3_desc' => 'SNMP V3，支持身份验证和加密',
+    'snmp_community' => 'SNMP 团体',
+    'snmp_community_desc' => '此设备的 SNMP 读取团体',
+    'snmp_port' => 'SNMP 端口',
+    'snmp_port_desc' => '用于 SNMP 的 UDP 端口号（默认为 161）。',
+    'snmp_timeout' => 'SNMP 超时',
+    'snmp_timeout_desc' => 'Cacti 等待 SNMP 响应的最大毫秒数（不适用于 php-snmp 支持）。',
+    'max_oids_per_request' => '每个获取请求的最大 OID 数',
+    'max_oids_per_request_desc' => '这是一个性能功能。指定在单个 SNMP 获取请求中可以获得的 OID 数量。**警告**：此功能仅在使用 Spine 时有效。**警告** 某些设备不支持大于 `1` 的值和/或如果此值太高可能报告为未知数据。',
+
+    // Security Options for SNMP V3
+    'snmp_v3_security_options' => 'SNMP V3 的安全选项',
+    'snmp_username' => 'SNMP 用户名',
+    'snmp_username_desc' => 'SNMP V3 `createUser` 语句或等效语句的 `用户名`',
+    'snmp_password' => 'SNMP 密码',
+    'snmp_password_desc' => 'SNMP V3 `createUser` 语句或等效语句的 `authpassphrase`',
+    'snmp_auth_protocol' => 'SNMP 身份验证协议',
+    'snmp_auth_protocol_desc' => 'SNMP V3 `createUser` 语句或等效语句的身份验证类型。选择 MD5、SHA、SHA-224、SHA-256、SHA-392 或 SHA-512。默认为 MD5。',
+    'snmp_privacy_passphrase' => 'SNMP 隐私密码短语',
+    'snmp_privacy_passphrase_desc' => 'SNMP V3 `createUser` 语句或等效语句的 `隐私密码短语`。',
+    'snmp_privacy_protocol' => 'SNMP 隐私协议',
+    'snmp_privacy_protocol_desc' => 'SNMP V3 `createUser` 语句或等效语句的 `隐私协议`。选择 DES（如果可用）、AES-128、AES-192 或 AES-256。默认为 DES。',
+    'snmp_privacy_protocol_note' => '**注意** Spine 今天可能不支持 DES，因为一些 Net-SNMP 发行版已禁用它。',
+    'snmp_context' => 'SNMP 上下文',
+    'snmp_context_desc' => '使用基于视图的访问控制模型（VACM）时，可以在使用 `com2sec` 指令、`group` 指令和 `access` 指令将团体名称映射到安全名称时指定 SNMP 上下文。这允许定义特殊的访问模型。如果在目标的 SNMP 配置中使用此类参数，请在此处指定用于访问该目标的上下文名称。',
+
+    // Device creation results
+    'device_creation_results' => '保存新设备后，您应该被重定向回同一编辑表单，并显示一些附加信息。如果您通过提供有效的团体字符串为此主机配置了 SNMP，您应该在页面顶部看到列出的各种统计信息。如果您看到"SNMP 错误"，这表明 Cacti 和您的设备之间存在 SNMP 问题。',
+    'associated_queries_templates' => '在页面底部将有两个附加框，关联数据查询和关联图形模板。如果您在上一页选择了主机模板，每个框中可能会有一些项目。如果任一框中没有列出任何内容，您需要将至少一个数据查询或图形模板与您的新设备关联，否则您将无法在下一步中创建图形。如果没有可用的图形模板或数据查询适用于您的设备，您可以检查 Cacti 模板存储库或创建自己的模板（如果当前不存在）。',
+
+    // A Word About SNMP
+    'word_about_snmp' => '关于 SNMP 的说明',
+    'snmp_version_choice' => '您选择的 SNMP 版本可能对 SNMP 在 Cacti 中的工作方式产生很大影响。除非您有理由选择其他版本，否则应该对所有内容使用版本 1。如果您计划利用（并且您的设备支持）高速（64 位）计数器，您必须选择版本 2。从 Cacti 0.8.7 开始，版本 3 已完全实现。',
+    'snmp_retrieval_methods' => 'Cacti 从主机检索 SNMP 信息的方式对支持哪些 SNMP 相关选项有影响。目前 Cacti 中有三种类型的 SNMP 检索方法，概述如下。',
+
+    // SNMP Retrieval Types
+    'snmp_retrieval_types' => 'SNMP 检索类型',
+    'snmp_type_column' => '类型',
+    'snmp_description_column' => '描述',
+    'snmp_supported_options_column' => '支持的选项',
+    'snmp_where_used_column' => '使用位置',
+    'external_snmp' => '外部 SNMP',
+    'external_snmp_desc' => '调用安装在系统上的 net-snmp snmpwalk 和 snmpget 二进制文件。',
+    'external_snmp_options' => '所有 SNMP 选项',
+    'external_snmp_usage' => 'Web 界面和 PHP 轮询器',
+    'internal_snmp' => '内部 SNMP',
+    'internal_snmp_desc' => '使用 PHP 的 SNMP 函数，这些函数在编译时链接到 `net-snmp`。',
+    'internal_snmp_options' => '仅版本 1',
+    'internal_snmp_usage' => 'Web 界面和 PHP 轮询器',
+    'spine_snmp' => 'Spine SNMP',
+    'spine_snmp_desc' => '直接链接到 `net-snmp` 并直接使用 SNMP API。',
+    'spine_snmp_options' => '所有 SNMP 选项',
+    'spine_snmp_usage' => 'Spine 轮询器',
+
+    // SNMP V3 Options Explained
+    'snmp_v3_options_explained' => 'SNMP V3 选项说明',
+    'snmp_v3_intro' => '使用 SNMP 协议版本 3 时，SNMP 支持身份验证和加密功能，称为**基于视图的访问控制模型（VACM）**。这要求相关目标设备支持并配置为使用 SNMP V3。通常，V3 选项的配置取决于目标类型。以下引自 `man snmpd.conf` 关于用户定义的内容',
+    'snmp_v3_users_title' => 'SNMPv3 用户',
+    'snmp_v3_createuser_syntax' => 'createUser [-e ENGINEID] username (MD5|SHA) authpassphrase [DES|AES] [privpassphrase]',
+    'snmp_v3_auth_types' => 'MD5 和 SHA 是要使用的身份验证类型。DES 和 AES 是要使用的隐私协议。如果未指定隐私密码短语，则假定它与身份验证密码短语相同。请注意，创建的用户将无用，除非它们也添加到上述 VACM 访问控制表中。',
+    'snmp_v3_openssl_note' => 'SHA 身份验证和 DES/AES 隐私需要安装 OpenSSL 并且代理使用 OpenSSL 支持构建。MD5 身份验证可以在没有 OpenSSL 的情况下使用。',
+    'snmp_v3_passphrase_warning' => '警告：最小密码短语长度为 8 个字符。',
+
+    // VACM Configuration
+    'vacm_configuration' => 'VACM 配置',
+    'vacm_intro' => 'VACM 的完全灵活性可通过四个配置指令实现 - com2sec、group、view 和 access。这些提供了对底层 VACM 表的直接配置。',
+    'vacm_com2sec' => 'com2sec [-Cn CONTEXT] SECNAME SOURCE COMMUNITY',
+    'vacm_com2sec_desc' => '将 SNMPv1 或 SNMPv2c 团体字符串映射到安全名称 - 可以是来自特定范围的源地址，也可以是全局的（"default"）。受限源可以是特定的主机名（或地址），或子网 - 表示为 IP/MASK（例如 10.10.10.0/255.255.255.0），或 IP/BITS（例如 10.10.10.0/24），或 IPv6 等效项。',
+
+    // Creating the Graphs
+    'creating_graphs_title' => '创建图形',
+    'creating_graphs_intro' => '现在您已经创建了一些设备，是时候为这些设备创建图形了。要做到这一点，请在创建标题下选择新图形菜单选项。如果您仍在设备编辑屏幕，请选择为此主机创建图形，以查看类似于下图所示的屏幕。',
+    'new_graphs_concept' => '包含每个设备的下拉菜单应用于选择您想要为其创建新图形的主机。此页面的基本概念很简单，在您想要为其创建图形的每一行中放置一个复选标记，然后点击创建。',
+    'data_query_considerations' => '如果您从"数据查询"框内创建图形，有几个额外的事项需要记住。首先是您可能会遇到上图所示的情况，即"SNMP - 接口统计"数据查询。如果发生这种情况，您可能需要查阅有关调试数据查询的部分，以了解为什么您的数据查询没有返回任何结果。此外，您可能会在某些数据查询框下看到"选择图形类型"下拉框。更改此下拉框的值会影响点击创建按钮后 Cacti 将制作的图形类型。Cacti 仅在有多种类型可供选择时显示此下拉框，因此在所有情况下可能不会显示。',
+    'graph_creation_final_step' => '一旦您选择了要创建的图形，只需点击页面底部的创建按钮。您将被带到一个新页面，允许您指定有关即将创建的图形的附加信息。您只会看到这里不是每个模板一部分的字段，否则值会自动来自模板。当此页面上的所有值看起来正确时，最后一次点击创建按钮以实际创建您的图形。',
+    'graph_management_note' => '如果您想在创建图形后编辑或删除它们，请使用菜单上的图形管理项。同样，数据源菜单项允许您管理 Cacti 中的数据源。',
+
+    // Viewing Graphs page specific
+    'page_title_viewing_graphs' => 'Cacti - 查看图形',
+    'viewing_graphs_title' => '查看图形',
+
+    // Background section
+    'background_title' => '背景',
+    'background_intro' => 'Cacti 于 2001 年由 Ian Berry 首次发明时，他的愿景是使其成为为网络、站点和数据中心运营空间的人员查看和渲染网络监控**图形**的最快和最简单的方式。因此，从一开始它的重点就是渲染一件事，**图形**。因此，Cacti 系统上的第二个**顶部标签**是**图形**标签。',
+
+    // The Graphs Top Tab section
+    'graphs_top_tab_title' => '图形顶部标签',
+    'graphs_top_tab_intro' => '**图形****顶部标签**有几种个性。它们包括：',
+    'tree_view_title' => '树状视图',
+    'tree_view_description' => '允许 Cacti 用户以分层**树**的形式查看**图形**。这些**树**通常由 Cacti 管理员构建，并在**用户**或**用户组**级别进行控制。',
+    'preview_view_title' => '预览视图',
+    'preview_view_description' => '**预览视图**提供 Cacti 用户有权访问的所有**图形**的视图。提供**表格过滤器**来约束返回到页面的**图形**列表。',
+    'list_view_title' => '列表视图',
+    'list_view_description' => '**列表视图**允许 Cacti 用户通过允许他们从各种页面选择图形，然后最终从**预览视图**查看这些页面来创建自己的**预览页面**。',
+
+    'graph_view_personalities' => '这些各种个性在 Cacti 中的显示方式根据您的主题有所不同。查看下面的两个图像，了解如何导航到各种**图形视图**模式。',
+    'classic_theme_layout' => '在第一个图像中，我们看到**图形视图**选项向最终用户显示的方式。这是经典、现代和深色主题的布局。',
+    'alternate_theme_layout' => '在第二个图像中，您可以看到**图形视图**页面对于 Paw、Paper-Plane 和 Sunrise 主题的用户的显示方式。',
+
+    // Graph Manipulation and Options section
+    'graph_manipulation_title' => '图形操作和选项',
+    'graph_manipulation_intro' => '一旦您可以查看**图形**，将有一个过滤器面板，为您提供多个选项来限制您对它们的查看。下面，您可以看到该过滤器面板的图像。',
+    'filter_panel_options' => '从此子面板，您可以执行以下操作：',
+    'search_regex' => '按正则表达式搜索',
+    'select_graph_templates' => '选择一个到多个，或所有**图形模板**来查看',
+    'graphs_per_page' => '指定每页图形数',
+    'display_columns' => '指定要显示的列数',
+    'view_thumbnails_or_full' => '查看无图例缩略图或带图例的完整图形',
+    'preset_timespans' => '设置各种预设时间跨度，或选择时间范围',
+    'shift_time' => '按移位时间跨度向前或向后移动时间',
+
+    'save_defaults' => '一旦您从列、缩略图和每页图形设置中获得您喜欢的过滤器，如果您有正确的权限，您可以按 `保存` 按钮，并为您的下次登录保存这些默认值。',
+    'action_icons_intro' => '再次取决于权限，在**图形**的右侧，您将找到许多操作图标，允许您对**图形**进行操作',
+    'action_icons_example' => '如果您安装了 **Thold** 和 **QuickTree** **插件**，下面的图像显示了可能的样子。',
+    'action_icons_description' => '从上到下，图形操作图标执行以下操作。',
+
+    // Graph Action Icons table
+    'action_icon_name_column' => '名称',
+    'action_icon_description_column' => '描述',
+    'graph_details_icon' => '图形详细信息',
+    'graph_details_desc' => '允许您执行精确缩放、查看 RRDtool 调试信息并执行图形数据的 CSV 导出。',
+    'csv_export_icon' => 'CSV 导出',
+    'csv_export_desc' => '允许您直接 CSV 导出图形数据',
+    'realtime_view_icon' => '实时视图',
+    'realtime_view_desc' => '允许您以低至 1 秒粒度查看图形，可以就地查看或在弹出窗口中查看',
+    'spike_kill_icon' => '峰值清除',
+    'spike_kill_desc' => '允许您清除图形中的峰值和间隙',
+    'create_threshold_icon' => '创建阈值',
+    'create_threshold_desc' => '为图形创建阈值',
+    'add_to_quicktree_icon' => '添加到快速树',
+    'add_to_quicktree_desc' => '允许您通过简单地在图形页面周围工具来选择图形添加到树中。',
+
+    // Graph Zooming section
+    'graph_zooming_title' => '图形缩放',
+    'graph_zooming_intro' => 'Cacti 还内置了强大的图形缩放界面。您可以通过简单地在图形区域右键单击来发现它允许您做什么。缩放时，您将缩放页面上的所有**图形**。它非常强大。',
+    'zoom_options_note' => '缩放菜单有许多选项。与其在这里解释它们，不如自己尝试一下。',
+
+    // Common graph viewing terms
+    'graph_view_modes' => '图形查看模式',
+    'filter_panel' => '过滤器面板',
+    'action_icons' => '操作图标',
+    'zoom_interface' => '缩放界面',
+    'context_menu' => '上下文菜单',
+    'time_range' => '时间范围',
+    'time_span' => '时间跨度',
+    'thumbnails' => '缩略图',
+    'legends' => '图例',
+    'precision_zooming' => '精确缩放',
+    'rrdtool_debug' => 'RRDtool 调试',
+    'graph_data' => '图形数据',
+    'granularity' => '粒度',
+    'popup_window' => '弹出窗口',
+    'spikes_and_gaps' => '峰值和间隙',
+    'threshold' => '阈值',
+    'quicktree' => '快速树'
 );
 ?>

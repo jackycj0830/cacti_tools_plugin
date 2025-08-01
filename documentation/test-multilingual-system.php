@@ -79,6 +79,42 @@ generatePageHeader('', 'test', true);
                 <td style="padding: 8px;">extending_capabilities_title</td>
                 <td style="padding: 8px;"><?php _e('extending_capabilities_title'); ?></td>
             </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">graph_overview_title</td>
+                <td style="padding: 8px;"><?php _e('graph_overview_title'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">graph_management</td>
+                <td style="padding: 8px;"><?php _e('graph_management'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">graph_template_single</td>
+                <td style="padding: 8px;"><?php _e('graph_template_single'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">how_to_graph_title</td>
+                <td style="padding: 8px;"><?php _e('how_to_graph_title'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">creating_device_title</td>
+                <td style="padding: 8px;"><?php _e('creating_device_title'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">snmp_options_title</td>
+                <td style="padding: 8px;"><?php _e('snmp_options_title'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">viewing_graphs_title</td>
+                <td style="padding: 8px;"><?php _e('viewing_graphs_title'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">graph_manipulation_title</td>
+                <td style="padding: 8px;"><?php _e('graph_manipulation_title'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">graph_zooming_title</td>
+                <td style="padding: 8px;"><?php _e('graph_zooming_title'); ?></td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -91,6 +127,9 @@ generatePageHeader('', 'test', true);
         <li><a href="Requirements.php">系統要求 (Requirements.php)</a></li>
         <li><a href="Navigating-The-User-Interface.php">導航用戶界面 (Navigating-The-User-Interface.php)</a></li>
         <li><a href="Principles-of-Operation.php">操作原理 (Principles-of-Operation.php)</a></li>
+        <li><a href="Graph-Overview.php">圖形概述 (Graph-Overview.php)</a></li>
+        <li><a href="How-to-Graph-Your-Network.php">如何繪製網路圖形 (How-to-Graph-Your-Network.php)</a></li>
+        <li><a href="Viewing-Graphs.php">檢視圖形 (Viewing-Graphs.php)</a></li>
     </ul>
 </div>
 

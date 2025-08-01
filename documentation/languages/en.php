@@ -370,6 +370,255 @@ $lang = array(
 
     // Beyond Graphs section
     'beyond_graphs_title' => 'Beyond Graphs',
-    'beyond_graphs_desc' => 'Cacti is not just a Graphing platform, it\'s also a Network Operations Framework. Thought the dozens of plugins and user contributed Graph Templates, the sky is the limit as to what can be done using the Cacti Framework. It\'s stood the test of time now in it\'s 19th year of existence in the Open Source world.'
+    'beyond_graphs_desc' => 'Cacti is not just a Graphing platform, it\'s also a Network Operations Framework. Thought the dozens of plugins and user contributed Graph Templates, the sky is the limit as to what can be done using the Cacti Framework. It\'s stood the test of time now in it\'s 19th year of existence in the Open Source world.',
+
+    // Graph Overview page specific
+    'page_title_graph_overview' => 'Cacti - Graph Overview',
+    'graph_overview_title' => 'Graph Overview',
+    'graph_overview_intro' => 'Almost everything in Cacti is somehow related to a **Graph**. At any time, you can list all available **Graph** by clicking on `Console > Management > Graphs` menu pick. While it is possible to manually create graphs through this interface, new users should follow the instructions provided in the next chapter for creating **New Graphs** in Cacti.',
+    'graph_rrdtool_relation' => 'For users who are familiar with RRDtool, you will immediately recognize that a **Graph** in Cacti is closely modeled after RRDtool\'s graphs. This makes sense since Cacti provides a user friendly interface to RRDtool without requiring users to understand how RRDtool works. With this in mind, every **Graph** in Cacti has certain settings and at least one **Graph Item** associated with it. While graph settings define the overall properties of a **Graph**, the **Graph Items** define the data that is to be represented on the **Graph**. So the **Graph Items** define which data to display and how it should displayed, and also define what should be displayed on the legend.',
+    'graph_templates_benefit' => 'Each **Graph** and **Graph Item** has a set of parameters which control various aspects of the **Graph**. Fortunately through the use of **Graph Templates**, it is not necessary to understand the function of each field to create **Graphs** for your network. When you are ready to take on the task of creating your own **Graph Templates**, extensive field descriptions for both **Graphs** and **Graph Items** are provided in that section of the manual.',
+    'graph_management_interface' => 'Below, you can see a simple version of the Graph Management interface found by going to `Console > Management > Graphs`',
+    'graph_management_features' => 'From this interface, you can see the Name, and ID of the **Graph**, the Source **Graph Template**, and it\'s size. At the bottom of the page, there is a list of Action that can be taken on **Graphs**. These actions are fairly extensive, and are also extended as you add **Plugins** to Cacti.',
+    'graph_edit_page' => 'When you click on the Name of the **Graph**, you will be taken to a `Graph Edit` page as shown below.',
+    'graph_template_limitations' => 'In most cases, where the **Graph** is owned by a **Graph Template**, there is not much your can do on this page. However, in the case that a **Graph** is not managed by a template as in the image below, there are many more options you will have when working with the **Graph**. The downside of not leveraging a **Graph Template** for your **Graphs** is that you have to duplicate the work for each **Graph** created.',
+    'non_templated_graph_control' => 'When viewing a Non-Templated **Graph**, you have complete control of the **Graphs** Canvas and all the **Graph Items** as you would in a **Graph Template**, and the Graph Configuration as shown below.',
+    'graph_settings_reference' => 'The settings in both the Canvas and Configuration components of the **Graph** will be covered in the **Graph Template** section of the manual and not covered here.',
+
+    // Graph related terms
+    'graph_item' => 'Graph Item',
+    'graph_items' => 'Graph Items',
+    'graph_template_single' => 'Graph Template',
+    'graph_edit' => 'Graph Edit',
+    'graph_management' => 'Graph Management',
+    'graph_configuration' => 'Graph Configuration',
+    'graph_canvas' => 'Graph Canvas',
+    'non_templated_graph' => 'Non-Templated Graph',
+    'templated_graph' => 'Templated Graph',
+    'new_graphs' => 'New Graphs',
+    'console_management_graphs' => 'Console > Management > Graphs',
+
+    // How to Graph Your Network page specific
+    'page_title_how_to_graph' => 'Cacti - How to Graph Your Network',
+    'how_to_graph_title' => 'How to Graph Your Network',
+    'how_to_graph_intro' => 'At this point, you probably realize that graphing is Cacti\'s greatest strength. Cacti has many powerful features that provide complex graphing and data acquisition, some which have a slight learning curve. Do not let that stop you however, because graphing your network is incredibly simple.',
+    'basic_steps_intro' => 'The next two sections will outline the two basic steps which are typically required to create **Graphs** for most **Devices** or **Device Types**.',
+    'automation_note' => '**NOTE**: The process described below is the Classic way for you to create and manage **Devices** and **Graphs**. However, Cacti now allows your to Automate many of these tasks in the **Automation** section of the Console. That topic is covered in the Automation Chapter.',
+
+    // Creating a Device section
+    'creating_device_title' => 'Creating a Device',
+    'creating_device_intro' => 'The first step to creating **Graphs** for your network is adding a **Device** for each network device that you want to create **Graphs** for. A **Device** contains important details such as the network hostname, SNMP parameters, and **Device Type** (aka **Device Template**).',
+    'device_management_intro' => 'To manage **Devices** within Cacti, click on the Devices menu item. Clicking Add will bring up a new device form. The first two fields, Description and Hostname are the only two fields that require your input beyond the defaults. If your host type is defined under the host template dropdown, be sure to select it here. You can always choose "Generic SNMP-enabled Host" if you are just graphing traffic or "None" if you are unsure. It is important to remember that the host template you choose will not lock you into any particular configuration, it will just provide more intelligent defaults for that type of host.',
+
+    // Device Field Definitions
+    'device_field_definitions' => 'Device Field Definitions',
+    'description_field' => 'Description',
+    'description_field_desc' => 'This description will show up in the first column of the device list. You may refer to it e.g. in graph titles.',
+    'hostname_field' => 'Hostname',
+    'hostname_field_desc' => 'Either an IP address or a hostname. The hostname will be resolved using the standard host resolving mechanisms, e.g. Dynamic Name Services (DNS)',
+    'host_template_field' => 'Host Template',
+    'host_template_field_desc' => 'A Host Template is a container for a list of graph templates that will be related to this host.',
+    'notes_field' => 'Notes',
+    'notes_field_desc' => 'Notes for a given device.',
+    'disable_host_field' => 'Disable Host',
+    'disable_host_field_desc' => 'Exclude this host from being polled. This is of particular value, if a device is no longer available, but should be kept e.g. as a reference.',
+
+    // Availability/Reachability Options
+    'availability_reachability_options' => 'Availability/Reachability Options',
+    'downed_device_detection' => 'Downed Device Detection',
+    'detection_none' => 'NONE',
+    'detection_none_desc' => 'Deactivate downed host detection',
+    'detection_ping_snmp' => 'PING and SNMP Uptime',
+    'detection_ping_snmp_desc' => 'Ping and then also check SNMP Uptime',
+    'detection_ping_or_snmp' => 'PING or SNMP Uptime',
+    'detection_ping_or_snmp_desc' => 'Ping and if successful, move on, if not check SNMP Uptime',
+    'detection_snmp_uptime' => 'SNMP Uptime',
+    'detection_snmp_uptime_desc' => 'verify the SNMP Uptime only',
+    'detection_snmp_desc' => 'SNMP Desc',
+    'detection_snmp_desc_desc' => 'verify the SNMP System Description',
+    'detection_snmp_getnext' => 'SNMP GetNext',
+    'detection_snmp_getnext_desc' => 'verify the very next SNMP OID after .1.3',
+    'detection_ping' => 'PING',
+    'detection_ping_desc' => 'perform a ping test, see below',
+
+    'ping_method' => 'Ping Method',
+    'ping_method_desc' => 'Available only for **PING and SNMP** or **PING**',
+    'ping_icmp' => 'ICMP',
+    'ping_icmp_desc' => 'perform ICMP tests. Requires permissions',
+    'ping_udp' => 'UDP',
+    'ping_udp_desc' => 'perform a UDP test',
+    'ping_tcp' => 'TCP',
+    'ping_tcp_desc' => 'perform a TCP test',
+
+    'ping_port' => 'Ping Port',
+    'ping_port_desc' => 'Available only for UDP/TCP PING test types. Please define the port to be tested here. Make sure, that no firewall intercepts the test ping.',
+    'timeout_value' => 'Timeout Value',
+    'timeout_value_desc' => 'After this time, the test fails. Measured in units of milliseconds.',
+    'ping_retry_count' => 'Ping Retry Count',
+    'ping_retry_count_desc' => 'The number of times Cacti will attempt to ping a host before failing.',
+
+    // SNMP Options
+    'snmp_options_title' => 'SNMP Options',
+    'snmp_version' => 'SNMP Version',
+    'snmp_version_1' => 'Version 1',
+    'snmp_version_1_desc' => 'Use SNMP Version 1. Be aware, that 64bit counters are not supported in this SNMP version.',
+    'snmp_version_2' => 'Version 2',
+    'snmp_version_2_desc' => 'Referred to as SNMP V2c in most SNMP documentations',
+    'snmp_version_3' => 'Version 3',
+    'snmp_version_3_desc' => 'SNMP V3, supporting authentication and encryption',
+    'snmp_community' => 'SNMP Community',
+    'snmp_community_desc' => 'SNMP read community for this device',
+    'snmp_port' => 'SNMP Port',
+    'snmp_port_desc' => 'UDP port number to use for SNMP (default is 161).',
+    'snmp_timeout' => 'SNMP Timeout',
+    'snmp_timeout_desc' => 'Maximum number of milliseconds Cacti will wait for an SNMP response (does not work with php-snmp support).',
+    'max_oids_per_request' => 'Maximum OID\'s Per Get Request',
+    'max_oids_per_request_desc' => 'This is a performance feature. Specifies the number of OID\'s that can be obtained in a single SNMP Get request. **WARNING**: This feature only works when using Spine. **WARNING** Some devices do not support values greater than `1` and/or may reports as unknown data if this value is too high.',
+
+    // Security Options for SNMP V3
+    'snmp_v3_security_options' => 'Security Options for SNMP V3',
+    'snmp_username' => 'SNMP Username',
+    'snmp_username_desc' => '`username` of an SNMP V3 `createUser` statement or equivalent',
+    'snmp_password' => 'SNMP Password',
+    'snmp_password_desc' => '`authpassphrase` of an SNMP V3 `createUser` statement or equivalent',
+    'snmp_auth_protocol' => 'SNMP Auth Protocol',
+    'snmp_auth_protocol_desc' => 'Authentication type of an SNMP V3 `createUser` statement or equivalent. Select either MD5, SHA, SHA-224, SHA-256, SHA-392, or SHA-512. Defaults to MD5.',
+    'snmp_privacy_passphrase' => 'SNMP Privacy Passphrase',
+    'snmp_privacy_passphrase_desc' => 'The `privacy passphrase` of an SNMP V3 `createUser` statement or equivalent.',
+    'snmp_privacy_protocol' => 'SNMP Privacy Protocol',
+    'snmp_privacy_protocol_desc' => 'The `privacy protocol` of an SNMP V3 `createUser` statement or equivalent. Select DES (if available), AES-128, AES-192, or AES-256. Defaults to DES.',
+    'snmp_privacy_protocol_note' => '**NOTE** Spine may not support DES today as some Net-SNMP distributions have disabled it.',
+    'snmp_context' => 'SNMP Context',
+    'snmp_context_desc' => 'When using the View-Based Access Control Model (VACM), it is possible to specify an SNMP Context when mapping a community name to a security name with a `com2sec` directive, with the `group` directive and the `access` directive. This allows for defining special access models. If using such a parameter with your target\'s SNMP configuration, specify the context name to be used to access that target here.',
+
+    // Device creation results
+    'device_creation_results' => 'After saving your new device, you should be redirected back to the same edit form with some additional information. If you configured SNMP for this host by providing a valid community string, you should see various statistics listed at the top of the page. If you see "SNMP error" instead, this indicates an SNMP problem between Cacti and your device.',
+    'associated_queries_templates' => 'Towards the bottom of the page there will be two addition boxes, Associated Data Queries, and Associated Graph Templates. If you selected a host template on the previous page, there will probably be a few items in each box. If there is nothing listed in either box, you will need to associate at least one data query or graph template with your new device or you will not be able to create graphs in the next step. If no available graph template or data query applies to your device, you can check the Cacti templates repository or create your own if nothing currently exists.',
+
+    // A Word About SNMP
+    'word_about_snmp' => 'A Word About SNMP',
+    'snmp_version_choice' => 'The SNMP version that you choose can have a great effect on how SNMP works for you in Cacti. Version 1 should be used for everything unless you have reason to choose otherwise. If you plan on utilizing (and your device supports) high-speed (64-bit) counters, you must select version 2. Starting with Cacti 0.8.7, version 3 is fully implemented.',
+    'snmp_retrieval_methods' => 'The way in which Cacti retrieves SNMP information from a host has an effect on which SNMP-related options are supported. Currently there are three types of SNMP retrieval methods in Cacti and are outlined below.',
+
+    // SNMP Retrieval Types
+    'snmp_retrieval_types' => 'SNMP Retrieval Types',
+    'snmp_type_column' => 'Type',
+    'snmp_description_column' => 'Description',
+    'snmp_supported_options_column' => 'Supported Options',
+    'snmp_where_used_column' => 'Where Used',
+    'external_snmp' => 'External SNMP',
+    'external_snmp_desc' => 'Calls the net-snmp snmpwalk and snmpget binaries that are installed on your system.',
+    'external_snmp_options' => 'All SNMP options',
+    'external_snmp_usage' => 'Web interface and PHP poller',
+    'internal_snmp' => 'Internal SNMP',
+    'internal_snmp_desc' => 'Uses PHP\'s SNMP functions which are linked against `net-snmp` at compile time.',
+    'internal_snmp_options' => 'Version 1 Only',
+    'internal_snmp_usage' => 'Web interface and PHP poller',
+    'spine_snmp' => 'Spine SNMP',
+    'spine_snmp_desc' => 'Links directly against `net-snmp` and directly uses the SNMP APIs.',
+    'spine_snmp_options' => 'All SNMP options',
+    'spine_snmp_usage' => 'Spine Poller',
+
+    // SNMP V3 Options Explained
+    'snmp_v3_options_explained' => 'SNMP V3 Options Explained',
+    'snmp_v3_intro' => 'SNMP supports authentication and encryption features when using SNMP protocol version 3 known as **View-Based Access Control Model (VACM)**. This requires, that the target device in question supports and is configured for SNMP V3 use. In general, configuration of V3 options is target type dependent. The following is cited from `man snmpd.conf` concerning user definitions',
+    'snmp_v3_users_title' => 'SNMPv3 Users',
+    'snmp_v3_createuser_syntax' => 'createUser [-e ENGINEID] username (MD5|SHA) authpassphrase [DES|AES] [privpassphrase]',
+    'snmp_v3_auth_types' => 'MD5 and SHA are the authentication types to use. DES and AES are the privacy protocols to use. If the privacy passphrase is not specified, it is assumed to be the same as the authentication passphrase. Note that the users created will be useless unless they are also added to the VACM access control tables described above.',
+    'snmp_v3_openssl_note' => 'SHA authentication and DES/AES privacy require OpenSSL to be installed and the agent to be built with OpenSSL support. MD5 authentication may be used without OpenSSL.',
+    'snmp_v3_passphrase_warning' => 'Warning: the minimum pass phrase length is 8 characters.',
+
+    // VACM Configuration
+    'vacm_configuration' => 'VACM Configuration',
+    'vacm_intro' => 'The full flexibility of the VACM is available using four configuration directives - com2sec, group, view and access. These provide direct configuration of the underlying VACM tables.',
+    'vacm_com2sec' => 'com2sec [-Cn CONTEXT] SECNAME SOURCE COMMUNITY',
+    'vacm_com2sec_desc' => 'map an SNMPv1 or SNMPv2c community string to a security name - either from a particular range of source addresses, or globally ("default"). A restricted source can either be a specific hostname (or address), or a subnet - represented as IP/MASK (e.g. 10.10.10.0/255.255.255.0), or IP/BITS (e.g. 10.10.10.0/24), or the IPv6 equivalents.',
+
+    // Creating the Graphs
+    'creating_graphs_title' => 'Creating the Graphs',
+    'creating_graphs_intro' => 'Now that you have created some devices, it is time to create graphs for these devices. To do this, select the New Graphs menu option under the Create heading. If you\'re still at the device edit screen, select Create Graphs for this Host to see a screen similar to the image pictured below.',
+    'new_graphs_concept' => 'The dropdown menu that contains each device should be used to select the host that you want to create new graphs for. The basic concept to this page is simple, place a check in each row that you want to create a graph for and click Create.',
+    'data_query_considerations' => 'If you are creating graphs from inside a "Data Query" box, there are a few additional things to keep in mind. First is that you may encounter the situation as pictured above with the "SNMP - Interface Statistics" data query. If this occurs you may want to consult the section on debugging data queries to see why your data query is not returning any results. Also, you may see a "Select a graph type" dropdown box under some data query boxes. Changing the value of this dropdown box affects which type of graph Cacti will make after clicking the Create button. Cacti only displays this dropdown box when there is more than one type to choose from, so it may not be displayed in all cases.',
+    'graph_creation_final_step' => 'Once you have selected the graphs that you want to create, simply click the Create button at the bottom of the page. You will be taken to a new page that allows you to specify additional information about the graphs you are about to create. You only see the fields here that are not part of each template, otherwise the value automatically comes from the template. When all of the values on this page look correct, click the Create button one last time to actually create your graphs.',
+    'graph_management_note' => 'If you would like to edit or delete your graphs after they have been created, use the Graph Management item on the menu. Likewise, the Data Source menu item allows you to manage your data sources in Cacti.',
+
+    // Viewing Graphs page specific
+    'page_title_viewing_graphs' => 'Cacti - Viewing Graphs',
+    'viewing_graphs_title' => 'Viewing Graphs',
+
+    // Background section
+    'background_title' => 'Background',
+    'background_intro' => 'Cacti, when it was first invented in 2001 by Ian Berry, his vision was to make it the fastest and easiest way to view and render Network Monitoring **Graphs** for people in the Network, Site, and Data Center Operations Space. As such, it\'s focus from the very beginning was on render just one thing, **Graphs**. So, as such, the second **Top Tab** on a Cacti system is the **Graphs** tab.',
+
+    // The Graphs Top Tab section
+    'graphs_top_tab_title' => 'The Graphs Top Tab',
+    'graphs_top_tab_intro' => 'The **Graphs** **Top Tab** has a few personalities. They include:',
+    'tree_view_title' => 'Tree View',
+    'tree_view_description' => 'Allows Cacti Users to view **Graphs** in the form of hierarchical **Trees**. These **Trees** are generally constructed by the Cacti Administrator and are controlled either at the **User** or **User Group** level.',
+    'preview_view_title' => 'Preview View',
+    'preview_view_description' => 'The **Preview View** provides a view of all **Graphs** that a Cacti User has access to. **Table Filters** are provided to constrain the list of **Graphs** returned to the page.',
+    'list_view_title' => 'List View',
+    'list_view_description' => 'The **List View** allows the Cacti user to Create their own **Preview Page** by allowing them to select graphs from various pages, and then finally view those pages from the **Preview View**.',
+
+    'graph_view_personalities' => 'The way these various personalities appear in Cacti is somewhat different depending on your Theme. Review the two images below, for how you navigate to the various **Graph View** modes.',
+    'classic_theme_layout' => 'In this first image, we see the way the **Graph View** options are displayed to the end user. This is the layout of the Classic, Modern and Dark themes.',
+    'alternate_theme_layout' => 'In this second image, you can see the way the **Graph View** page will appear for users of the Paw, Paper-Plane, and Sunrise themes.',
+
+    // Graph Manipulation and Options section
+    'graph_manipulation_title' => 'Graph Manipulation and Options',
+    'graph_manipulation_intro' => 'Once you can view the **Graphs**, there will be a Filter Panel that will provide you multiple options to limit your view of them. Below, you can see an image of that Filter Panel.',
+    'filter_panel_options' => 'From this sub-panel, you can do the following:',
+    'search_regex' => 'Search by regular expression',
+    'select_graph_templates' => 'Select one to many, or all **Graph Templates** to view',
+    'graphs_per_page' => 'Specify the number of Graphs per Page',
+    'display_columns' => 'Specify the number of columns to Display',
+    'view_thumbnails_or_full' => 'View either Legendless Thumbnails or full Graphs with their legends',
+    'preset_timespans' => 'Set various Preset Time-spans, or select a Time Range',
+    'shift_time' => 'Shift the Time either forward or backward by the Shift Time-span',
+
+    'save_defaults' => 'Once you have the Filter where you like it from a Columns, Thumbnails, and Graphs per Page setting, you can press the `Save` button, if you have the correct permissions and save those defaults for your next login.',
+    'action_icons_intro' => 'Depending again on permissions, to the right of the **Graphs**, you will find a number of action icons that allow you to operate on the **Graphs**',
+    'action_icons_example' => 'The image below shows what that might look like if you have the **Thold** and **QuickTree** **Plugins** installed.',
+    'action_icons_description' => 'From top to bottom, the Graph Action Icons do the following.',
+
+    // Graph Action Icons table
+    'action_icon_name_column' => 'Name',
+    'action_icon_description_column' => 'Description',
+    'graph_details_icon' => 'Graph Details',
+    'graph_details_desc' => 'Allow you to perform precision zooming, view RRDtool debug information and perform CSV exports of your Graph Data.',
+    'csv_export_icon' => 'CSV Export',
+    'csv_export_desc' => 'Allows you to directly CSV Export your Graph Data',
+    'realtime_view_icon' => 'Realtime View',
+    'realtime_view_desc' => 'Allows you to view your Graphs at down to a 1 second granularity either in place, or in a pop-up Window',
+    'spike_kill_icon' => 'Spike Kill',
+    'spike_kill_desc' => 'Allow you to clear up Spikes and Gaps in your Graph',
+    'create_threshold_icon' => 'Create Threshold',
+    'create_threshold_desc' => 'Create a Threshold for the Graph',
+    'add_to_quicktree_icon' => 'Add to QuickTree',
+    'add_to_quicktree_desc' => 'Allow you to select Graphs to add to Trees by simply tooling around the Graphs page.',
+
+    // Graph Zooming section
+    'graph_zooming_title' => 'Graph Zooming',
+    'graph_zooming_intro' => 'Cacti also has a powerful Graph Zoom interface built in. You can discover what it allows you to do by simply right clicking in the Graph area. When zooming, you will zoom all the **Graphs** on a page. It\'s quite powerful.',
+    'zoom_options_note' => 'There are many options for the Zoom menu. Instead of explaining them here try them out for yourself.',
+
+    // Common graph viewing terms
+    'graph_view_modes' => 'Graph View Modes',
+    'filter_panel' => 'Filter Panel',
+    'action_icons' => 'Action Icons',
+    'zoom_interface' => 'Zoom Interface',
+    'context_menu' => 'Context Menu',
+    'time_range' => 'Time Range',
+    'time_span' => 'Time Span',
+    'thumbnails' => 'Thumbnails',
+    'legends' => 'Legends',
+    'precision_zooming' => 'Precision Zooming',
+    'rrdtool_debug' => 'RRDtool Debug',
+    'graph_data' => 'Graph Data',
+    'granularity' => 'Granularity',
+    'popup_window' => 'Pop-up Window',
+    'spikes_and_gaps' => 'Spikes and Gaps',
+    'threshold' => 'Threshold',
+    'quicktree' => 'QuickTree'
 );
 ?>

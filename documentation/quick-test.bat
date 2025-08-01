@@ -88,6 +88,27 @@ if exist "Principles-of-Operation.php" (
     set missing_files=1
 )
 
+if exist "Graph-Overview.php" (
+    echo ✅ Graph-Overview.php - Found
+) else (
+    echo ❌ Graph-Overview.php - Missing
+    set missing_files=1
+)
+
+if exist "How-to-Graph-Your-Network.php" (
+    echo ✅ How-to-Graph-Your-Network.php - Found
+) else (
+    echo ❌ How-to-Graph-Your-Network.php - Missing
+    set missing_files=1
+)
+
+if exist "Viewing-Graphs.php" (
+    echo ✅ Viewing-Graphs.php - Found
+) else (
+    echo ❌ Viewing-Graphs.php - Missing
+    set missing_files=1
+)
+
 if exist "test-multilingual-system.php" (
     echo ✅ test-multilingual-system.php - Found
 ) else (
@@ -174,6 +195,30 @@ if errorlevel 1 (
     echo ✅ Principles-of-Operation.php syntax OK
 )
 
+php -l Graph-Overview.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Graph-Overview.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Graph-Overview.php syntax OK
+)
+
+php -l How-to-Graph-Your-Network.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ How-to-Graph-Your-Network.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ How-to-Graph-Your-Network.php syntax OK
+)
+
+php -l Viewing-Graphs.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Viewing-Graphs.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Viewing-Graphs.php syntax OK
+)
+
 echo.
 
 if defined syntax_errors (
@@ -200,6 +245,9 @@ echo   🧪 System Test Page:   http://localhost:8000/test-multilingual-system.p
 echo   📋 Requirements Page:  http://localhost:8000/Requirements.php
 echo   🎛️ UI Navigation:      http://localhost:8000/Navigating-The-User-Interface.php
 echo   ⚙️ Operation Principles: http://localhost:8000/Principles-of-Operation.php
+echo   📊 Graph Overview:     http://localhost:8000/Graph-Overview.php
+echo   🌐 How to Graph Network: http://localhost:8000/How-to-Graph-Your-Network.php
+echo   👁️ Viewing Graphs:      http://localhost:8000/Viewing-Graphs.php
 echo.
 echo 🔧 Test Instructions:
 echo   1. Open the URLs above in your web browser
