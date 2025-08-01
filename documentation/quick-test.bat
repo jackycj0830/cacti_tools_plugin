@@ -109,6 +109,13 @@ if exist "Viewing-Graphs.php" (
     set missing_files=1
 )
 
+if exist "Devices.php" (
+    echo ✅ Devices.php - Found
+) else (
+    echo ❌ Devices.php - Missing
+    set missing_files=1
+)
+
 if exist "test-multilingual-system.php" (
     echo ✅ test-multilingual-system.php - Found
 ) else (
@@ -219,6 +226,14 @@ if errorlevel 1 (
     echo ✅ Viewing-Graphs.php syntax OK
 )
 
+php -l Devices.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Devices.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Devices.php syntax OK
+)
+
 echo.
 
 if defined syntax_errors (
@@ -248,6 +263,7 @@ echo   ⚙️ Operation Principles: http://localhost:8000/Principles-of-Operatio
 echo   📊 Graph Overview:     http://localhost:8000/Graph-Overview.php
 echo   🌐 How to Graph Network: http://localhost:8000/How-to-Graph-Your-Network.php
 echo   👁️ Viewing Graphs:      http://localhost:8000/Viewing-Graphs.php
+echo   🖥️ Device Management:   http://localhost:8000/Devices.php
 echo.
 echo 🔧 Test Instructions:
 echo   1. Open the URLs above in your web browser

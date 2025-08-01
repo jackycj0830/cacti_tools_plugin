@@ -619,6 +619,108 @@ $lang = array(
     'popup_window' => 'Pop-up Window',
     'spikes_and_gaps' => 'Spikes and Gaps',
     'threshold' => 'Threshold',
-    'quicktree' => 'QuickTree'
+    'quicktree' => 'QuickTree',
+
+    // Devices page specific
+    'page_title_devices' => 'Cacti - Device Management',
+    'devices_title' => 'Device Management',
+    'devices_intro' => 'This section will describe **Device** management in Cacti.',
+    'devices_adding_methods' => 'Adding a **Device** to Cacti can be done in a few different ways, either via the Web GUI, Cacti\'s Automation, or the Command Line Interface (CLI).',
+
+    // Web GUI Option section
+    'web_gui_option_title' => 'Web GUI Option',
+    'web_gui_intro' => 'To add a device via the Web GUI first click on `Console > Management > Devices` and you will see the below device console window which will show existing devices if any',
+    'add_device_button_desc' => 'You will now select the + on the top right hand corner',
+    'add_device_screen_desc' => 'Once you select the + otherwise known as the add device button you will see the below screen which will ask you for device specific information',
+    'device_important_info' => 'Some of the most important information about the device will be required in this window which includes',
+
+    // Device fields
+    'device_description_field' => 'Description',
+    'device_description_desc' => 'The name that will appear on **Graphs** by default',
+    'device_ip_hostname_field' => 'IP/Hostname',
+    'device_ip_hostname_desc' => 'The DNS or IP address of the actual **Device**. IPv6 address insert into brackets (example: [2001:abcd:1234::1])',
+    'device_poller_association_field' => 'Poller Association',
+    'device_poller_association_desc' => 'Defines which **Data Collector** is responsible for pulling information about the **Device**',
+    'device_template_field' => 'Device Template',
+    'device_template_desc' => 'Cisco, Net-SNMP, Linux, etc - The Cacti object that holds all the **Graph Templates** and **Data Queries** to be graphed',
+    'device_site_location_field' => 'Site, Location',
+    'device_site_location_desc' => 'Very important to performing Meta queries, or for Site level Graph organization on Cacti **Graph Trees**',
+    'device_availability_field' => 'Availability/Reachability',
+    'device_availability_desc' => 'Settings that describe **Device** timeouts and availability methods.',
+    'device_snmp_info_field' => 'SNMP information',
+    'device_snmp_info_desc' => 'SNMP Credentials for connecting to the **Device**',
+    'device_notes_field' => 'Device Notes',
+    'device_notes_desc' => 'Arbitrary unstructured information about the **Device**',
+
+    'device_save_and_create_graphs' => 'Cacti requires this basic information to be able to monitor the device and once entered, click save on the bottom right corner. With the device created you will need to add graphs for the device by clicking **Create graphs for this device** on the top right hand corner.',
+
+    // Availability/Reachability Settings section
+    'availability_reachability_settings_title' => 'Availability/Reachability Settings',
+    'availability_intro' => 'Cacti prefers to use the Simple Network Management Protocol (SNMP) to communicate with **Devices**. Therefore, when creating a **Device**, you need to provide SNMP credentials to obtain information about the **Device** in order to collect data from it. Before Cacti will query the **Device** for data, it first verifies that the **Device** is up and responding. When doing so, you have several options. They include:',
+
+    // Availability options
+    'availability_none' => 'None',
+    'availability_none_desc' => 'Always assume the device is up. This is generally reserved for **Device** objects that do not have a state.',
+    'availability_snmp_uptime' => 'SNMP Uptime',
+    'availability_snmp_uptime_desc' => 'Query the SNMP Uptime Instance OID',
+    'availability_ping_snmp' => 'Ping and SNMP Uptime',
+    'availability_ping_snmp_desc' => 'Ping the device but also check the SNMP Uptime Instance OID',
+    'availability_ping' => 'Ping',
+    'availability_ping_desc' => 'Either ICMP, TCP at a port, or UDP as a port. Newer version has an additional method TCP Ping Closed. The device is considered UP even if the tcp ping returns closed',
+    'availability_ping_or_snmp' => 'Ping or SNMP Uptime',
+    'availability_ping_or_snmp_desc' => 'Only one needs to be working for Cacti to collect data',
+    'availability_snmp_desc' => 'SNMP Desc',
+    'availability_snmp_desc_desc' => 'Query the SNMP sysDescription in cases where the SNMP Uptime OID is not available',
+    'availability_snmp_getnext' => 'SNMP GetNext',
+    'availability_snmp_getnext_desc' => 'Query the first available OID in the OID tree for the **Device** Used for certain devices that have limited SNMP support.',
+
+    // SNMP Credentials section
+    'snmp_credentials_title' => 'SNMP Credentials',
+    'snmp_credentials_intro' => 'When providing the SNMP credentials, Cacti currently supports the following versions:',
+    'snmp_v1_title' => 'Version 1',
+    'snmp_v1_desc' => 'Rarely used any more. Reserved for very old hardware',
+    'snmp_v2_title' => 'Version 2',
+    'snmp_v2_desc' => 'Still very popular, and support 64 bit counters except on Windows',
+    'snmp_v3_title' => 'Version 3',
+    'snmp_v3_desc' => 'Support is provided, but there are presently a limitation. If you are using advanced settings such as SHA224+ or AES192+ with SNMPv3, you must uninstall the php-snmp module if it\'s in use in php and leverage the Net-SNMP binaries instead.',
+    'snmp_credentials_warning' => 'When providing the SNMP Credentials, Cacti will warn you if you have provided incomplete information depending on the SNMP Version and SNMP Security Level you have specified.',
+
+    // Additional Important Options section
+    'additional_important_options_title' => 'Additional Important Options',
+    'additional_options_intro' => 'There are some additional options that you should note before starting to use Cacti. They include the following:',
+    'device_threads_option' => 'Device Threads',
+    'device_threads_desc' => 'If your device is far away, and can tolerate multiple threads querying information, you can increase this number to reduce the time it takes to collect all information.',
+    'max_oids_option' => 'Maximum OIDs Per Get Request',
+    'max_oids_desc' => 'Otherwise known as MaxOID\'s, this SNMP option will allow the SNMP client to gather more metrics per get request. Please keep in mind that the higher you make this number, the longer a SNMP respond may take. So, you have to be sensitive about the SNMP timeout as the number get\'s larger. Since, by default SNMP is generally collected over UDP, you will also be limited in the number of responses depending on how many routers or VPN\'s you traverse to reach a device. When traversing VPN connections, many VPN\'s limit the MTU to around 500 bytes, which will significantly limit how large the Max OID\'s can be. In some cases, it may be better to deploy a **Remote Data Collector** when your device is either far way from a latency perspective, or that you must traverse VPN\'s to communicate with.',
+    'external_id_option' => 'External ID',
+    'external_id_desc' => 'This field is normally used for Asset Tracking information for the **Device**, but it use is entirely up to the System Administrator.',
+
+    // Plugin Behavior section
+    'plugin_behavior_title' => 'Plugin Behavior',
+    'plugin_behavior_intro' => 'Many Cacti Plugins can and do add additional columns to the Device table in Cacti. Depending on the Plugin you have installed, you will find other information that you can provide about the device including things like:',
+    'notification_settings_option' => 'Notification Settings',
+    'notification_settings_desc' => 'Who to notify when the **Device** changes state',
+    'criticality_option' => 'Criticality',
+    'criticality_desc' => 'How important is the device',
+    'failure_recovery_option' => 'Failure and Recovery Counts',
+    'failure_recovery_desc' => 'How long till a device is treated as truly down.',
+    'ping_thresholds_option' => 'Ping Thresholds',
+    'ping_thresholds_desc' => 'What RTL is considered bad when reaching a device',
+
+    // CLI section
+    'cli_creation_title' => 'Creating devices via CLI script',
+    'cli_creation_intro' => 'You can also create device by using the CLI script located at /cactidir/cli/',
+    'cli_usage_example' => 'To add a device using the bare minimum information would look something like this',
+    'cli_success_message' => 'Adding test (192.168.1.15) as "Cacti Stats" using SNMP v3 with community "public"\nSuccess - new device-id: (45)',
+
+    // Common device management terms
+    'device_console' => 'Device Console',
+    'add_device_button' => 'Add Device Button',
+    'create_graphs_for_device' => 'Create graphs for this device',
+    'device_management' => 'Device Management',
+    'data_collector' => 'Data Collector',
+    'remote_data_collector' => 'Remote Data Collector',
+    'asset_tracking' => 'Asset Tracking',
+    'system_administrator' => 'System Administrator'
 );
 ?>

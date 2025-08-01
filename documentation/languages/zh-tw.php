@@ -419,6 +419,108 @@ $lang = array(
     'popup_window' => '彈出視窗',
     'spikes_and_gaps' => '峰值和間隙',
     'threshold' => '閾值',
-    'quicktree' => '快速樹'
+    'quicktree' => '快速樹',
+
+    // Devices page specific
+    'page_title_devices' => 'Cacti - 裝置管理',
+    'devices_title' => '裝置管理',
+    'devices_intro' => '本節將描述 Cacti 中的**裝置**管理。',
+    'devices_adding_methods' => '向 Cacti 新增**裝置**可以透過幾種不同的方式完成，可以透過 Web GUI、Cacti 的自動化或命令列介面 (CLI)。',
+
+    // Web GUI Option section
+    'web_gui_option_title' => 'Web GUI 選項',
+    'web_gui_intro' => '要透過 Web GUI 新增裝置，首先點擊 `控制台 > 管理 > 裝置`，您將看到下面的裝置控制台視窗，如果有的話，它將顯示現有裝置',
+    'add_device_button_desc' => '您現在將選擇右上角的 +',
+    'add_device_screen_desc' => '一旦您選擇了 +（也稱為新增裝置按鈕），您將看到下面的畫面，它將要求您提供裝置特定資訊',
+    'device_important_info' => '此視窗中需要一些關於裝置的最重要資訊，包括',
+
+    // Device fields
+    'device_description_field' => '描述',
+    'device_description_desc' => '預設情況下將出現在**圖形**上的名稱',
+    'device_ip_hostname_field' => 'IP/主機名稱',
+    'device_ip_hostname_desc' => '實際**裝置**的 DNS 或 IP 位址。IPv6 位址插入括號中（例如：[2001:abcd:1234::1]）',
+    'device_poller_association_field' => '輪詢器關聯',
+    'device_poller_association_desc' => '定義哪個**資料收集器**負責拉取關於**裝置**的資訊',
+    'device_template_field' => '裝置範本',
+    'device_template_desc' => 'Cisco、Net-SNMP、Linux 等 - 包含所有要繪製圖形的**圖形範本**和**資料查詢**的 Cacti 物件',
+    'device_site_location_field' => '站點、位置',
+    'device_site_location_desc' => '對於執行元查詢或在 Cacti **圖形樹**上進行站點級圖形組織非常重要',
+    'device_availability_field' => '可用性/可達性',
+    'device_availability_desc' => '描述**裝置**逾時和可用性方法的設定。',
+    'device_snmp_info_field' => 'SNMP 資訊',
+    'device_snmp_info_desc' => '連接到**裝置**的 SNMP 憑據',
+    'device_notes_field' => '裝置備註',
+    'device_notes_desc' => '關於**裝置**的任意非結構化資訊',
+
+    'device_save_and_create_graphs' => 'Cacti 需要這些基本資訊才能監控裝置，輸入後，點擊右下角的儲存。建立裝置後，您需要透過點擊右上角的**為此裝置建立圖形**來為裝置新增圖形。',
+
+    // Availability/Reachability Settings section
+    'availability_reachability_settings_title' => '可用性/可達性設定',
+    'availability_intro' => 'Cacti 更喜歡使用簡單網路管理協定 (SNMP) 與**裝置**通訊。因此，在建立**裝置**時，您需要提供 SNMP 憑據以獲取關於**裝置**的資訊，以便從中收集資料。在 Cacti 查詢**裝置**資料之前，它首先驗證**裝置**是否正常運行並回應。這樣做時，您有幾個選項。它們包括：',
+
+    // Availability options
+    'availability_none' => '無',
+    'availability_none_desc' => '始終假設裝置正常運行。這通常保留給沒有狀態的**裝置**物件。',
+    'availability_snmp_uptime' => 'SNMP 正常運行時間',
+    'availability_snmp_uptime_desc' => '查詢 SNMP 正常運行時間實例 OID',
+    'availability_ping_snmp' => 'Ping 和 SNMP 正常運行時間',
+    'availability_ping_snmp_desc' => 'Ping 裝置但也檢查 SNMP 正常運行時間實例 OID',
+    'availability_ping' => 'Ping',
+    'availability_ping_desc' => 'ICMP、連接埠上的 TCP 或連接埠上的 UDP。較新版本有一個額外的方法 TCP Ping 關閉。即使 tcp ping 返回關閉，裝置也被認為是正常的',
+    'availability_ping_or_snmp' => 'Ping 或 SNMP 正常運行時間',
+    'availability_ping_or_snmp_desc' => '只需要一個工作即可讓 Cacti 收集資料',
+    'availability_snmp_desc' => 'SNMP 描述',
+    'availability_snmp_desc_desc' => '在 SNMP 正常運行時間 OID 不可用的情況下查詢 SNMP sysDescription',
+    'availability_snmp_getnext' => 'SNMP GetNext',
+    'availability_snmp_getnext_desc' => '查詢**裝置**的 OID 樹中第一個可用的 OID，用於具有有限 SNMP 支援的某些裝置。',
+
+    // SNMP Credentials section
+    'snmp_credentials_title' => 'SNMP 憑據',
+    'snmp_credentials_intro' => '在提供 SNMP 憑據時，Cacti 目前支援以下版本：',
+    'snmp_v1_title' => '版本 1',
+    'snmp_v1_desc' => '很少再使用。保留給非常舊的硬體',
+    'snmp_v2_title' => '版本 2',
+    'snmp_v2_desc' => '仍然非常流行，支援 64 位元計數器，除了在 Windows 上',
+    'snmp_v3_title' => '版本 3',
+    'snmp_v3_desc' => '提供支援，但目前有限制。如果您使用 SNMPv3 的進階設定，如 SHA224+ 或 AES192+，您必須解除安裝 php-snmp 模組（如果在 php 中使用），並改用 Net-SNMP 二進位檔案。',
+    'snmp_credentials_warning' => '在提供 SNMP 憑據時，如果您根據指定的 SNMP 版本和 SNMP 安全級別提供了不完整的資訊，Cacti 將警告您。',
+
+    // Additional Important Options section
+    'additional_important_options_title' => '其他重要選項',
+    'additional_options_intro' => '在開始使用 Cacti 之前，您應該注意一些其他選項。它們包括以下內容：',
+    'device_threads_option' => '裝置執行緒',
+    'device_threads_desc' => '如果您的裝置很遠，並且可以容忍多個執行緒查詢資訊，您可以增加此數字以減少收集所有資訊所需的時間。',
+    'max_oids_option' => '每個獲取請求的最大 OID 數',
+    'max_oids_desc' => '也稱為 MaxOID，此 SNMP 選項將允許 SNMP 用戶端在每個獲取請求中收集更多指標。請記住，您使此數字越高，SNMP 回應可能需要的時間就越長。因此，隨著數字變大，您必須對 SNMP 逾時敏感。由於預設情況下 SNMP 通常透過 UDP 收集，您還將受到回應數量的限制，這取決於您到達裝置需要穿越多少路由器或 VPN。當穿越 VPN 連接時，許多 VPN 將 MTU 限制在大約 500 位元組，這將顯著限制最大 OID 的大小。在某些情況下，當您的裝置從延遲角度來看很遠，或者您必須穿越 VPN 進行通訊時，最好部署**遠端資料收集器**。',
+    'external_id_option' => '外部 ID',
+    'external_id_desc' => '此欄位通常用於**裝置**的資產追蹤資訊，但其使用完全取決於系統管理員。',
+
+    // Plugin Behavior section
+    'plugin_behavior_title' => '外掛行為',
+    'plugin_behavior_intro' => '許多 Cacti 外掛可以並且確實向 Cacti 中的裝置表新增額外的欄。根據您安裝的外掛，您將找到可以提供的關於裝置的其他資訊，包括以下內容：',
+    'notification_settings_option' => '通知設定',
+    'notification_settings_desc' => '當**裝置**更改狀態時通知誰',
+    'criticality_option' => '關鍵性',
+    'criticality_desc' => '裝置有多重要',
+    'failure_recovery_option' => '故障和恢復計數',
+    'failure_recovery_desc' => '裝置被視為真正宕機需要多長時間。',
+    'ping_thresholds_option' => 'Ping 閾值',
+    'ping_thresholds_desc' => '到達裝置時什麼 RTL 被認為是壞的',
+
+    // CLI section
+    'cli_creation_title' => '透過 CLI 腳本建立裝置',
+    'cli_creation_intro' => '您還可以使用位於 /cactidir/cli/ 的 CLI 腳本建立裝置',
+    'cli_usage_example' => '使用最少資訊新增裝置看起來像這樣',
+    'cli_success_message' => '新增測試 (192.168.1.15) 作為 "Cacti 統計" 使用 SNMP v3 與社群 "public"\n成功 - 新裝置 ID：(45)',
+
+    // Common device management terms
+    'device_console' => '裝置控制台',
+    'add_device_button' => '新增裝置按鈕',
+    'create_graphs_for_device' => '為此裝置建立圖形',
+    'device_management' => '裝置管理',
+    'data_collector' => '資料收集器',
+    'remote_data_collector' => '遠端資料收集器',
+    'asset_tracking' => '資產追蹤',
+    'system_administrator' => '系統管理員'
 );
 ?>
