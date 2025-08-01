@@ -163,6 +163,18 @@ generatePageHeader('', 'test', true);
                 <td style="padding: 8px;">modifying_graph_template_title</td>
                 <td style="padding: 8px;"><?php _e('modifying_graph_template_title'); ?></td>
             </tr>
+            <tr>
+                <td style="padding: 8px;">data_sources_title</td>
+                <td style="padding: 8px;"><?php _e('data_sources_title'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">data_source_management</td>
+                <td style="padding: 8px;"><?php _e('data_source_management'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">storage_considerations_title</td>
+                <td style="padding: 8px;"><?php _e('storage_considerations_title'); ?></td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -182,6 +194,7 @@ generatePageHeader('', 'test', true);
         <li><a href="Sites.php">站點管理 (Sites.php)</a></li>
         <li><a href="Trees.php">樹管理 (Trees.php)</a></li>
         <li><a href="Graphs.php">圖形管理 (Graphs.php)</a></li>
+        <li><a href="Data-Sources.php">資料來源管理 (Data-Sources.php)</a></li>
     </ul>
 </div>
 

@@ -832,6 +832,48 @@ $lang = array(
     'graph_parameters' => 'Graph Parameters',
     'graph_title' => 'Graph Title',
     'graph_size' => 'Graph Size',
-    'template_updates' => 'Template Updates'
+    'template_updates' => 'Template Updates',
+
+    // Data Sources page specific
+    'page_title_data_sources' => 'Cacti - Data Source Management',
+    'data_sources_title' => 'Data Source Management',
+    'data_sources_intro' => 'Data sources in Cacti are the points of data that Cacti will collect from a device. The following are examples of different sources that can be utililised for graphing, though is just the surface of what is achievable:',
+    'data_source_ping_example' => 'Monitoring a device via ping will usually count as 1 data source.',
+    'data_source_switch_example' => 'A 24 port switch and you poll the device via snmp and graph all of the ports then there will be 24 data sources',
+    'data_source_note' => '**Note**: if you add more graphs that base their data on the original **Data source** that would not count as another **Data Source** since it uses the already existing source.',
+    'data_source_example_explanation' => 'For example, if you have a 24 port switch that you create an **In/Out Bits** graph for each interface, and you then add the **In/Out Bits with 95th Percentile** for each interface, you would still only have 24 data sources.',
+    'data_source_resource_importance' => 'Keeping on top of the amount of data sources you have is important as the more data sources you have the more resources you will need to allocate to your server.',
+    'data_source_device_view' => 'You can see how many data sources are associated with a single device by going to management then clicking on devices.',
+    'device_datasources_image_desc' => 'device datasources',
+    'data_source_total_view' => 'You can also see the total amount of data sources by checking the poller stats on the system. Click the log tab and filter by stats and lookout for the below messege',
+    'data_source_stats_example' => '2019/05/24 17:21:11 - SYSTEM STATS: Time:9.5913 Method:spine Processes:2 Threads:2 Hosts:14 HostsPerProcess:7 DataSources:162 RRDsProcessed:117',
+    'data_source_stats_explanation' => 'This output tells us we have 162 data sources on the system.',
+
+    // Storage considerations section
+    'storage_considerations_title' => 'Storage considerations and datasources',
+    'storage_considerations_intro' => 'The amount of data sources on your system has an impact on the amount of storage you will need. You will also need to consider what rate you are polling your devices. e.g. 1 minute or 5 Minute polls',
+    'storage_per_datasource' => 'Here is the approximate amount of storage you can expect to consume per data source',
+
+    // Storage table headers
+    'polling_time_column' => 'Polling time',
+    'retention_column' => 'Retention',
+    'file_size_column' => 'File size',
+
+    // Storage table data
+    'thirty_second' => '30 second',
+    'one_minute' => '1 minute',
+    'five_minute' => '5 minute',
+    'daily' => 'Daily',
+    'weekly' => 'Weekly',
+    'monthly' => 'Monthly',
+    'yearly' => 'Yearly',
+
+    // Common data source terms
+    'data_source_management' => 'Data Source Management',
+    'data_collection_points' => 'Data Collection Points',
+    'polling_rate' => 'Polling Rate',
+    'storage_requirements' => 'Storage Requirements',
+    'poller_statistics' => 'Poller Statistics',
+    'system_resources' => 'System Resources'
 );
 ?>

@@ -832,6 +832,48 @@ $lang = array(
     'graph_parameters' => '图形参数',
     'graph_title' => '图形标题',
     'graph_size' => '图形大小',
-    'template_updates' => '模板更新'
+    'template_updates' => '模板更新',
+
+    // Data Sources page specific
+    'page_title_data_sources' => 'Cacti - 数据源管理',
+    'data_sources_title' => '数据源管理',
+    'data_sources_intro' => 'Cacti 中的数据源是 Cacti 将从设备收集的数据点。以下是可用于图形化的不同源的示例，尽管这只是可实现内容的表面：',
+    'data_source_ping_example' => '通过 ping 监控设备通常算作 1 个数据源。',
+    'data_source_switch_example' => '一个 24 端口交换机，您通过 snmp 轮询设备并绘制所有端口的图形，那么将有 24 个数据源',
+    'data_source_note' => '**注意**：如果您添加更多基于原始**数据源**的图形，那不会算作另一个**数据源**，因为它使用已经存在的源。',
+    'data_source_example_explanation' => '例如，如果您有一个 24 端口交换机，为每个接口创建一个**输入/输出位**图形，然后为每个接口添加**带 95% 百分位的输入/输出位**，您仍然只有 24 个数据源。',
+    'data_source_resource_importance' => '掌握您拥有的数据源数量很重要，因为数据源越多，您需要为服务器分配的资源就越多。',
+    'data_source_device_view' => '您可以通过转到管理然后点击设备来查看与单个设备关联的数据源数量。',
+    'device_datasources_image_desc' => '设备数据源',
+    'data_source_total_view' => '您还可以通过检查系统上的轮询器统计信息来查看数据源的总数。点击日志选项卡并按统计信息过滤，查找下面的消息',
+    'data_source_stats_example' => '2019/05/24 17:21:11 - 系统统计：时间:9.5913 方法:spine 进程:2 线程:2 主机:14 每进程主机:7 数据源:162 已处理RRD:117',
+    'data_source_stats_explanation' => '此输出告诉我们系统上有 162 个数据源。',
+
+    // Storage considerations section
+    'storage_considerations_title' => '存储考虑和数据源',
+    'storage_considerations_intro' => '系统上的数据源数量对您需要的存储量有影响。您还需要考虑轮询设备的速率。例如 1 分钟或 5 分钟轮询',
+    'storage_per_datasource' => '以下是您可以期望每个数据源消耗的大致存储量',
+
+    // Storage table headers
+    'polling_time_column' => '轮询时间',
+    'retention_column' => '保留',
+    'file_size_column' => '文件大小',
+
+    // Storage table data
+    'thirty_second' => '30 秒',
+    'one_minute' => '1 分钟',
+    'five_minute' => '5 分钟',
+    'daily' => '每日',
+    'weekly' => '每周',
+    'monthly' => '每月',
+    'yearly' => '每年',
+
+    // Common data source terms
+    'data_source_management' => '数据源管理',
+    'data_collection_points' => '数据收集点',
+    'polling_rate' => '轮询速率',
+    'storage_requirements' => '存储要求',
+    'poller_statistics' => '轮询器统计',
+    'system_resources' => '系统资源'
 );
 ?>

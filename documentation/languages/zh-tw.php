@@ -632,6 +632,48 @@ $lang = array(
     'graph_parameters' => '圖形參數',
     'graph_title' => '圖形標題',
     'graph_size' => '圖形大小',
-    'template_updates' => '範本更新'
+    'template_updates' => '範本更新',
+
+    // Data Sources page specific
+    'page_title_data_sources' => 'Cacti - 資料來源管理',
+    'data_sources_title' => '資料來源管理',
+    'data_sources_intro' => 'Cacti 中的資料來源是 Cacti 將從裝置收集的資料點。以下是可用於圖形化的不同來源的範例，儘管這只是可實現內容的表面：',
+    'data_source_ping_example' => '透過 ping 監控裝置通常算作 1 個資料來源。',
+    'data_source_switch_example' => '一個 24 連接埠交換器，您透過 snmp 輪詢裝置並繪製所有連接埠的圖形，那麼將有 24 個資料來源',
+    'data_source_note' => '**注意**：如果您新增更多基於原始**資料來源**的圖形，那不會算作另一個**資料來源**，因為它使用已經存在的來源。',
+    'data_source_example_explanation' => '例如，如果您有一個 24 連接埠交換器，為每個介面建立一個**輸入/輸出位元**圖形，然後為每個介面新增**帶 95% 百分位的輸入/輸出位元**，您仍然只有 24 個資料來源。',
+    'data_source_resource_importance' => '掌握您擁有的資料來源數量很重要，因為資料來源越多，您需要為伺服器分配的資源就越多。',
+    'data_source_device_view' => '您可以透過轉到管理然後點擊裝置來檢視與單個裝置關聯的資料來源數量。',
+    'device_datasources_image_desc' => '裝置資料來源',
+    'data_source_total_view' => '您還可以透過檢查系統上的輪詢器統計資訊來檢視資料來源的總數。點擊日誌標籤並按統計資訊篩選，查找下面的訊息',
+    'data_source_stats_example' => '2019/05/24 17:21:11 - 系統統計：時間:9.5913 方法:spine 程序:2 執行緒:2 主機:14 每程序主機:7 資料來源:162 已處理RRD:117',
+    'data_source_stats_explanation' => '此輸出告訴我們系統上有 162 個資料來源。',
+
+    // Storage considerations section
+    'storage_considerations_title' => '儲存考慮和資料來源',
+    'storage_considerations_intro' => '系統上的資料來源數量對您需要的儲存量有影響。您還需要考慮輪詢裝置的速率。例如 1 分鐘或 5 分鐘輪詢',
+    'storage_per_datasource' => '以下是您可以期望每個資料來源消耗的大致儲存量',
+
+    // Storage table headers
+    'polling_time_column' => '輪詢時間',
+    'retention_column' => '保留',
+    'file_size_column' => '檔案大小',
+
+    // Storage table data
+    'thirty_second' => '30 秒',
+    'one_minute' => '1 分鐘',
+    'five_minute' => '5 分鐘',
+    'daily' => '每日',
+    'weekly' => '每週',
+    'monthly' => '每月',
+    'yearly' => '每年',
+
+    // Common data source terms
+    'data_source_management' => '資料來源管理',
+    'data_collection_points' => '資料收集點',
+    'polling_rate' => '輪詢速率',
+    'storage_requirements' => '儲存要求',
+    'poller_statistics' => '輪詢器統計',
+    'system_resources' => '系統資源'
 );
 ?>
