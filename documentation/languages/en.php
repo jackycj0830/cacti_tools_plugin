@@ -721,6 +721,94 @@ $lang = array(
     'data_collector' => 'Data Collector',
     'remote_data_collector' => 'Remote Data Collector',
     'asset_tracking' => 'Asset Tracking',
-    'system_administrator' => 'System Administrator'
+    'system_administrator' => 'System Administrator',
+
+    // Sites page specific
+    'page_title_sites' => 'Cacti - Site Management',
+    'sites_title' => 'Site Management',
+    'sites_intro' => 'This section will describe **Site** management in Cacti.',
+    'sites_purpose' => 'Sites in Cacti can be used to separate different parts of your company with the respective location devices. For example, you can have a site called **123 main street** in which you can associate all of the devices that are in the physical location to the Cacti site. This could also be a customer site or data center location',
+    'sites_page_image_desc' => 'Cacti Sites page',
+    'sites_attribute_data' => 'Below is an example of some of the attribute data you can enter for the site/location',
+    'sites_create_instruction' => 'Enter the appropriate information for the site and click create on the below right side',
+    'sites_add_image_desc' => 'cacti add sites',
+    'sites_device_association' => 'Once you have created a site while you are creating a device manually you can now associate the device to the site',
+    'sites_device_site_image_desc' => 'cacti add device site',
+    'sites_automation_association' => 'You can also associate the discovered devices via automation to a particular site.',
+    'sites_automation_image_desc' => 'cacti sites automation',
+
+    // Common site management terms
+    'site_management' => 'Site Management',
+    'physical_location' => 'Physical Location',
+    'customer_site' => 'Customer Site',
+    'data_center_location' => 'Data Center Location',
+    'attribute_data' => 'Attribute Data',
+    'device_association' => 'Device Association',
+    'discovered_devices' => 'Discovered Devices',
+    'automation_association' => 'Automation Association',
+
+    // Trees page specific
+    'page_title_trees' => 'Cacti - Cacti Trees',
+    'trees_title' => 'Cacti Trees',
+    'trees_section_title' => 'Trees',
+    'trees_intro' => 'A **Tree** can be thought of as a hierarchical way of organizing your graphs. Each **Tree** consists of zero or more branches that contain leaf nodes such as **Graphs**, **Devices** and **Sites**. It\'s a very powerful way of organizing your **Graphs**.',
+    'trees_current_setup' => 'Below we can see the current **Trees** we have setup on our Cacti server. To get to this screen click `Console > Management > Trees`.',
+    'trees_add_remove' => 'From this page you can add or remove **Trees** as required.',
+    'tree_management_page_desc' => 'Tree Management Page',
+    'trees_graph_view' => 'Below is how a **Tree** is displayed in **Graph View**. We can see the **Device** that is being monitored - clicking on this **Device** will result in seeing all of the **Graph** data generated for the **Device**.',
+    'tree_view_desc' => 'Tree View',
+
+    // Creating a Tree section
+    'creating_tree_title' => 'Creating a Tree',
+    'creating_tree_intro' => 'To create a new tree simply click the Add button (+) on the top right hand corner and enter a name for your **Tree**. After the tree has been created you will see the below page where you are able to add **Devices** to the **Tree**.',
+    'tree_options_desc' => 'Tree Options',
+    'tree_device_adding' => 'To add devices to the new tree simply drag an available device to the tree and it will be added to the tree. Cacti currently supports four `Sort Types`, which can be either inherited, of left to the author to define inheritance and at what level. See the image below for a visual representation of how Tree Sorting is accomplished.',
+    'tree_sorting_desc' => 'Tree Sorting',
+
+    // Tree Sorting Type Definitions table
+    'tree_sorting_table_title' => 'Table 8-1. Tree Sporting Type Definitions',
+    'tree_field_column' => 'Field',
+    'tree_value_column' => 'Value',
+    'tree_description_column' => 'Description',
+    'tree_name_field' => 'Name',
+    'tree_name_value' => 'Name of the tree entry.',
+    'tree_name_desc' => 'The sort order of all trees themselves is',
+    'tree_alphabetical_note' => 'always alphabetical',
+    'tree_sorting_type_field' => 'Sorting Type',
+    'tree_manual_ordering' => 'Manual Ordering (No Sorting)',
+    'tree_manual_ordering_value' => 'Y',
+    'tree_manual_ordering_desc' => 'ou may chance the sequence at your will',
+    'tree_alphabetical_ordering' => 'Alphabetical Ordering',
+    'tree_alphabetical_value' => '1, Ab, ab',
+    'tree_alphabetical_desc' => 'All sub-trees are ordered alphabetically,',
+    'tree_alphabetical_note_desc' => 'unless specifies otherwise (you may chance sort options at sub-tree label)',
+    'tree_natural_ordering' => 'Natural Ordering',
+    'tree_natural_value' => 'ab1, ab2, ab7, ab10, ab20',
+    'tree_natural_desc' => 'N/A',
+    'tree_numeric_ordering' => 'Numeric Ordering',
+    'tree_numeric_value' => '01, 02, 4, 04',
+    'tree_numeric_desc' => 'Leading zeroes are not taken into account',
+    'tree_numeric_note' => 'when ordering numerically',
+
+    // Tree management and editing
+    'tree_publishing' => 'End users will not be able to view the **Tree** or it\'s Graphs until you publish it. To edit a **Tree**, you will be required to lock it for your use. The locking is designed to prevent multiple users from editing a **Tree** simultaneously.',
+    'tree_drag_drop' => 'When a Tree is locked, you can drag & drop the **Sites**, **Devices** and **Graphs** over to the Tree menu. To add a \'Root Branch\', simply press the button to do so, once you have Root Branches, you may right click on the to create sub-branches on the Tree.',
+    'tree_site_interaction' => 'When you single click on a **Site**, the **Devices**, and **Graphs** associated with that **Site** should appear in their respective sections. You can also type into the Search fields above the various sections to drill into them. You can also shift-click and control-click on the objects within a section to drag & drop multiple objects at one time.',
+    'tree_unlock_reminder' => 'Don\'t forget to unlock your **Tree** before finishing your editing session.',
+
+    // Common tree management terms
+    'tree_management' => 'Tree Management',
+    'hierarchical_organization' => 'Hierarchical Organization',
+    'leaf_nodes' => 'Leaf Nodes',
+    'root_branch' => 'Root Branch',
+    'sub_branches' => 'Sub-branches',
+    'sort_types' => 'Sort Types',
+    'manual_ordering' => 'Manual Ordering',
+    'alphabetical_ordering' => 'Alphabetical Ordering',
+    'natural_ordering' => 'Natural Ordering',
+    'numeric_ordering' => 'Numeric Ordering',
+    'tree_locking' => 'Tree Locking',
+    'tree_publishing' => 'Tree Publishing',
+    'drag_and_drop' => 'Drag & Drop'
 );
 ?>

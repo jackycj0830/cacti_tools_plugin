@@ -721,6 +721,94 @@ $lang = array(
     'data_collector' => '数据收集器',
     'remote_data_collector' => '远程数据收集器',
     'asset_tracking' => '资产跟踪',
-    'system_administrator' => '系统管理员'
+    'system_administrator' => '系统管理员',
+
+    // Sites page specific
+    'page_title_sites' => 'Cacti - 站点管理',
+    'sites_title' => '站点管理',
+    'sites_intro' => '本节将描述 Cacti 中的**站点**管理。',
+    'sites_purpose' => 'Cacti 中的站点可用于将公司的不同部分与相应的位置设备分开。例如，您可以有一个名为 **123 主街** 的站点，您可以将物理位置中的所有设备关联到 Cacti 站点。这也可以是客户站点或数据中心位置',
+    'sites_page_image_desc' => 'Cacti 站点页面',
+    'sites_attribute_data' => '以下是您可以为站点/位置输入的一些属性数据示例',
+    'sites_create_instruction' => '为站点输入适当的信息，然后点击右下方的创建',
+    'sites_add_image_desc' => 'cacti 添加站点',
+    'sites_device_association' => '创建站点后，在手动创建设备时，您现在可以将设备关联到站点',
+    'sites_device_site_image_desc' => 'cacti 添加设备站点',
+    'sites_automation_association' => '您还可以通过自动化将发现的设备关联到特定站点。',
+    'sites_automation_image_desc' => 'cacti 站点自动化',
+
+    // Common site management terms
+    'site_management' => '站点管理',
+    'physical_location' => '物理位置',
+    'customer_site' => '客户站点',
+    'data_center_location' => '数据中心位置',
+    'attribute_data' => '属性数据',
+    'device_association' => '设备关联',
+    'discovered_devices' => '发现的设备',
+    'automation_association' => '自动化关联',
+
+    // Trees page specific
+    'page_title_trees' => 'Cacti - Cacti 树',
+    'trees_title' => 'Cacti 树',
+    'trees_section_title' => '树',
+    'trees_intro' => '**树**可以被认为是组织图形的分层方式。每个**树**由零个或多个分支组成，这些分支包含叶节点，如**图形**、**设备**和**站点**。这是组织**图形**的一种非常强大的方式。',
+    'trees_current_setup' => '下面我们可以看到我们在 Cacti 服务器上设置的当前**树**。要到达此屏幕，请点击 `控制台 > 管理 > 树`。',
+    'trees_add_remove' => '从此页面您可以根据需要添加或删除**树**。',
+    'tree_management_page_desc' => '树管理页面',
+    'trees_graph_view' => '下面是**树**在**图形视图**中的显示方式。我们可以看到正在监控的**设备** - 点击此**设备**将导致看到为**设备**生成的所有**图形**数据。',
+    'tree_view_desc' => '树视图',
+
+    // Creating a Tree section
+    'creating_tree_title' => '创建树',
+    'creating_tree_intro' => '要创建新树，只需点击右上角的添加按钮 (+) 并为您的**树**输入名称。创建树后，您将看到下面的页面，您可以在其中向**树**添加**设备**。',
+    'tree_options_desc' => '树选项',
+    'tree_device_adding' => '要向新树添加设备，只需将可用设备拖到树中，它将被添加到树中。Cacti 目前支持四种 `排序类型`，可以继承，或留给作者定义继承和在什么级别。请参见下面的图像，了解如何完成树排序的可视化表示。',
+    'tree_sorting_desc' => '树排序',
+
+    // Tree Sorting Type Definitions table
+    'tree_sorting_table_title' => '表 8-1. 树排序类型定义',
+    'tree_field_column' => '字段',
+    'tree_value_column' => '值',
+    'tree_description_column' => '描述',
+    'tree_name_field' => '名称',
+    'tree_name_value' => '树条目的名称。',
+    'tree_name_desc' => '所有树本身的排序顺序是',
+    'tree_alphabetical_note' => '始终按字母顺序',
+    'tree_sorting_type_field' => '排序类型',
+    'tree_manual_ordering' => '手动排序（无排序）',
+    'tree_manual_ordering_value' => 'Y',
+    'tree_manual_ordering_desc' => '您可以随意更改序列',
+    'tree_alphabetical_ordering' => '字母排序',
+    'tree_alphabetical_value' => '1, Ab, ab',
+    'tree_alphabetical_desc' => '所有子树都按字母顺序排序，',
+    'tree_alphabetical_note_desc' => '除非另有说明（您可以在子树标签处更改排序选项）',
+    'tree_natural_ordering' => '自然排序',
+    'tree_natural_value' => 'ab1, ab2, ab7, ab10, ab20',
+    'tree_natural_desc' => 'N/A',
+    'tree_numeric_ordering' => '数字排序',
+    'tree_numeric_value' => '01, 02, 4, 04',
+    'tree_numeric_desc' => '数字排序时不考虑前导零',
+    'tree_numeric_note' => '数字排序时',
+
+    // Tree management and editing
+    'tree_publishing' => '最终用户将无法查看**树**或其图形，直到您发布它。要编辑**树**，您需要锁定它供您使用。锁定旨在防止多个用户同时编辑**树**。',
+    'tree_drag_drop' => '当树被锁定时，您可以将**站点**、**设备**和**图形**拖放到树菜单上。要添加"根分支"，只需按下按钮即可，一旦您有了根分支，您可以右键单击它们在树上创建子分支。',
+    'tree_site_interaction' => '当您单击**站点**时，与该**站点**关联的**设备**和**图形**应该出现在它们各自的部分中。您还可以在各个部分上方的搜索字段中输入以深入了解它们。您还可以在部分内的对象上进行 shift-click 和 control-click，以一次拖放多个对象。',
+    'tree_unlock_reminder' => '在完成编辑会话之前，不要忘记解锁您的**树**。',
+
+    // Common tree management terms
+    'tree_management' => '树管理',
+    'hierarchical_organization' => '分层组织',
+    'leaf_nodes' => '叶节点',
+    'root_branch' => '根分支',
+    'sub_branches' => '子分支',
+    'sort_types' => '排序类型',
+    'manual_ordering' => '手动排序',
+    'alphabetical_ordering' => '字母排序',
+    'natural_ordering' => '自然排序',
+    'numeric_ordering' => '数字排序',
+    'tree_locking' => '树锁定',
+    'tree_publishing' => '树发布',
+    'drag_and_drop' => '拖放'
 );
 ?>

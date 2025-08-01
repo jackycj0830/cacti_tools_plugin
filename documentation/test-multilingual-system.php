@@ -127,6 +127,30 @@ generatePageHeader('', 'test', true);
                 <td style="padding: 8px;">snmp_credentials_title</td>
                 <td style="padding: 8px;"><?php _e('snmp_credentials_title'); ?></td>
             </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">sites_title</td>
+                <td style="padding: 8px;"><?php _e('sites_title'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">site_management</td>
+                <td style="padding: 8px;"><?php _e('site_management'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">physical_location</td>
+                <td style="padding: 8px;"><?php _e('physical_location'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">trees_title</td>
+                <td style="padding: 8px;"><?php _e('trees_title'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">tree_management</td>
+                <td style="padding: 8px;"><?php _e('tree_management'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">hierarchical_organization</td>
+                <td style="padding: 8px;"><?php _e('hierarchical_organization'); ?></td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -143,6 +167,8 @@ generatePageHeader('', 'test', true);
         <li><a href="How-to-Graph-Your-Network.php">如何繪製網路圖形 (How-to-Graph-Your-Network.php)</a></li>
         <li><a href="Viewing-Graphs.php">檢視圖形 (Viewing-Graphs.php)</a></li>
         <li><a href="Devices.php">裝置管理 (Devices.php)</a></li>
+        <li><a href="Sites.php">站點管理 (Sites.php)</a></li>
+        <li><a href="Trees.php">樹管理 (Trees.php)</a></li>
     </ul>
 </div>
 

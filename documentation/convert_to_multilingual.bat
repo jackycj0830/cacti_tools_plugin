@@ -116,6 +116,8 @@ echo   📄 Graph-Overview.php   - Graph overview guide (PHP version)
 echo   📄 How-to-Graph-Your-Network.php - Network graphing tutorial (PHP version)
 echo   📄 Viewing-Graphs.php   - Graph viewing guide (PHP version)
 echo   📄 Devices.php         - Device management guide (PHP version)
+echo   📄 Sites.php           - Site management guide (PHP version)
+echo   📄 Trees.php           - Tree management guide (PHP version)
 echo   📄 test-multilingual-system.php - System testing page
 echo   📄 *.php               - Converted PHP documentation files
 echo   📁 backup_html_*       - Backup of original HTML files
@@ -142,7 +144,7 @@ echo   2. Navigate to documentation.php in your browser
 echo   3. Test the system using test-multilingual-system.php
 echo   4. Test language switching using the dropdown in top-right corner
 echo   5. Navigate between pages to verify language persistence
-echo   6. Test specific pages like Requirements.php, Navigating-The-User-Interface.php, Principles-of-Operation.php, Graph-Overview.php, How-to-Graph-Your-Network.php, Viewing-Graphs.php, and Devices.php
+echo   6. Test specific pages like Requirements.php, Navigating-The-User-Interface.php, Principles-of-Operation.php, Graph-Overview.php, How-to-Graph-Your-Network.php, Viewing-Graphs.php, Devices.php, Sites.php, and Trees.php
 echo   7. Test on mobile devices for responsive design
 echo   8. Verify all links point to .php files (not .html)
 echo.

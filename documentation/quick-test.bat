@@ -116,6 +116,20 @@ if exist "Devices.php" (
     set missing_files=1
 )
 
+if exist "Sites.php" (
+    echo ✅ Sites.php - Found
+) else (
+    echo ❌ Sites.php - Missing
+    set missing_files=1
+)
+
+if exist "Trees.php" (
+    echo ✅ Trees.php - Found
+) else (
+    echo ❌ Trees.php - Missing
+    set missing_files=1
+)
+
 if exist "test-multilingual-system.php" (
     echo ✅ test-multilingual-system.php - Found
 ) else (
@@ -234,6 +248,22 @@ if errorlevel 1 (
     echo ✅ Devices.php syntax OK
 )
 
+php -l Sites.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Sites.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Sites.php syntax OK
+)
+
+php -l Trees.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Trees.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Trees.php syntax OK
+)
+
 echo.
 
 if defined syntax_errors (
@@ -264,6 +294,8 @@ echo   📊 Graph Overview:     http://localhost:8000/Graph-Overview.php
 echo   🌐 How to Graph Network: http://localhost:8000/How-to-Graph-Your-Network.php
 echo   👁️ Viewing Graphs:      http://localhost:8000/Viewing-Graphs.php
 echo   🖥️ Device Management:   http://localhost:8000/Devices.php
+echo   🏢 Site Management:     http://localhost:8000/Sites.php
+echo   🌳 Tree Management:     http://localhost:8000/Trees.php
 echo.
 echo 🔧 Test Instructions:
 echo   1. Open the URLs above in your web browser

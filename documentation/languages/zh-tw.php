@@ -521,6 +521,94 @@ $lang = array(
     'data_collector' => '資料收集器',
     'remote_data_collector' => '遠端資料收集器',
     'asset_tracking' => '資產追蹤',
-    'system_administrator' => '系統管理員'
+    'system_administrator' => '系統管理員',
+
+    // Sites page specific
+    'page_title_sites' => 'Cacti - 站點管理',
+    'sites_title' => '站點管理',
+    'sites_intro' => '本節將描述 Cacti 中的**站點**管理。',
+    'sites_purpose' => 'Cacti 中的站點可用於將公司的不同部分與相應的位置裝置分開。例如，您可以有一個名為 **123 主街** 的站點，您可以將實體位置中的所有裝置關聯到 Cacti 站點。這也可以是客戶站點或資料中心位置',
+    'sites_page_image_desc' => 'Cacti 站點頁面',
+    'sites_attribute_data' => '以下是您可以為站點/位置輸入的一些屬性資料範例',
+    'sites_create_instruction' => '為站點輸入適當的資訊，然後點擊右下方的建立',
+    'sites_add_image_desc' => 'cacti 新增站點',
+    'sites_device_association' => '建立站點後，在手動建立裝置時，您現在可以將裝置關聯到站點',
+    'sites_device_site_image_desc' => 'cacti 新增裝置站點',
+    'sites_automation_association' => '您還可以透過自動化將發現的裝置關聯到特定站點。',
+    'sites_automation_image_desc' => 'cacti 站點自動化',
+
+    // Common site management terms
+    'site_management' => '站點管理',
+    'physical_location' => '實體位置',
+    'customer_site' => '客戶站點',
+    'data_center_location' => '資料中心位置',
+    'attribute_data' => '屬性資料',
+    'device_association' => '裝置關聯',
+    'discovered_devices' => '發現的裝置',
+    'automation_association' => '自動化關聯',
+
+    // Trees page specific
+    'page_title_trees' => 'Cacti - Cacti 樹',
+    'trees_title' => 'Cacti 樹',
+    'trees_section_title' => '樹',
+    'trees_intro' => '**樹**可以被認為是組織圖形的分層方式。每個**樹**由零個或多個分支組成，這些分支包含葉節點，如**圖形**、**裝置**和**站點**。這是組織**圖形**的一種非常強大的方式。',
+    'trees_current_setup' => '下面我們可以看到我們在 Cacti 伺服器上設定的當前**樹**。要到達此畫面，請點擊 `控制台 > 管理 > 樹`。',
+    'trees_add_remove' => '從此頁面您可以根據需要新增或刪除**樹**。',
+    'tree_management_page_desc' => '樹管理頁面',
+    'trees_graph_view' => '下面是**樹**在**圖形檢視**中的顯示方式。我們可以看到正在監控的**裝置** - 點擊此**裝置**將導致看到為**裝置**產生的所有**圖形**資料。',
+    'tree_view_desc' => '樹檢視',
+
+    // Creating a Tree section
+    'creating_tree_title' => '建立樹',
+    'creating_tree_intro' => '要建立新樹，只需點擊右上角的新增按鈕 (+) 並為您的**樹**輸入名稱。建立樹後，您將看到下面的頁面，您可以在其中向**樹**新增**裝置**。',
+    'tree_options_desc' => '樹選項',
+    'tree_device_adding' => '要向新樹新增裝置，只需將可用裝置拖到樹中，它將被新增到樹中。Cacti 目前支援四種 `排序類型`，可以繼承，或留給作者定義繼承和在什麼級別。請參見下面的圖像，了解如何完成樹排序的視覺化表示。',
+    'tree_sorting_desc' => '樹排序',
+
+    // Tree Sorting Type Definitions table
+    'tree_sorting_table_title' => '表 8-1. 樹排序類型定義',
+    'tree_field_column' => '欄位',
+    'tree_value_column' => '值',
+    'tree_description_column' => '描述',
+    'tree_name_field' => '名稱',
+    'tree_name_value' => '樹條目的名稱。',
+    'tree_name_desc' => '所有樹本身的排序順序是',
+    'tree_alphabetical_note' => '始終按字母順序',
+    'tree_sorting_type_field' => '排序類型',
+    'tree_manual_ordering' => '手動排序（無排序）',
+    'tree_manual_ordering_value' => 'Y',
+    'tree_manual_ordering_desc' => '您可以隨意更改序列',
+    'tree_alphabetical_ordering' => '字母排序',
+    'tree_alphabetical_value' => '1, Ab, ab',
+    'tree_alphabetical_desc' => '所有子樹都按字母順序排序，',
+    'tree_alphabetical_note_desc' => '除非另有說明（您可以在子樹標籤處更改排序選項）',
+    'tree_natural_ordering' => '自然排序',
+    'tree_natural_value' => 'ab1, ab2, ab7, ab10, ab20',
+    'tree_natural_desc' => 'N/A',
+    'tree_numeric_ordering' => '數字排序',
+    'tree_numeric_value' => '01, 02, 4, 04',
+    'tree_numeric_desc' => '數字排序時不考慮前導零',
+    'tree_numeric_note' => '數字排序時',
+
+    // Tree management and editing
+    'tree_publishing' => '最終使用者將無法檢視**樹**或其圖形，直到您發布它。要編輯**樹**，您需要鎖定它供您使用。鎖定旨在防止多個使用者同時編輯**樹**。',
+    'tree_drag_drop' => '當樹被鎖定時，您可以將**站點**、**裝置**和**圖形**拖放到樹選單上。要新增"根分支"，只需按下按鈕即可，一旦您有了根分支，您可以右鍵點擊它們在樹上建立子分支。',
+    'tree_site_interaction' => '當您點擊**站點**時，與該**站點**關聯的**裝置**和**圖形**應該出現在它們各自的部分中。您還可以在各個部分上方的搜尋欄位中輸入以深入了解它們。您還可以在部分內的物件上進行 shift-click 和 control-click，以一次拖放多個物件。',
+    'tree_unlock_reminder' => '在完成編輯會話之前，不要忘記解鎖您的**樹**。',
+
+    // Common tree management terms
+    'tree_management' => '樹管理',
+    'hierarchical_organization' => '分層組織',
+    'leaf_nodes' => '葉節點',
+    'root_branch' => '根分支',
+    'sub_branches' => '子分支',
+    'sort_types' => '排序類型',
+    'manual_ordering' => '手動排序',
+    'alphabetical_ordering' => '字母排序',
+    'natural_ordering' => '自然排序',
+    'numeric_ordering' => '數字排序',
+    'tree_locking' => '樹鎖定',
+    'tree_publishing' => '樹發布',
+    'drag_and_drop' => '拖放'
 );
 ?>
