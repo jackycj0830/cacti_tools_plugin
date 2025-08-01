@@ -158,6 +158,13 @@ if exist "Data-Collectors.php" (
     set missing_files=1
 )
 
+if exist "Spine-Data-Collection.php" (
+    echo ✅ Spine-Data-Collection.php - Found
+) else (
+    echo ❌ Spine-Data-Collection.php - Missing
+    set missing_files=1
+)
+
 if exist "test-multilingual-system.php" (
     echo ✅ test-multilingual-system.php - Found
 ) else (
@@ -324,6 +331,14 @@ if errorlevel 1 (
     echo ✅ Data-Collectors.php syntax OK
 )
 
+php -l Spine-Data-Collection.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Spine-Data-Collection.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Spine-Data-Collection.php syntax OK
+)
+
 echo.
 
 if defined syntax_errors (
@@ -360,6 +375,7 @@ echo   📈 Graph Management:    http://localhost:8000/Graphs.php
 echo   📊 Data Source Management: http://localhost:8000/Data-Sources.php
 echo   📈 Aggregate Graphs:    http://localhost:8000/Aggregates.php
 echo   🔄 Data Collectors:    http://localhost:8000/Data-Collectors.php
+echo   ⚡ Spine Data Collection: http://localhost:8000/Spine-Data-Collection.php
 echo.
 echo 🔧 Test Instructions:
 echo   1. Open the URLs above in your web browser

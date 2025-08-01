@@ -942,6 +942,116 @@ mysql -u root mysql -e "GRANT SELECT ON mysql.time_zone_name TO cacti@<远程轮
     'highly_available' => '高可用性',
     'full_sync' => '完全同步',
     'boost_module' => 'Boost 模块',
-    'enterprise_architecture' => '企业架构'
+    'enterprise_architecture' => '企业架构',
+
+    // Spine page specific
+    'page_title_spine' => 'Cacti - Spine',
+    'spine_title' => 'Spine',
+    'spine_intro' => 'Spine 是 `cmd.php` 的快速替代品。它用 C 语言编写，以确保设备轮询的最佳性能，并且是多线程的。预期轮询时间会有数量级的减少。例如，在配备 4 GB RAM 和标准本地磁盘的双 XEON 系统上，约 20,000 个数据源的轮询时间远少于 60 秒是可以实现的。',
+    'spine_warning' => '使用 Spine 时，不要更改 crontab 或 systemd 设置！始终使用 poller.php 与 crontab 或 cactid.php 与 systemd！',
+    'spine_activation' => '要激活 Spine 而不是 cmd.php，请访问 `控制台 > 配置 > 设置 > 轮询器` 并选择 spine 并保存为 `轮询器类型`。如果它没有显示为可用的 `轮询器类型`，这意味着它要么没有安装，要么它的路径没有在设置中的 `路径` 选项卡中定义。',
+    'spine_testing' => '保存后，poller.php 将在所有后续轮询周期中使用 Spine。在进行此更改之前，请确保 Spine 使用以下测试从命令行正常运行：',
+    'spine_test_command' => 'cd /usr/local/spine/bin
+./spine -R -V 3 -S',
+    'spine_output_note' => '您应该收到相当多的输出，具体取决于系统的大小。要增加线程数和并发进程数，您必须在 `控制台 > 数据收集 > 数据收集器` 下编辑数据收集器时修改设置。',
+    'spine_performance' => '虽然 Spine 真的很快，但选择正确的设置将确保使用所有处理器资源。最大并发轮询器进程的必需设置是可用于 Spine 的 CPU 核心数的 1-2 倍。',
+    'spine_mysql_connections' => '使用 spine 时，您必须对 MySQL 或 MariaDB 可用的连接数敏感。在 `控制台 > 实用程序 > 系统实用程序 > 常规` 下，Cacti 将为 MySQL/MariaDB 提供推荐的 `max_connection`。',
+
+    // Spine parameters tables
+    'spine_system_params_title' => '表 15-1. 在系统级别维护的 Spine 参数',
+    'spine_collector_params_title' => '表 15-2. 在数据收集器级别维护的 Spine 参数',
+    'spine_device_params_title' => '表 15-3. 在设备级别维护的 Spine 参数',
+    'spine_param_name' => '名称',
+    'spine_param_description' => '描述',
+
+    // System level parameters
+    'spine_script_timeout_name' => '脚本和脚本服务器超时值',
+    'spine_script_timeout_desc' => 'Spine 等待脚本完成的最长时间，以秒为单位。如果脚本服务器脚本由于超时条件而终止，则输入到 RRD 文件中的值将为 NaN',
+
+    // Data collector level parameters
+    'spine_max_threads_name' => '每个进程的最大线程数',
+    'spine_max_threads_desc' => '每个进程允许的最大线程数。使用 Spine 时使用更高的数字将提高性能。必需设置为 10-15。超过 50 的值通常是不合理的，可能会降低性能而不是提高性能。',
+    'spine_script_servers_name' => 'PHP 脚本服务器数量',
+    'spine_script_servers_desc' => '每个 Spine 进程运行的并发脚本服务器进程数。接受 1 到 10 之间的设置。脚本服务器将预加载 PHP 环境。然后，脚本服务器脚本被包含到该环境中，以节省重新加载 PHP 和重新解释每次调用的二进制文件的开销。',
+
+    // Device level parameters
+    'spine_snmp_oids_name' => '每个 SNMP Get 请求的最大 SNMP OID 数',
+    'spine_snmp_oids_desc' => '每个 SNMP 请求发出的最大 SNMP get OID 数。增加此值可提高慢速链路上的轮询器性能。最大值为 60 个 OID，但该值高度依赖于到远程设备的链路的 MTU。在某些情况下，使用**远程数据收集器**对轮询远程**设备**更有效。此外，某些**设备类型**不处理大型 SNMP OID get 请求。最好进行实验，直到找到正确的设置。',
+    'spine_device_threads_name' => '设备线程',
+    'spine_device_threads_desc' => '用于从**设备**收集信息的最大 spine 线程数。在**设备**级别使用此设置时，您必须确保为进程分配了足够的线程，以免阻止从同一 spine 二进制文件轮询的其他**设备**。',
+
+    // Installing Spine section
+    'installing_spine_title' => '安装 Spine',
+    'spine_compile_note' => '由于 Spine 是用 C 编写的，必须在要安装的本地系统上编译，下面是在 centos 和 Ubuntu 上编译的示例',
+    'ubuntu_title' => 'Ubuntu',
+    'ubuntu_packages' => '安装所需的系统包',
+    'ubuntu_install_command' => 'apt-get install -y build-essential dos2unix dh-autoreconf libtool help2man libssl-dev libmysql++-dev librrds-perl libsnmp-dev',
+    'spine_download_note' => '接下来，下载您要查找的 spine 版本。通常这应该与您使用的 Cacti 版本匹配。在这种情况下，我们将下载 Spine 的 1.2.3 版本',
+    'spine_download_commands' => 'wget <https://github.com/Cacti/spine/archive/release/1.2.3.zip>
+unzip 1.2.3
+cd spine-release-1.2.3',
+    'spine_compile_note2' => '一旦您进入 spine 目录，就是通过发出以下命令编译轮询器的时候了：',
+    'spine_compile_commands' => './bootstrap
+./configure
+make
+make install
+chown root:root /usr/local/spine/bin/spine
+chmod u+s /usr/local/spine/bin/spine',
+    'spine_config_note' => '完成后，您需要配置 spine 的配置文件',
+    'spine_config_command' => 'vi /usr/local/spine/etc/spine.conf',
+    'spine_config_example_note' => '下面是一个配置示例，但您的配置应该与您的 cacti 数据库用户名和密码匹配',
+    'spine_config_example' => 'DB_Host       localhost
+DB_Database   cacti
+DB_User       spine
+DB_Pass       spine
+DB_Port       3306
+#DB_UseSSL    0
+#RDB_SSL_Key
+#RDB_SSL_Cert
+#RDB_SSL_CA',
+    'centos_title' => 'CentOS',
+    'centos_packages' => '安装所需的系统包',
+    'centos_install_command' => 'yum install -y gcc mysql-devel net-snmp-devel autoconf automake libtool dos2unix help2man',
+    'centos_compile_note' => '然后使用以下命令编译',
+    'centos_compile_commands' => './bootstrap
+./configure
+make
+make install
+chown root:root /usr/local/spine/bin/spine
+chmod u+s /usr/local/spine/bin/spine',
+
+    // Testing/Debugging section
+    'testing_debugging_title' => '通过命令行测试/调试 spine',
+    'spine_testing_intro' => 'spine 在命令行提供了几种不同的方式来测试其功能。以下是您可以通过执行 spine 运行的一些测试示例。',
+    'test_without_db_title' => '测试 Spine 而不将结果写入数据库',
+    'test_without_db_desc' => '此测试允许您运行 spine 并将结果显示到控制台。通过指定 -R 选项，这不会将任何数据提交到数据库。',
+    'test_specific_host_title' => '为特定主机运行 spine',
+    'test_specific_host_desc' => '如果您想为特定主机运行 spine，您可以使用以下命令执行此操作：',
+    'spine_debug_gui_title' => '通过 GUI 调试 Spine',
+    'spine_debug_gui_desc' => '您还可以通过日志文件查看 spine 调试信息，spine 还允许您提高它在日志中提供的详细级别，如果您想调试特定设备并查看 spine 输出，请点击启用设备调试。',
+    'spine_debug_gui_example' => '下面是通过日志文件输出的 Spine 调试信息示例',
+    'spine_debug_image_desc' => 'spine',
+    'spine_logging_settings' => '要启用更详细的 spine 日志记录，请转到 `控制台 > 配置 > 设置 > 轮询器`',
+    'spine_logging_options' => '您可以选择详细、摘要或无效数据的无日志记录',
+    'spine_logging_detailed' => '详细日志记录将类似于 cmd.php，您将获得每个有问题的数据源的报告',
+    'spine_logging_summary' => '摘要提供每个设备有多少数据源有问题的计数',
+    'spine_parameters_image_desc' => 'spine',
+
+    // Common errors section
+    'spine_errors_title' => '常见的 Spine 相关错误',
+    'spine_error_config_missing' => '2021/01/08 14:38:44 - SPINE: Poller[1] PID[14838] FATAL: Unable to read configuration file! (Spine init)',
+    'spine_error_config_solution' => '确保您在 /usr/local/spine/etc 中有 spine.conf，在首次安装时 `spine.conf` 可能是 `spine.conf.dist`。',
+    'spine_error_setuid' => 'DEBUG Falling back to UDP Ping Due to SetUID Issues',
+    'spine_error_setuid_desc' => '这是 spine 的权限问题，确保您已给 spine 适当的权限',
+    'spine_error_setuid_solution' => 'chmod u+s /usr/local/spine/bin/spine',
+
+    // Common spine terms
+    'spine_data_collection' => 'Spine 数据收集',
+    'multi_threaded' => '多线程',
+    'poller_type' => '轮询器类型',
+    'script_server' => '脚本服务器',
+    'snmp_oids' => 'SNMP OID',
+    'device_threads' => '设备线程',
+    'spine_collection' => 'Spine 数据收集'
 );
 ?>

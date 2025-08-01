@@ -195,6 +195,18 @@ generatePageHeader('', 'test', true);
                 <td style="padding: 8px;">remote_data_collector_term</td>
                 <td style="padding: 8px;"><?php _e('remote_data_collector_term'); ?></td>
             </tr>
+            <tr>
+                <td style="padding: 8px;">spine_title</td>
+                <td style="padding: 8px;"><?php _e('spine_title'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">spine_data_collection</td>
+                <td style="padding: 8px;"><?php _e('spine_data_collection'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">multi_threaded</td>
+                <td style="padding: 8px;"><?php _e('multi_threaded'); ?></td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -217,6 +229,7 @@ generatePageHeader('', 'test', true);
         <li><a href="Data-Sources.php">資料來源管理 (Data-Sources.php)</a></li>
         <li><a href="Aggregates.php">聚合圖形 (Aggregates.php)</a></li>
         <li><a href="Data-Collectors.php">資料收集器 (Data-Collectors.php)</a></li>
+        <li><a href="Spine-Data-Collection.php">Spine 資料收集 (Spine-Data-Collection.php)</a></li>
     </ul>
 </div>
 
