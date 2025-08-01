@@ -175,6 +175,14 @@ generatePageHeader('', 'test', true);
                 <td style="padding: 8px;">storage_considerations_title</td>
                 <td style="padding: 8px;"><?php _e('storage_considerations_title'); ?></td>
             </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">aggregates_title</td>
+                <td style="padding: 8px;"><?php _e('aggregates_title'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">aggregate_graphs</td>
+                <td style="padding: 8px;"><?php _e('aggregate_graphs'); ?></td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -195,6 +203,7 @@ generatePageHeader('', 'test', true);
         <li><a href="Trees.php">樹管理 (Trees.php)</a></li>
         <li><a href="Graphs.php">圖形管理 (Graphs.php)</a></li>
         <li><a href="Data-Sources.php">資料來源管理 (Data-Sources.php)</a></li>
+        <li><a href="Aggregates.php">聚合圖形 (Aggregates.php)</a></li>
     </ul>
 </div>
 

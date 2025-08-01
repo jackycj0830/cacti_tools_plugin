@@ -874,6 +874,16 @@ $lang = array(
     'polling_rate' => 'Polling Rate',
     'storage_requirements' => 'Storage Requirements',
     'poller_statistics' => 'Poller Statistics',
-    'system_resources' => 'System Resources'
+    'system_resources' => 'System Resources',
+
+    // Aggregates page specific
+    'page_title_aggregates' => 'Cacti - Aggregate Graphs',
+    'aggregates_title' => 'Aggregate Graphs',
+    'aggregates_intro' => 'This section will describe **Aggregate Graphs** in Cacti.',
+
+    // Common aggregate terms
+    'aggregate_graphs' => 'Aggregate Graphs',
+    'aggregation' => 'Aggregation',
+    'graph_aggregation' => 'Graph Aggregation'
 );
 ?>

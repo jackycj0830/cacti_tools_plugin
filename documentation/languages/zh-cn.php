@@ -874,6 +874,16 @@ $lang = array(
     'polling_rate' => '轮询速率',
     'storage_requirements' => '存储要求',
     'poller_statistics' => '轮询器统计',
-    'system_resources' => '系统资源'
+    'system_resources' => '系统资源',
+
+    // Aggregates page specific
+    'page_title_aggregates' => 'Cacti - 聚合图形',
+    'aggregates_title' => '聚合图形',
+    'aggregates_intro' => '本节将描述 Cacti 中的**聚合图形**。',
+
+    // Common aggregate terms
+    'aggregate_graphs' => '聚合图形',
+    'aggregation' => '聚合',
+    'graph_aggregation' => '图形聚合'
 );
 ?>
