@@ -183,6 +183,18 @@ generatePageHeader('', 'test', true);
                 <td style="padding: 8px;">aggregate_graphs</td>
                 <td style="padding: 8px;"><?php _e('aggregate_graphs'); ?></td>
             </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">data_collectors_title</td>
+                <td style="padding: 8px;"><?php _e('data_collectors_title'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">main_data_collector_term</td>
+                <td style="padding: 8px;"><?php _e('main_data_collector_term'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">remote_data_collector_term</td>
+                <td style="padding: 8px;"><?php _e('remote_data_collector_term'); ?></td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -204,6 +216,7 @@ generatePageHeader('', 'test', true);
         <li><a href="Graphs.php">圖形管理 (Graphs.php)</a></li>
         <li><a href="Data-Sources.php">資料來源管理 (Data-Sources.php)</a></li>
         <li><a href="Aggregates.php">聚合圖形 (Aggregates.php)</a></li>
+        <li><a href="Data-Collectors.php">資料收集器 (Data-Collectors.php)</a></li>
     </ul>
 </div>
 

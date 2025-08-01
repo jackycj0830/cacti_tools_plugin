@@ -884,6 +884,64 @@ $lang = array(
     // Common aggregate terms
     'aggregate_graphs' => '聚合图形',
     'aggregation' => '聚合',
-    'graph_aggregation' => '图形聚合'
+    'graph_aggregation' => '图形聚合',
+
+    // Data Collectors page specific
+    'page_title_data_collectors' => 'Cacti - 数据收集器',
+    'data_collectors_title' => '数据收集器',
+    'data_collector_background_title' => '数据收集器背景',
+    'data_collectors_intro' => 'Cacti 可以支持一个到多个**数据收集器**。有两种类型的**数据收集器**：',
+    'main_data_collector' => '**主数据收集器** - 这本质上是您的核心 Cacti 服务器和数据库。**主数据收集器**也被称为**主服务器**。',
+    'remote_data_collector' => '**远程数据收集器** - 这些数据收集器位于远程位置，或者由于防火墙或安全策略而无法访问设备的地方。**远程数据收集器**也被称为**远程轮询器**。',
+    'remote_collector_design' => '由于 Cacti **远程数据收集器**的设计，远程站点的某人实际上可以登录到该**数据收集器**并与其交互，就像他们的**数据收集器**是**主数据收集器**一样。此外，如果由于某种原因**主数据收集器**变得不可用（例如由于 WAN 中断），它管理的**设备**的数据将在本地缓存，直到**主数据收集器**再次可达。',
+    'collector_normalization' => '一旦**主数据收集器**变得可达，**远程数据收集器**将把其缓存刷新回**主数据收集器**，系统将恢复正常。因此，这通常被认为是更高可用性（HA）的设计。',
+    'enterprise_architecture' => '一个好的 Cacti 企业架构将包括三个**主数据收集器**，其 cactid systemd 服务由 keepalived 管理，使用 GlusterFS 作为 Web 服务器、日志和 RRD 文件的完全复制文件系统，使用 MariaDB Galera 作为完全容错的数据库服务器。',
+    'load_balancing' => '然后，使用 keepalived 到负载均衡器，您可以在所有三个**主数据收集器**之间负载均衡连接，使用 MariaDB Galera 数据库来维护登录会话数据。有许多关于设置和使用 MariaDB Galera 以及来自 Citrix 和其他公司的 HAProxy 或负载均衡器的好文章，以将读写流量定向到正确的 Galera 实例服务器。底线是 Cacti 今天提供了拥有高可用性（HA）设置的机会。',
+    'ha_setup_note' => '该 HA 设置不会在本章中涵盖，但可能会在以后的日期包含。',
+    'boost_module_requirement' => '当使用多个**数据收集器**时，Cacti 需要使用 `boost` 模块，该模块现在包含在主 Cacti 包中。因此，如果您计划部署多个**数据收集器**，您应该熟悉其使用以及为什么它对 HA 设计至关重要。',
+    'network_requirements' => '为了让**远程数据收集器**与**主数据收集器**一起工作，**远程数据收集器**必须能够通过 https 和 MySQL 协议以双向方式与**主数据收集器**通信。因此，只需要打开两个端口即可充分利用 Cacti 中的多个**数据收集器**架构。',
+
+    // Data Collector User Interface section
+    'data_collector_ui_title' => '数据收集器用户界面',
+    'data_collector_ui_description' => '下面的图像显示了当前在线收集器（又名轮询器）。在此页面上，我们可以看到当前、平均和最大数据收集时间，使用的**数据收集器**进程和线程，**设备**的数量以及这些**设备**正在轮询什么。操作下拉菜单允许您启用、禁用和删除**远程数据收集器**。那里还有一个 `完全同步` 选项。`完全同步` 选项将把关键的 Cacti 表复制到选定的**远程数据收集器**，用于身份验证、全局设置等。',
+    'full_sync_usage' => '在当前的 Cacti 设计中，您不应该经常执行 `完全同步`。它主要用于在中断后将用户数据库和全局设置推送到远程，如果在该中断期间有数据库更改。',
+    'data_collectors_image_desc' => '数据收集器',
+    'main_collector_description' => '**主数据收集器**驻留在中央 Cacti 服务器上。它还充当主**数据收集器**，为整个系统执行关键维护操作。',
+    'main_collector_edit_description' => '在下面的编辑页面中，您可以看到编辑**主数据收集器**时可用的选项。重要的是使用的主机名可以被**远程数据收集器**解析。',
+    'data_collectors_edit_main_desc' => '数据收集器编辑主',
+    'remote_collector_edit_description' => '在下面的图像中编辑**远程数据收集器**时，您可以看到它与**主数据收集器**共享许多设置，另外还有 `时区` 设置和 MySQL/MariaDB 凭据以及 `测试连接` 按钮。通常，这些设置仅在 Cacti 的初始设置期间使用，之后仅用于诊断。',
+    'data_collectors_edit_remote_desc' => '数据收集器编辑远程',
+    'data_collectors_edit_remote_test_desc' => '数据收集器编辑远程连接测试',
+
+    // Setup section
+    'setup_main_collector_title' => '设置主数据收集器以接受远程连接',
+    'mysql_config_changes' => '我们需要对 MySQL 配置进行一些配置更改，以允许**远程数据收集器**与**主数据收集器**通信。',
+    'mysql_grant_commands' => 'mysql -u root mysql -e "GRANT ALL ON cacti.* TO cactidb@<远程轮询器主机的ip>  IDENTIFIED BY \'password\';"
+mysql -u root mysql -e "GRANT SELECT ON mysql.time_zone_name TO cacti@<远程轮询器主机的ip> IDENTIFIED BY \'password\';"',
+    'remote_config_setup' => '接下来设置位于 `<path_cacti>/include/config.php` 的**远程数据收集器** config.php，包含远程数据库详细信息和凭据。通常，您不必作为**远程数据收集器**直接维护的一部分来执行此操作，**远程数据收集器**安装过程将强制您采取这些步骤来完成安装。但是，这里提供它作为参考，以便您了解该过程。',
+    'remote_config_example' => '#$rdatabase_type     = \'mysql\';
+#$rdatabase_default  = \'cacti\';
+#$rdatabase_hostname = \'localhost\'; <<< 主服务器的IP/主机名
+#$rdatabase_username = \'cactiuser\';
+#$rdatabase_password = \'cactiuser\';
+#$rdatabase_port     = \'3306\';
+#$rdatabase_retries  = 5;
+#$rdatabase_ssl      = false;
+#$rdatabase_ssl_key  = \'\';
+#$rdatabase_ssl_cert = \'\';
+#$rdatabase_ssl_ca   = \'\';',
+    'remote_install_instruction' => '您现在需要在远程服务器上安装 Cacti，选择如下所示的**新远程轮询器**安装选项。',
+    'remote_setup_image_desc' => '远程数据收集器设置',
+
+    // Common data collector terms
+    'data_collector_management' => '数据收集器管理',
+    'main_data_collector_term' => '主数据收集器',
+    'remote_data_collector_term' => '远程数据收集器',
+    'primary_server' => '主服务器',
+    'remote_pollers' => '远程轮询器',
+    'highly_available' => '高可用性',
+    'full_sync' => '完全同步',
+    'boost_module' => 'Boost 模块',
+    'enterprise_architecture' => '企业架构'
 );
 ?>

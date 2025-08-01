@@ -151,6 +151,13 @@ if exist "Aggregates.php" (
     set missing_files=1
 )
 
+if exist "Data-Collectors.php" (
+    echo ✅ Data-Collectors.php - Found
+) else (
+    echo ❌ Data-Collectors.php - Missing
+    set missing_files=1
+)
+
 if exist "test-multilingual-system.php" (
     echo ✅ test-multilingual-system.php - Found
 ) else (
@@ -309,6 +316,14 @@ if errorlevel 1 (
     echo ✅ Aggregates.php syntax OK
 )
 
+php -l Data-Collectors.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Data-Collectors.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Data-Collectors.php syntax OK
+)
+
 echo.
 
 if defined syntax_errors (
@@ -344,6 +359,7 @@ echo   🌳 Tree Management:     http://localhost:8000/Trees.php
 echo   📈 Graph Management:    http://localhost:8000/Graphs.php
 echo   📊 Data Source Management: http://localhost:8000/Data-Sources.php
 echo   📈 Aggregate Graphs:    http://localhost:8000/Aggregates.php
+echo   🔄 Data Collectors:    http://localhost:8000/Data-Collectors.php
 echo.
 echo 🔧 Test Instructions:
 echo   1. Open the URLs above in your web browser
