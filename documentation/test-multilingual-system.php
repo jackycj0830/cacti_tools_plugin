@@ -151,6 +151,18 @@ generatePageHeader('', 'test', true);
                 <td style="padding: 8px;">hierarchical_organization</td>
                 <td style="padding: 8px;"><?php _e('hierarchical_organization'); ?></td>
             </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">graphs_title</td>
+                <td style="padding: 8px;"><?php _e('graphs_title'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">graph_management_console</td>
+                <td style="padding: 8px;"><?php _e('graph_management_console'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">modifying_graph_template_title</td>
+                <td style="padding: 8px;"><?php _e('modifying_graph_template_title'); ?></td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -169,6 +181,7 @@ generatePageHeader('', 'test', true);
         <li><a href="Devices.php">裝置管理 (Devices.php)</a></li>
         <li><a href="Sites.php">站點管理 (Sites.php)</a></li>
         <li><a href="Trees.php">樹管理 (Trees.php)</a></li>
+        <li><a href="Graphs.php">圖形管理 (Graphs.php)</a></li>
     </ul>
 </div>
 

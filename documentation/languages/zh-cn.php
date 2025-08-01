@@ -809,6 +809,29 @@ $lang = array(
     'numeric_ordering' => '数字排序',
     'tree_locking' => '树锁定',
     'tree_publishing' => '树发布',
-    'drag_and_drop' => '拖放'
+    'drag_and_drop' => '拖放',
+
+    // Graphs page specific
+    'page_title_graphs' => 'Cacti - 图形管理',
+    'graphs_title' => '图形管理',
+    'graphs_intro' => '本节将描述 Cacti 中的**图形**管理。',
+    'graphs_console_view' => 'Cacti 具有通过控制台查看每个设备图形的功能。这允许管理员查看附加到特定设备的图形。您还可以按图形类型搜索。下面我们搜索与本地 linux 服务器关联的图形',
+    'graph_management_image_desc' => '图形管理',
+    'graphs_menu_description' => '点击列表中的一个图形会显示下面的菜单。从此菜单中，您可以在特定图形上启用调试，还可以更改图形模板等',
+    'graph_management_click_desc' => '图形管理点击',
+
+    // Modifying the graph template section
+    'modifying_graph_template_title' => '修改图形模板',
+    'modifying_graph_template_desc' => 'Cacti 允许您更改图形模板的许多方面。您可以更改参数，如图形的标题以及图形的大小。这些更改将推送到图形模板，因此使用该模板的其他设备也将被更新。',
+    'graph_template_options_desc' => '图形模板选项',
+
+    // Common graph management terms
+    'graph_management_console' => '图形管理控制台',
+    'graph_debugging' => '图形调试',
+    'graph_template_modification' => '图形模板修改',
+    'graph_parameters' => '图形参数',
+    'graph_title' => '图形标题',
+    'graph_size' => '图形大小',
+    'template_updates' => '模板更新'
 );
 ?>

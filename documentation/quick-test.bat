@@ -130,6 +130,13 @@ if exist "Trees.php" (
     set missing_files=1
 )
 
+if exist "Graphs.php" (
+    echo ✅ Graphs.php - Found
+) else (
+    echo ❌ Graphs.php - Missing
+    set missing_files=1
+)
+
 if exist "test-multilingual-system.php" (
     echo ✅ test-multilingual-system.php - Found
 ) else (
@@ -264,6 +271,14 @@ if errorlevel 1 (
     echo ✅ Trees.php syntax OK
 )
 
+php -l Graphs.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Graphs.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Graphs.php syntax OK
+)
+
 echo.
 
 if defined syntax_errors (
@@ -296,6 +311,7 @@ echo   👁️ Viewing Graphs:      http://localhost:8000/Viewing-Graphs.php
 echo   🖥️ Device Management:   http://localhost:8000/Devices.php
 echo   🏢 Site Management:     http://localhost:8000/Sites.php
 echo   🌳 Tree Management:     http://localhost:8000/Trees.php
+echo   📈 Graph Management:    http://localhost:8000/Graphs.php
 echo.
 echo 🔧 Test Instructions:
 echo   1. Open the URLs above in your web browser

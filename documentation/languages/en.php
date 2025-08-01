@@ -809,6 +809,29 @@ $lang = array(
     'numeric_ordering' => 'Numeric Ordering',
     'tree_locking' => 'Tree Locking',
     'tree_publishing' => 'Tree Publishing',
-    'drag_and_drop' => 'Drag & Drop'
+    'drag_and_drop' => 'Drag & Drop',
+
+    // Graphs page specific
+    'page_title_graphs' => 'Cacti - Graph Management',
+    'graphs_title' => 'Graph Management',
+    'graphs_intro' => 'This section will describe **Graph** management in Cacti.',
+    'graphs_console_view' => 'Cacti features a way to view the graphs per device via the console. This allows the administrator to view the graphs that are attached to a specific device. You can also search by type of graph. Below we search for graphs that are associated with the local linux server',
+    'graph_management_image_desc' => 'graph management',
+    'graphs_menu_description' => 'Clicking on one of the graphs in the list shows the below menu. From this menu you can enable debugging on the specific graph you can also change the template of the graph amongst other things',
+    'graph_management_click_desc' => 'Graph management click',
+
+    // Modifying the graph template section
+    'modifying_graph_template_title' => 'Modifying the graph template',
+    'modifying_graph_template_desc' => 'Cacti allows you to change many aspects of the graph template. You can change parameters such the title of the graph as well the size of the graphs. These changes will be pushed to the graph template so other devices using the template will also be updated.',
+    'graph_template_options_desc' => 'Graph template options',
+
+    // Common graph management terms
+    'graph_management_console' => 'Graph Management Console',
+    'graph_debugging' => 'Graph Debugging',
+    'graph_template_modification' => 'Graph Template Modification',
+    'graph_parameters' => 'Graph Parameters',
+    'graph_title' => 'Graph Title',
+    'graph_size' => 'Graph Size',
+    'template_updates' => 'Template Updates'
 );
 ?>

@@ -609,6 +609,29 @@ $lang = array(
     'numeric_ordering' => '數字排序',
     'tree_locking' => '樹鎖定',
     'tree_publishing' => '樹發布',
-    'drag_and_drop' => '拖放'
+    'drag_and_drop' => '拖放',
+
+    // Graphs page specific
+    'page_title_graphs' => 'Cacti - 圖形管理',
+    'graphs_title' => '圖形管理',
+    'graphs_intro' => '本節將描述 Cacti 中的**圖形**管理。',
+    'graphs_console_view' => 'Cacti 具有透過控制台檢視每個裝置圖形的功能。這允許管理員檢視附加到特定裝置的圖形。您還可以按圖形類型搜尋。下面我們搜尋與本地 linux 伺服器關聯的圖形',
+    'graph_management_image_desc' => '圖形管理',
+    'graphs_menu_description' => '點擊清單中的一個圖形會顯示下面的選單。從此選單中，您可以在特定圖形上啟用除錯，還可以更改圖形範本等',
+    'graph_management_click_desc' => '圖形管理點擊',
+
+    // Modifying the graph template section
+    'modifying_graph_template_title' => '修改圖形範本',
+    'modifying_graph_template_desc' => 'Cacti 允許您更改圖形範本的許多方面。您可以更改參數，如圖形的標題以及圖形的大小。這些更改將推送到圖形範本，因此使用該範本的其他裝置也將被更新。',
+    'graph_template_options_desc' => '圖形範本選項',
+
+    // Common graph management terms
+    'graph_management_console' => '圖形管理控制台',
+    'graph_debugging' => '圖形除錯',
+    'graph_template_modification' => '圖形範本修改',
+    'graph_parameters' => '圖形參數',
+    'graph_title' => '圖形標題',
+    'graph_size' => '圖形大小',
+    'template_updates' => '範本更新'
 );
 ?>
