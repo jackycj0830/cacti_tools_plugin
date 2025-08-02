@@ -387,6 +387,15 @@ generatePageHeader('', 'test', true);
         <li><a href="Settings-Paths.php">路徑設定 (Settings-Paths.php)</a></li>
         <li><a href="User-Management.php">使用者管理 (User-Management.php)</a></li>
         <li><a href="Frequently-Asked-Questions.php">常見問題 (Frequently-Asked-Questions.php)</a></li>
+        <li><a href="Settings-Auth-Local.php">本地認證設定 (Settings-Auth-Local.php)</a></li>
+        <li><a href="Settings-Auth-LDAP.php">LDAP 認證設定 (Settings-Auth-LDAP.php)</a></li>
+        <li><a href="Settings-Auth-Basic.php">基本認證設定 (Settings-Auth-Basic.php)</a></li>
+        <li><a href="Settings-Domains.php">網域設定 (Settings-Domains.php)</a></li>
+        <li><a href="System-Utilities.php">系統實用工具 (System-Utilities.php)</a></li>
+        <li><a href="Data-Debug.php">資料除錯 (Data-Debug.php)</a></li>
+        <li><a href="External-Links.php">外部連結 (External-Links.php)</a></li>
+        <li><a href="Reports-Admin.php">報告管理 (Reports-Admin.php)</a></li>
+        <li><a href="Reports-User.php">報告使用者 (Reports-User.php)</a></li>
     </ul>
 </div>
 

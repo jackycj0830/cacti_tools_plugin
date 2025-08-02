@@ -2,7 +2,7 @@
 
 ## 📊 Conversion Status Summary
 
-### ✅ **Completed PHP Conversions (42 files)**
+### ✅ **Completed PHP Conversions (52 files)**
 
 #### **Core Documentation Pages**
 1. Requirements.php
@@ -56,50 +56,52 @@
 #### **Settings and Configuration**
 36. Settings-General.php
 37. Settings-Paths.php
+38. Settings-Device-Defaults.php
+39. Settings-Data.php
+40. Settings-Visual.php
+41. Settings-Performance.php
+42. Settings-Poller.php
+
+#### **Authentication Settings**
+43. Settings-Auth-Local.php
+44. Settings-Auth-LDAP.php
+45. Settings-Auth-Basic.php
+46. Settings-Domains.php
 
 #### **User Management**
-38. User-Management.php
+47. User-Management.php
+48. User-Group-Management.php
+49. User-Domains.php
+
+#### **Utilities and Tools**
+50. System-Utilities.php
+51. Data-Debug.php
+52. External-Links.php
+
+#### **Reporting System**
+53. Reports-Admin.php
+54. Reports-User.php
 
 #### **Help and Support**
-39. Frequently-Asked-Questions.php
+55. Frequently-Asked-Questions.php
 
 #### **System Files**
-40. documentation.php (main index)
-41. test-multilingual-system.php (testing)
-42. quick-test.bat (testing script)
+56. documentation.php (main index)
+57. test-multilingual-system.php (testing)
+58. quick-test.bat (testing script)
 
 ---
 
-## 🔄 **Remaining HTML Files to Convert (60+ files)**
+## 🔄 **Remaining HTML Files to Convert (44+ files)**
 
 ### **Settings Pages**
-- Settings-Device-Defaults.html
-- Settings-Poller.html
-- Settings-Data.html
-- Settings-Visual.html
-- Settings-Performance.html
 - Settings-Spikes.html
 - Settings-Mail-Reporting-DNS.html
-- Settings-Auth-Local.html
-- Settings-Auth-LDAP.html
-- Settings-Auth-Basic.html
-- Settings-Domains.html
-
-### **User Management Pages**
-- User-Group-Management.html
-- User-Domains.html
 
 ### **Plugin Management**
 - Plugin-Management.html
 
-### **Utilities**
-- System-Utilities.html
-- Data-Debug.html
-- External-Links.html
-
 ### **Reporting**
-- Reports-Admin.html
-- Reports-User.html
 - Reports-Items.html
 - Reports-Preview.html
 - Reports-Events.html
@@ -217,8 +219,8 @@
 ## 📈 **Conversion Progress**
 
 - **Total Files**: ~102 documentation files
-- **Converted to PHP**: 42 files (41%)
-- **Remaining HTML**: 60+ files (59%)
+- **Converted to PHP**: 58 files (57%)
+- **Remaining HTML**: 44+ files (43%)
 - **Multilingual Support**: 100% for converted files
 - **Testing Coverage**: Comprehensive test system in place
 
