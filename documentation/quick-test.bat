@@ -214,6 +214,55 @@ if exist "Color-Templates.php" (
     set missing_files=1
 )
 
+if exist "Automation-Networks.php" (
+    echo ✅ Automation-Networks.php - Found
+) else (
+    echo ❌ Automation-Networks.php - Missing
+    set missing_files=1
+)
+
+if exist "Discovered-Devices.php" (
+    echo ✅ Discovered-Devices.php - Found
+) else (
+    echo ❌ Discovered-Devices.php - Missing
+    set missing_files=1
+)
+
+if exist "Device-Rules.php" (
+    echo ✅ Device-Rules.php - Found
+) else (
+    echo ❌ Device-Rules.php - Missing
+    set missing_files=1
+)
+
+if exist "Graph-Rules.php" (
+    echo ✅ Graph-Rules.php - Found
+) else (
+    echo ❌ Graph-Rules.php - Missing
+    set missing_files=1
+)
+
+if exist "Tree-Rules.php" (
+    echo ✅ Tree-Rules.php - Found
+) else (
+    echo ❌ Tree-Rules.php - Missing
+    set missing_files=1
+)
+
+if exist "SNMP-Options.php" (
+    echo ✅ SNMP-Options.php - Found
+) else (
+    echo ❌ SNMP-Options.php - Missing
+    set missing_files=1
+)
+
+if exist "Networks.php" (
+    echo ✅ Networks.php - Found
+) else (
+    echo ❌ Networks.php - Missing
+    set missing_files=1
+)
+
 if exist "test-multilingual-system.php" (
     echo ✅ test-multilingual-system.php - Found
 ) else (
@@ -444,6 +493,62 @@ if errorlevel 1 (
     echo ✅ Color-Templates.php syntax OK
 )
 
+php -l Automation-Networks.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Automation-Networks.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Automation-Networks.php syntax OK
+)
+
+php -l Discovered-Devices.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Discovered-Devices.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Discovered-Devices.php syntax OK
+)
+
+php -l Device-Rules.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Device-Rules.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Device-Rules.php syntax OK
+)
+
+php -l Graph-Rules.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Graph-Rules.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Graph-Rules.php syntax OK
+)
+
+php -l Tree-Rules.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Tree-Rules.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Tree-Rules.php syntax OK
+)
+
+php -l SNMP-Options.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ SNMP-Options.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ SNMP-Options.php syntax OK
+)
+
+php -l Networks.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Networks.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Networks.php syntax OK
+)
+
 echo.
 
 if defined syntax_errors (
@@ -488,6 +593,13 @@ echo   📊 Graph Templates:    http://localhost:8000/Graph-Templates.php
 echo   💾 Data Source Templates: http://localhost:8000/Data-Source-Templates.php
 echo   📈 Aggregate Templates: http://localhost:8000/Aggregate-Templates.php
 echo   🎨 Color Templates:     http://localhost:8000/Color-Templates.php
+echo   🌐 Automation Networks: http://localhost:8000/Automation-Networks.php
+echo   🔍 Discovered Devices:  http://localhost:8000/Discovered-Devices.php
+echo   📋 Device Rules:        http://localhost:8000/Device-Rules.php
+echo   📊 Graph Rules:         http://localhost:8000/Graph-Rules.php
+echo   🌳 Tree Rules:          http://localhost:8000/Tree-Rules.php
+echo   🔧 SNMP Options:        http://localhost:8000/SNMP-Options.php
+echo   🌐 Networks:            http://localhost:8000/Networks.php
 echo.
 echo 🔧 Test Instructions:
 echo   1. Open the URLs above in your web browser

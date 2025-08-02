@@ -275,6 +275,30 @@ generatePageHeader('', 'test', true);
                 <td style="padding: 8px;">color_templates_intro</td>
                 <td style="padding: 8px;"><?php _e('color_templates_intro'); ?></td>
             </tr>
+            <tr>
+                <td style="padding: 8px;">automation_networks_title</td>
+                <td style="padding: 8px;"><?php _e('automation_networks_title'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">discovered_devices_title</td>
+                <td style="padding: 8px;"><?php _e('discovered_devices_title'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">device_rules_title</td>
+                <td style="padding: 8px;"><?php _e('device_rules_title'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">snmp_options_title</td>
+                <td style="padding: 8px;"><?php _e('snmp_options_title'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">networks_title</td>
+                <td style="padding: 8px;"><?php _e('networks_title'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">networks_automation_title</td>
+                <td style="padding: 8px;"><?php _e('networks_automation_title'); ?></td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -305,6 +329,13 @@ generatePageHeader('', 'test', true);
         <li><a href="Data-Source-Templates.php">資料來源範本 (Data-Source-Templates.php)</a></li>
         <li><a href="Aggregate-Templates.php">聚合範本 (Aggregate-Templates.php)</a></li>
         <li><a href="Color-Templates.php">顏色範本 (Color-Templates.php)</a></li>
+        <li><a href="Automation-Networks.php">自動化網路 (Automation-Networks.php)</a></li>
+        <li><a href="Discovered-Devices.php">發現裝置 (Discovered-Devices.php)</a></li>
+        <li><a href="Device-Rules.php">裝置規則 (Device-Rules.php)</a></li>
+        <li><a href="Graph-Rules.php">圖形規則 (Graph-Rules.php)</a></li>
+        <li><a href="Tree-Rules.php">樹規則 (Tree-Rules.php)</a></li>
+        <li><a href="SNMP-Options.php">SNMP 選項 (SNMP-Options.php)</a></li>
+        <li><a href="Networks.php">網路 (Networks.php)</a></li>
     </ul>
 </div>
 
