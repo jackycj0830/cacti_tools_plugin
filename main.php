@@ -20,7 +20,7 @@
  +-------------------------------------------------------------------------+
  | http://www.cacti.net/                                                   |
  +-------------------------------------------------------------------------+
- | Customized PHP Pages (By Jacky.zou editor)  v.1.0.3_20250629            |
+ | Customized PHP Pages (By Jacky.zou editor)  v.1.0.4_20250802            |
  +-------------------------------------------------------------------------+
 */
 ?>
@@ -68,7 +68,7 @@
 <iframe id="frameGraphs" class="frame" src="/cacti/plugins/tools/graph_view.php" sandbox="allow-scripts allow-same-origin"></iframe>
 <iframe id="frameRrdviewer" class="frame" src="/cacti/plugins/tools/rrd_graph_viewer_daily.php" sandbox="allow-scripts allow-same-origin"></iframe>
 <iframe id="frameDocuments" class="frame" src="/cacti/plugins/tools/documents.php" sandbox="allow-scripts allow-same-origin"></iframe>
-<iframe id="frameDocumentation" class="frame" src="/cacti/plugins/tools/documentation/documentation.html" sandbox="allow-scripts allow-same-origin"></iframe>
+<iframe id="frameDocumentation" class="frame" src="/cacti/plugins/tools/documentation/documentation.php" sandbox="allow-scripts allow-same-origin"></iframe>
 <iframe id="frameManageTholdCacti" class="frame" src="/cacti/plugins/tools/manage_thold_cacti.php" sandbox="allow-scripts allow-same-origin"></iframe>
 <iframe id="frameUpdater" class="frame" src="/cacti/plugins/tools/updater.php" sandbox="allow-scripts allow-same-origin"></iframe>
 
