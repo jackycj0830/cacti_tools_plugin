@@ -231,6 +231,18 @@ generatePageHeader('', 'test', true);
                 <td style="padding: 8px;">xml_file</td>
                 <td style="padding: 8px;"><?php _e('xml_file'); ?></td>
             </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">device_templates_title</td>
+                <td style="padding: 8px;"><?php _e('device_templates_title'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">device_template</td>
+                <td style="padding: 8px;"><?php _e('device_template'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">automation_templates</td>
+                <td style="padding: 8px;"><?php _e('automation_templates'); ?></td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -256,6 +268,7 @@ generatePageHeader('', 'test', true);
         <li><a href="Spine-Data-Collection.php">Spine 資料收集 (Spine-Data-Collection.php)</a></li>
         <li><a href="Data-Input-Methods.php">資料輸入方法 (Data-Input-Methods.php)</a></li>
         <li><a href="Data-Queries.php">資料查詢 (Data-Queries.php)</a></li>
+        <li><a href="Device-Templates.php">裝置範本 (Device-Templates.php)</a></li>
     </ul>
 </div>
 

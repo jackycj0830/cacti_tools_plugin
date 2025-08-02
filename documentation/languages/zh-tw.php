@@ -1005,6 +1005,43 @@ chmod u+s /usr/local/spine/bin/spine',
     'xml_file' => 'XML 檔案',
     'associated_graph_templates' => '關聯圖形範本',
     'associated_data_templates' => '關聯資料範本',
-    'suggested_values' => '建議值'
+    'suggested_values' => '建議值',
+
+    // Device Templates page specific
+    'page_title_device_templates' => 'Cacti - 裝置範本',
+    'device_templates_title' => '裝置範本',
+    'device_templates_intro' => '**裝置範本**是 Cacti 物件，允許您定義**裝置**類別，包括一個到多個**圖形範本**、**資料查詢**和其他**外掛**相關物件類型。',
+    'device_templates_purpose' => '**裝置範本**的目的是透過預定義應為新增到 Cacti 的每個**裝置**建立的**圖形**來簡化**自動化**程序。它們與**自動化範本**配合工作，以便當 Cacti 發現**網路**時，它知道為每個**裝置**建立什麼**圖形**。',
+    'device_templates_main_screen' => '**裝置範本**主畫面如下圖所示：',
+    'device_templates_page_desc' => '裝置範本頁面',
+    'device_templates_page_info' => '從此頁面，您可以看到每個**裝置範本**的標題、對 Cacti CLI 腳本很重要的 ID。您可以看到**裝置範本**是否可以刪除，以及使用**裝置範本**的**裝置**數量。被**裝置**使用的範本無法刪除，因此如果您嘗試刪除其中一個範本，您將收到錯誤訊息。',
+    'device_templates_dropdown_options' => '從下拉選單中有三個選項，它們是：',
+
+    // Device Templates options table
+    'device_templates_option_field' => '選項',
+    'device_templates_description_field' => '描述',
+    'device_templates_delete_option' => '刪除',
+    'device_templates_delete_desc' => '如果**裝置範本**是*可刪除的*，則刪除它',
+    'device_templates_duplicate_option' => '複製',
+    'device_templates_duplicate_desc' => '製作**裝置範本**的精確副本。',
+    'device_templates_sync_option' => '同步裝置',
+    'device_templates_sync_desc' => '使用最新定義更新所有使用此**裝置範本**的**裝置**，新增但不刪除**圖形範本**和**資料查詢**。',
+
+    // Device Template editing
+    'device_templates_edit_intro' => '編輯**裝置範本**時，您將看到如下所示的頁面。從此頁面，您可以新增和刪除**圖形範本**、**資料查詢**和其他**外掛**物件。在下面的圖像中，您可以看到*思科路由器*有一個**圖形範本**，即*思科 - CPU 使用率*和一個**資料查詢**，即*SNMP - 介面統計*。系統上沒有定義**閾值範本**，因此無法選擇一個。',
+    'device_templates_edit_page_desc' => '裝置範本編輯頁面',
+    'device_templates_add_remove' => '要向**裝置範本**新增**圖形範本**或**資料查詢**，只需從下拉選單中選擇它，然後按*新增*按鈕。之後無需*儲存*。要刪除其中一個項目，只需按所需**圖形範本**或**資料查詢**右側的 x 符號。',
+
+    // Common device template terms
+    'device_template' => '裝置範本',
+    'device_templates' => '裝置範本',
+    'automation_templates' => '自動化範本',
+    'threshold_templates' => '閾值範本',
+    'cisco_router' => '思科路由器',
+    'cisco_cpu_usage' => '思科 - CPU 使用率',
+    'snmp_interface_statistics' => 'SNMP - 介面統計',
+    'deletable' => '可刪除的',
+    'sync_devices' => '同步裝置',
+    'duplicate' => '複製'
 );
 ?>

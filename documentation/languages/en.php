@@ -1205,6 +1205,43 @@ chmod u+s /usr/local/spine/bin/spine',
     'xml_file' => 'XML File',
     'associated_graph_templates' => 'Associated Graph Templates',
     'associated_data_templates' => 'Associated Data Templates',
-    'suggested_values' => 'Suggested Values'
+    'suggested_values' => 'Suggested Values',
+
+    // Device Templates page specific
+    'page_title_device_templates' => 'Cacti - Device Templates',
+    'device_templates_title' => 'Device Templates',
+    'device_templates_intro' => '**Device Templates** are Cacti objects that allows you to define classes of **Devices** that includes from one to many **Graph Templates**, **Data Queries** and other **Plugin** related object types.',
+    'device_templates_purpose' => 'The purpose of **Device Templates** is to simplify the **Automation** process by pre-defining the **Graphs** that should be created for every **Device** that is added to Cacti. They work in conjunction with **Automation Templates** so that when Cacti discovers a **Network** it knows what **Graphs** to create for each **Device**.',
+    'device_templates_main_screen' => 'The **Device Templates** main screen looks like the image below:',
+    'device_templates_page_desc' => 'Device Templates Page',
+    'device_templates_page_info' => 'From this page, you can see the title of each **Device Template**, it\'s ID which is important for the Cacti CLI scripts. You can see if the **Device Template** can be removed, and the number of **Devices** using the **Device Template**. Templates that are used by **Devices** can not be removed and therefore if you attempt to remove one of these Templates, you will receive and error message.',
+    'device_templates_dropdown_options' => 'From the drop down there are three options, they are:',
+
+    // Device Templates options table
+    'device_templates_option_field' => 'Option',
+    'device_templates_description_field' => 'Description',
+    'device_templates_delete_option' => 'Delete',
+    'device_templates_delete_desc' => 'Remove the **Device Template** if it\'s *Deletable*',
+    'device_templates_duplicate_option' => 'Duplicate',
+    'device_templates_duplicate_desc' => 'Make an exact copy of the **Device Template**.',
+    'device_templates_sync_option' => 'Sync Devices',
+    'device_templates_sync_desc' => 'Update all **Devices** using this **Device Template** with the latest definition, adding, but not removing **Graph Templates**, and **Data Queries**.',
+
+    // Device Template editing
+    'device_templates_edit_intro' => 'When editing a **Device Template**, you will see the page as displayed below. From this page, you can add and remove **Graph Templates**, **Data Queries**, and other **Plugin** objects. In the image below, you can see that the *Cisco Router* has one **Graph Template** that of *Cisco - CPU Usage* and one **Data Query** that of *SNMP - Interface Statistics*. There are no **Threshold Templates** defined on the system, so there is no way to select one.',
+    'device_templates_edit_page_desc' => 'Device Template Edit Page',
+    'device_templates_add_remove' => 'To add a **Graph Template** or **Data Query** to the **Device Template**, simply select it from the drop down, and press the *Add* button. There is no need to *Save* afterwards. To removed one of these items, simply press the x glyph to the right of the desired **Graph Template** or **Data Query**.',
+
+    // Common device template terms
+    'device_template' => 'Device Template',
+    'device_templates' => 'Device Templates',
+    'automation_templates' => 'Automation Templates',
+    'threshold_templates' => 'Threshold Templates',
+    'cisco_router' => 'Cisco Router',
+    'cisco_cpu_usage' => 'Cisco - CPU Usage',
+    'snmp_interface_statistics' => 'SNMP - Interface Statistics',
+    'deletable' => 'Deletable',
+    'sync_devices' => 'Sync Devices',
+    'duplicate' => 'Duplicate'
 );
 ?>
