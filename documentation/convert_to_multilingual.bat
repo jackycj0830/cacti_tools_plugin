@@ -127,6 +127,9 @@ echo   📄 Data-Input-Methods.php - Data input methods guide (PHP version)
 echo   📄 Data-Queries.php   - Data queries guide (PHP version)
 echo   📄 Device-Templates.php - Device templates guide (PHP version)
 echo   📄 Graph-Templates.php - Graph templates guide (PHP version)
+echo   📄 Data-Source-Templates.php - Data source templates guide (PHP version)
+echo   📄 Aggregate-Templates.php - Aggregate templates guide (PHP version)
+echo   📄 Color-Templates.php - Color templates guide (PHP version)
 echo   📄 test-multilingual-system.php - System testing page
 echo   📄 *.php               - Converted PHP documentation files
 echo   📁 backup_html_*       - Backup of original HTML files
@@ -153,7 +156,7 @@ echo   2. Navigate to documentation.php in your browser
 echo   3. Test the system using test-multilingual-system.php
 echo   4. Test language switching using the dropdown in top-right corner
 echo   5. Navigate between pages to verify language persistence
-echo   6. Test specific pages like Requirements.php, Navigating-The-User-Interface.php, Principles-of-Operation.php, Graph-Overview.php, How-to-Graph-Your-Network.php, Viewing-Graphs.php, Devices.php, Sites.php, Trees.php, Graphs.php, Data-Sources.php, Aggregates.php, Data-Collectors.php, Spine-Data-Collection.php, Data-Input-Methods.php, Data-Queries.php, Device-Templates.php, and Graph-Templates.php
+echo   6. Test specific pages like Requirements.php, Navigating-The-User-Interface.php, Principles-of-Operation.php, Graph-Overview.php, How-to-Graph-Your-Network.php, Viewing-Graphs.php, Devices.php, Sites.php, Trees.php, Graphs.php, Data-Sources.php, Aggregates.php, Data-Collectors.php, Spine-Data-Collection.php, Data-Input-Methods.php, Data-Queries.php, Device-Templates.php, Graph-Templates.php, Data-Source-Templates.php, Aggregate-Templates.php, and Color-Templates.php
 echo   7. Test on mobile devices for responsive design
 echo   8. Verify all links point to .php files (not .html)
 echo.

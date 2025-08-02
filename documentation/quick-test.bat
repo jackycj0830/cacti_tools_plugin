@@ -193,6 +193,27 @@ if exist "Graph-Templates.php" (
     set missing_files=1
 )
 
+if exist "Data-Source-Templates.php" (
+    echo ✅ Data-Source-Templates.php - Found
+) else (
+    echo ❌ Data-Source-Templates.php - Missing
+    set missing_files=1
+)
+
+if exist "Aggregate-Templates.php" (
+    echo ✅ Aggregate-Templates.php - Found
+) else (
+    echo ❌ Aggregate-Templates.php - Missing
+    set missing_files=1
+)
+
+if exist "Color-Templates.php" (
+    echo ✅ Color-Templates.php - Found
+) else (
+    echo ❌ Color-Templates.php - Missing
+    set missing_files=1
+)
+
 if exist "test-multilingual-system.php" (
     echo ✅ test-multilingual-system.php - Found
 ) else (
@@ -399,6 +420,30 @@ if errorlevel 1 (
     echo ✅ Graph-Templates.php syntax OK
 )
 
+php -l Data-Source-Templates.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Data-Source-Templates.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Data-Source-Templates.php syntax OK
+)
+
+php -l Aggregate-Templates.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Aggregate-Templates.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Aggregate-Templates.php syntax OK
+)
+
+php -l Color-Templates.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Color-Templates.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Color-Templates.php syntax OK
+)
+
 echo.
 
 if defined syntax_errors (
@@ -440,6 +485,9 @@ echo   📝 Data Input Methods:  http://localhost:8000/Data-Input-Methods.php
 echo   🔍 Data Queries:       http://localhost:8000/Data-Queries.php
 echo   📋 Device Templates:   http://localhost:8000/Device-Templates.php
 echo   📊 Graph Templates:    http://localhost:8000/Graph-Templates.php
+echo   💾 Data Source Templates: http://localhost:8000/Data-Source-Templates.php
+echo   📈 Aggregate Templates: http://localhost:8000/Aggregate-Templates.php
+echo   🎨 Color Templates:     http://localhost:8000/Color-Templates.php
 echo.
 echo 🔧 Test Instructions:
 echo   1. Open the URLs above in your web browser

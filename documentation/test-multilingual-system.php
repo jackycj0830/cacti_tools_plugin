@@ -255,6 +255,26 @@ generatePageHeader('', 'test', true);
                 <td style="padding: 8px;">graph_items</td>
                 <td style="padding: 8px;"><?php _e('graph_items'); ?></td>
             </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">data_source_templates_title</td>
+                <td style="padding: 8px;"><?php _e('data_source_templates_title'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">aggregate_templates_title</td>
+                <td style="padding: 8px;"><?php _e('aggregate_templates_title'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">color_templates_title</td>
+                <td style="padding: 8px;"><?php _e('color_templates_title'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">aggregate_overview_title</td>
+                <td style="padding: 8px;"><?php _e('aggregate_overview_title'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">color_templates_intro</td>
+                <td style="padding: 8px;"><?php _e('color_templates_intro'); ?></td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -282,6 +302,9 @@ generatePageHeader('', 'test', true);
         <li><a href="Data-Queries.php">資料查詢 (Data-Queries.php)</a></li>
         <li><a href="Device-Templates.php">裝置範本 (Device-Templates.php)</a></li>
         <li><a href="Graph-Templates.php">圖形範本 (Graph-Templates.php)</a></li>
+        <li><a href="Data-Source-Templates.php">資料來源範本 (Data-Source-Templates.php)</a></li>
+        <li><a href="Aggregate-Templates.php">聚合範本 (Aggregate-Templates.php)</a></li>
+        <li><a href="Color-Templates.php">顏色範本 (Color-Templates.php)</a></li>
     </ul>
 </div>
 
