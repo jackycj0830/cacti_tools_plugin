@@ -299,6 +299,26 @@ generatePageHeader('', 'test', true);
                 <td style="padding: 8px;">networks_automation_title</td>
                 <td style="padding: 8px;"><?php _e('networks_automation_title'); ?></td>
             </tr>
+            <tr>
+                <td style="padding: 8px;">data_profiles_title</td>
+                <td style="padding: 8px;"><?php _e('data_profiles_title'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">cdefs_title</td>
+                <td style="padding: 8px;"><?php _e('cdefs_title'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">vdefs_title</td>
+                <td style="padding: 8px;"><?php _e('vdefs_title'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">colors_title</td>
+                <td style="padding: 8px;"><?php _e('colors_title'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">gprints_title</td>
+                <td style="padding: 8px;"><?php _e('gprints_title'); ?></td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -336,6 +356,11 @@ generatePageHeader('', 'test', true);
         <li><a href="Tree-Rules.php">樹規則 (Tree-Rules.php)</a></li>
         <li><a href="SNMP-Options.php">SNMP 選項 (SNMP-Options.php)</a></li>
         <li><a href="Networks.php">網路 (Networks.php)</a></li>
+        <li><a href="Data-Profiles.php">資料來源設定檔 (Data-Profiles.php)</a></li>
+        <li><a href="CDEFs.php">CDEF (CDEFs.php)</a></li>
+        <li><a href="VDEFs.php">VDEF (VDEFs.php)</a></li>
+        <li><a href="Colors.php">顏色 (Colors.php)</a></li>
+        <li><a href="GPRINTs.php">GPRINT (GPRINTs.php)</a></li>
     </ul>
 </div>
 

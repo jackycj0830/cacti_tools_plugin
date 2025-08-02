@@ -137,6 +137,11 @@ echo   📄 Graph-Rules.php - Graph rules guide (PHP version)
 echo   📄 Tree-Rules.php - Tree rules guide (PHP version)
 echo   📄 SNMP-Options.php - SNMP options guide (PHP version)
 echo   📄 Networks.php - Networks overview guide (PHP version)
+echo   📄 Data-Profiles.php - Data source profiles guide (PHP version)
+echo   📄 CDEFs.php - CDEFs guide (PHP version)
+echo   📄 VDEFs.php - VDEFs guide (PHP version)
+echo   📄 Colors.php - Colors guide (PHP version)
+echo   📄 GPRINTs.php - GPRINTs guide (PHP version)
 echo   📄 test-multilingual-system.php - System testing page
 echo   📄 *.php               - Converted PHP documentation files
 echo   📁 backup_html_*       - Backup of original HTML files
@@ -163,7 +168,7 @@ echo   2. Navigate to documentation.php in your browser
 echo   3. Test the system using test-multilingual-system.php
 echo   4. Test language switching using the dropdown in top-right corner
 echo   5. Navigate between pages to verify language persistence
-echo   6. Test specific pages like Requirements.php, Navigating-The-User-Interface.php, Principles-of-Operation.php, Graph-Overview.php, How-to-Graph-Your-Network.php, Viewing-Graphs.php, Devices.php, Sites.php, Trees.php, Graphs.php, Data-Sources.php, Aggregates.php, Data-Collectors.php, Spine-Data-Collection.php, Data-Input-Methods.php, Data-Queries.php, Device-Templates.php, Graph-Templates.php, Data-Source-Templates.php, Aggregate-Templates.php, Color-Templates.php, Automation-Networks.php, Discovered-Devices.php, Device-Rules.php, Graph-Rules.php, Tree-Rules.php, SNMP-Options.php, and Networks.php
+echo   6. Test specific pages like Requirements.php, Navigating-The-User-Interface.php, Principles-of-Operation.php, Graph-Overview.php, How-to-Graph-Your-Network.php, Viewing-Graphs.php, Devices.php, Sites.php, Trees.php, Graphs.php, Data-Sources.php, Aggregates.php, Data-Collectors.php, Spine-Data-Collection.php, Data-Input-Methods.php, Data-Queries.php, Device-Templates.php, Graph-Templates.php, Data-Source-Templates.php, Aggregate-Templates.php, Color-Templates.php, Automation-Networks.php, Discovered-Devices.php, Device-Rules.php, Graph-Rules.php, Tree-Rules.php, SNMP-Options.php, Networks.php, Data-Profiles.php, CDEFs.php, VDEFs.php, Colors.php, and GPRINTs.php
 echo   7. Test on mobile devices for responsive design
 echo   8. Verify all links point to .php files (not .html)
 echo.

@@ -263,6 +263,41 @@ if exist "Networks.php" (
     set missing_files=1
 )
 
+if exist "Data-Profiles.php" (
+    echo ✅ Data-Profiles.php - Found
+) else (
+    echo ❌ Data-Profiles.php - Missing
+    set missing_files=1
+)
+
+if exist "CDEFs.php" (
+    echo ✅ CDEFs.php - Found
+) else (
+    echo ❌ CDEFs.php - Missing
+    set missing_files=1
+)
+
+if exist "VDEFs.php" (
+    echo ✅ VDEFs.php - Found
+) else (
+    echo ❌ VDEFs.php - Missing
+    set missing_files=1
+)
+
+if exist "Colors.php" (
+    echo ✅ Colors.php - Found
+) else (
+    echo ❌ Colors.php - Missing
+    set missing_files=1
+)
+
+if exist "GPRINTs.php" (
+    echo ✅ GPRINTs.php - Found
+) else (
+    echo ❌ GPRINTs.php - Missing
+    set missing_files=1
+)
+
 if exist "test-multilingual-system.php" (
     echo ✅ test-multilingual-system.php - Found
 ) else (
@@ -549,6 +584,46 @@ if errorlevel 1 (
     echo ✅ Networks.php syntax OK
 )
 
+php -l Data-Profiles.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Data-Profiles.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Data-Profiles.php syntax OK
+)
+
+php -l CDEFs.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ CDEFs.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ CDEFs.php syntax OK
+)
+
+php -l VDEFs.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ VDEFs.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ VDEFs.php syntax OK
+)
+
+php -l Colors.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Colors.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Colors.php syntax OK
+)
+
+php -l GPRINTs.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ GPRINTs.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ GPRINTs.php syntax OK
+)
+
 echo.
 
 if defined syntax_errors (
@@ -600,6 +675,11 @@ echo   📊 Graph Rules:         http://localhost:8000/Graph-Rules.php
 echo   🌳 Tree Rules:          http://localhost:8000/Tree-Rules.php
 echo   🔧 SNMP Options:        http://localhost:8000/SNMP-Options.php
 echo   🌐 Networks:            http://localhost:8000/Networks.php
+echo   📊 Data Profiles:       http://localhost:8000/Data-Profiles.php
+echo   🧮 CDEFs:               http://localhost:8000/CDEFs.php
+echo   📈 VDEFs:               http://localhost:8000/VDEFs.php
+echo   🎨 Colors:              http://localhost:8000/Colors.php
+echo   📝 GPRINTs:             http://localhost:8000/GPRINTs.php
 echo.
 echo 🔧 Test Instructions:
 echo   1. Open the URLs above in your web browser
