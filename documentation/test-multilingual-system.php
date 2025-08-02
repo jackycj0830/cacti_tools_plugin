@@ -327,6 +327,18 @@ generatePageHeader('', 'test', true);
                 <td style="padding: 8px;">export_template_title</td>
                 <td style="padding: 8px;"><?php _e('export_template_title'); ?></td>
             </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">settings_general</td>
+                <td style="padding: 8px;"><?php _e('settings_general'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">plugin_overview</td>
+                <td style="padding: 8px;"><?php _e('plugin_overview'); ?></td>
+            </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">video_tutorials</td>
+                <td style="padding: 8px;"><?php _e('video_tutorials'); ?></td>
+            </tr>
         </tbody>
     </table>
 </div>

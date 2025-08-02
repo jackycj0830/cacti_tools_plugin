@@ -239,6 +239,7 @@ if (isset($_GET['lang'])) {
 <h3 id="automation"><?php _e('automation'); ?></h3>
 <ul>
 <li><a href="Networks.php"><?php _e('networks'); ?></a></li>
+<li><a href="Automation-Networks.php"><?php _e('automation_networks'); ?></a></li>
 <li><a href="Discovered-Devices.php"><?php _e('discovered_devices'); ?></a></li>
 <li><a href="Device-Rules.php"><?php _e('device_rules'); ?></a></li>
 <li><a href="Graph-Rules.php"><?php _e('graph_rules'); ?></a></li>
@@ -264,17 +265,144 @@ if (isset($_GET['lang'])) {
 <h2 id="advanced-operations"><?php _e('section_advanced'); ?></h2>
 <p><?php _e('section_advanced_desc'); ?></p>
 
+<h3 id="settings"><?php _e('settings'); ?></h3>
+<h4 id="settings-without-auth"><?php _e('settings_without_auth'); ?></h4>
+<ul>
+<li><a href="Settings-General.html"><?php _e('settings_general'); ?></a></li>
+<li><a href="Settings-Paths.html"><?php _e('settings_paths'); ?></a></li>
+<li><a href="Settings-Device-Defaults.html"><?php _e('settings_device_defaults'); ?></a></li>
+<li><a href="Settings-Poller.html"><?php _e('settings_poller'); ?></a></li>
+<li><a href="Settings-Data.html"><?php _e('settings_data'); ?></a></li>
+<li><a href="Settings-Visual.html"><?php _e('settings_visual'); ?></a></li>
+<li><a href="Settings-Performance.html"><?php _e('settings_performance'); ?></a></li>
+<li><a href="Settings-Spikes.html"><?php _e('settings_spikes'); ?></a></li>
+<li><a href="Settings-Mail-Reporting-DNS.html"><?php _e('settings_mail_reporting_dns'); ?></a></li>
+</ul>
+
+<h4 id="settings-auth"><?php _e('settings_auth'); ?></h4>
+<ul>
+<li><a href="Settings-Auth-Local.html"><?php _e('settings_auth_local'); ?></a></li>
+<li><a href="Settings-Auth-LDAP.html"><?php _e('settings_auth_ldap'); ?></a></li>
+<li><a href="Settings-Auth-Basic.html"><?php _e('settings_auth_basic'); ?></a></li>
+<li><a href="Settings-Domains.html"><?php _e('settings_domains'); ?></a></li>
+</ul>
+
+<h3 id="configuration"><?php _e('configuration_users_groups_domains'); ?></h3>
+<ul>
+<li><a href="User-Management.html"><?php _e('user_management'); ?></a></li>
+<li><a href="User-Group-Management.html"><?php _e('user_group_management'); ?></a></li>
+<li><a href="User-Domains.html"><?php _e('user_domains'); ?></a></li>
+</ul>
+
+<h3 id="plugins"><?php _e('configuration_plugins'); ?></h3>
+<ul>
+<li><a href="Plugin-Management.html"><?php _e('plugin_management'); ?></a></li>
+</ul>
+
+<h3 id="utilities"><?php _e('utilities'); ?></h3>
+<ul>
+<li><a href="System-Utilities.html"><?php _e('system_utilities'); ?></a></li>
+<li><a href="Data-Debug.html"><?php _e('data_debug'); ?></a></li>
+<li><a href="External-Links.html"><?php _e('external_links'); ?></a></li>
+</ul>
+
+<h3 id="reporting"><?php _e('reporting'); ?></h3>
+<ul>
+<li><a href="Reports-Admin.html"><?php _e('reports_admin'); ?></a></li>
+<li><a href="Reports-User.html"><?php _e('reports_user'); ?></a></li>
+<li><a href="Reports-Items.html"><?php _e('reports_items'); ?></a></li>
+<li><a href="Reports-Preview.html"><?php _e('reports_preview'); ?></a></li>
+<li><a href="Reports-Events.html"><?php _e('reports_events'); ?></a></li>
+<li><a href="Reports-Other-Options.html"><?php _e('reports_other_options'); ?></a></li>
+</ul>
+
+<h3 id="other-advanced"><?php _e('other_advanced_topics'); ?></h3>
+<ul>
+<li><a href="The-Cacti-Log.html"><?php _e('cacti_log'); ?></a></li>
+<li><a href="Command-Line-Scripts.html"><?php _e('command_line_scripts'); ?></a></li>
+<li><a href="PHP-Script-Server.html"><?php _e('php_script_server'); ?></a></li>
+<li><a href="Boost.html"><?php _e('boost'); ?></a></li>
+<li><a href="Frequently-Asked-Questions.html"><?php _e('frequently_asked_questions'); ?></a></li>
+<li><a href="Replacement-Variables.html"><?php _e('replacement_variables'); ?></a></li>
+<li><a href="RRDtool-Specific-Features.html"><?php _e('rrdtool_specific_features'); ?></a></li>
+<li><a href="RRDProxy-Specific-Features.html"><?php _e('rrdproxy_specific_features'); ?></a></li>
+<li><a href="Spikekill.html"><?php _e('spikekill'); ?></a></li>
+<li><a href="Debugging.html"><?php _e('debugging'); ?></a></li>
+<li><a href="Version-Specific-Release-Notes.html"><?php _e('version_specific_release_notes'); ?></a></li>
+</ul>
+
 <h2 id="plugin-development"><?php _e('section_plugin_dev'); ?></h2>
 <p><?php _e('section_plugin_dev_desc'); ?></p>
+
+<ul>
+<li><a href="Plugin-Overview.html"><?php _e('plugin_overview'); ?></a></li>
+<li><a href="Plugin-Guidelines.html"><?php _e('plugin_guidelines'); ?></a></li>
+<li><a href="Creating-Plugins.html"><?php _e('creating_plugins'); ?></a></li>
+<li><a href="Plugin-References.html"><?php _e('plugin_references'); ?></a></li>
+<li><a href="Plugin-Hook-API-Ref.html"><?php _e('plugin_hook_api_ref'); ?></a></li>
+</ul>
+
+<h3 id="supported-plugins"><?php _e('supported_plugins'); ?></h3>
+<ul>
+<li><a href="Syslog-Plugin.html"><?php _e('syslog_plugin'); ?></a></li>
+<li><a href="Mactrack-Plugin.html"><?php _e('mactrack_plugin'); ?></a></li>
+<li><a href="ReportIt-Plugin.html"><?php _e('reportit_plugin'); ?></a></li>
+</ul>
 
 <h2 id="how-tos"><?php _e('section_howtos'); ?></h2>
 <p><?php _e('section_howtos_desc'); ?></p>
 
+<ul>
+<li><a href="How-To-Work-with-Templates.html"><?php _e('how_to_work_with_templates'); ?></a></li>
+<li><a href="How-To-Create-Data-Input-Method.html"><?php _e('how_to_create_data_input_method'); ?></a></li>
+<li><a href="How-To-Data-Queries.html"><?php _e('how_to_data_queries'); ?></a></li>
+<li><a href="How-To-Existing-SNMP-Data-Queries.html"><?php _e('how_to_existing_snmp_data_queries'); ?></a></li>
+<li><a href="How-To-New-SNMP-Data-Queries.html"><?php _e('how_to_new_snmp_data_queries'); ?></a></li>
+<li><a href="How-To-Script-Data-Queries.html"><?php _e('how_to_script_data_queries'); ?></a></li>
+<li><a href="How-To-Setup-Remote-Pollers.html"><?php _e('how_to_setup_remote_pollers'); ?></a></li>
+<li><a href="How-To-Determine-Template-Version.html"><?php _e('how_to_determine_template_version'); ?></a></li>
+<li><a href="How-To-SSH-Tunnels.html"><?php _e('how_to_ssh_tunnels'); ?></a></li>
+<li><a href="Enable-SSL-for-Cacti.html"><?php _e('enable_ssl_for_cacti'); ?></a></li>
+<li><a href="Graph-a-Single-SNMP-OID.html"><?php _e('graph_single_snmp_oid'); ?></a></li>
+<li><a href="How-To-snmpd-custom-script.html"><?php _e('how_to_snmp_custom_script'); ?></a></li>
+<li><a href="How-To-poller-5-to-1-min.html"><?php _e('how_to_poller_5_to_1_min'); ?></a></li>
+<li><a href="Convert-package-to-source.html"><?php _e('convert_package_to_source'); ?></a></li>
+</ul>
+
+<h3 id="video-tutorials"><?php _e('video_tutorials'); ?></h3>
+<p><?php _e('video_tutorials_desc'); ?></p>
+<ul>
+<li><a href="https://www.youtube.com/channel/UCE-7Zq8H5bBhJJJqJJJJJJJ" target="_blank"><?php _e('cacti_youtube_channel'); ?></a></li>
+</ul>
+
 <h2 id="contributing"><?php _e('section_contributing'); ?></h2>
 <p><?php _e('section_contributing_desc'); ?></p>
 
+<ul>
+<li><a href="Open-Source-Code.html"><?php _e('open_source_code'); ?></a></li>
+<li><a href="Language-Translations.html"><?php _e('language_translations'); ?></a></li>
+</ul>
+
 <h2 id="development-standards"><?php _e('section_standards'); ?></h2>
 <p><?php _e('section_standards_desc'); ?></p>
+
+<ul>
+<li><a href="Standards-Documentation.html"><?php _e('standards_documentation'); ?></a></li>
+<li><a href="Standards-Code-Formatting.html"><?php _e('standards_code_formatting'); ?></a></li>
+<li><a href="Standards-PHP-Spec-Constructs.html"><?php _e('standards_php_spec_constructs'); ?></a></li>
+<li><a href="Standards-FileSystem-Layout.html"><?php _e('standards_filesystem_layout'); ?></a></li>
+<li><a href="Standards-Patch-Creation.html"><?php _e('standards_patch_creation'); ?></a></li>
+<li><a href="Standards-SQL.html"><?php _e('standards_sql'); ?></a></li>
+<li><a href="Standards-Security.html"><?php _e('standards_security'); ?></a></li>
+</ul>
+
+<h2 id="template-specific"><?php _e('template_specific_documentation'); ?></h2>
+<p><?php _e('template_specific_desc'); ?></p>
+
+<ul>
+<li><a href="Apache-Server-Template.html"><?php _e('apache_server_template'); ?></a></li>
+<li><a href="ESXi-VMWare-Template.html"><?php _e('esxi_vmware_template'); ?></a></li>
+</ul>
 
 <hr />
 <p><?php _e('copyright'); ?></p>
