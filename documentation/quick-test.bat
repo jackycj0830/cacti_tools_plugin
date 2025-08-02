@@ -186,6 +186,13 @@ if exist "Device-Templates.php" (
     set missing_files=1
 )
 
+if exist "Graph-Templates.php" (
+    echo ✅ Graph-Templates.php - Found
+) else (
+    echo ❌ Graph-Templates.php - Missing
+    set missing_files=1
+)
+
 if exist "test-multilingual-system.php" (
     echo ✅ test-multilingual-system.php - Found
 ) else (
@@ -384,6 +391,14 @@ if errorlevel 1 (
     echo ✅ Device-Templates.php syntax OK
 )
 
+php -l Graph-Templates.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Graph-Templates.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Graph-Templates.php syntax OK
+)
+
 echo.
 
 if defined syntax_errors (
@@ -424,6 +439,7 @@ echo   ⚡ Spine Data Collection: http://localhost:8000/Spine-Data-Collection.ph
 echo   📝 Data Input Methods:  http://localhost:8000/Data-Input-Methods.php
 echo   🔍 Data Queries:       http://localhost:8000/Data-Queries.php
 echo   📋 Device Templates:   http://localhost:8000/Device-Templates.php
+echo   📊 Graph Templates:    http://localhost:8000/Graph-Templates.php
 echo.
 echo 🔧 Test Instructions:
 echo   1. Open the URLs above in your web browser
