@@ -268,8 +268,8 @@ if (isset($_GET['lang'])) {
 <h3 id="settings"><?php _e('settings'); ?></h3>
 <h4 id="settings-without-auth"><?php _e('settings_without_auth'); ?></h4>
 <ul>
-<li><a href="Settings-General.html"><?php _e('settings_general'); ?></a></li>
-<li><a href="Settings-Paths.html"><?php _e('settings_paths'); ?></a></li>
+<li><a href="Settings-General.php"><?php _e('settings_general'); ?></a></li>
+<li><a href="Settings-Paths.php"><?php _e('settings_paths'); ?></a></li>
 <li><a href="Settings-Device-Defaults.html"><?php _e('settings_device_defaults'); ?></a></li>
 <li><a href="Settings-Poller.html"><?php _e('settings_poller'); ?></a></li>
 <li><a href="Settings-Data.html"><?php _e('settings_data'); ?></a></li>
@@ -289,7 +289,7 @@ if (isset($_GET['lang'])) {
 
 <h3 id="configuration"><?php _e('configuration_users_groups_domains'); ?></h3>
 <ul>
-<li><a href="User-Management.html"><?php _e('user_management'); ?></a></li>
+<li><a href="User-Management.php"><?php _e('user_management'); ?></a></li>
 <li><a href="User-Group-Management.html"><?php _e('user_group_management'); ?></a></li>
 <li><a href="User-Domains.html"><?php _e('user_domains'); ?></a></li>
 </ul>
@@ -322,7 +322,7 @@ if (isset($_GET['lang'])) {
 <li><a href="Command-Line-Scripts.html"><?php _e('command_line_scripts'); ?></a></li>
 <li><a href="PHP-Script-Server.html"><?php _e('php_script_server'); ?></a></li>
 <li><a href="Boost.html"><?php _e('boost'); ?></a></li>
-<li><a href="Frequently-Asked-Questions.html"><?php _e('frequently_asked_questions'); ?></a></li>
+<li><a href="Frequently-Asked-Questions.php"><?php _e('frequently_asked_questions'); ?></a></li>
 <li><a href="Replacement-Variables.html"><?php _e('replacement_variables'); ?></a></li>
 <li><a href="RRDtool-Specific-Features.html"><?php _e('rrdtool_specific_features'); ?></a></li>
 <li><a href="RRDProxy-Specific-Features.html"><?php _e('rrdproxy_specific_features'); ?></a></li>

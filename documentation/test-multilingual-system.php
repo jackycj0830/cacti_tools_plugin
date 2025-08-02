@@ -383,6 +383,10 @@ generatePageHeader('', 'test', true);
         <li><a href="GPRINTs.php">GPRINT (GPRINTs.php)</a></li>
         <li><a href="Import-Template.php">範本匯入 (Import-Template.php)</a></li>
         <li><a href="Export-Template.php">範本匯出 (Export-Template.php)</a></li>
+        <li><a href="Settings-General.php">一般設定 (Settings-General.php)</a></li>
+        <li><a href="Settings-Paths.php">路徑設定 (Settings-Paths.php)</a></li>
+        <li><a href="User-Management.php">使用者管理 (User-Management.php)</a></li>
+        <li><a href="Frequently-Asked-Questions.php">常見問題 (Frequently-Asked-Questions.php)</a></li>
     </ul>
 </div>
 

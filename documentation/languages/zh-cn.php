@@ -1790,6 +1790,25 @@ chmod u+s /usr/local/spine/bin/spine',
 
     // Additional missing keys
     'other_advanced_topics' => '其他高级主题',
-    'plugin_management' => '插件管理'
+    'plugin_management' => '插件管理',
+
+    // Basic page titles and content for converted HTML files
+    'page_title_settings_paths' => 'Cacti - 设置路径',
+    'settings_paths_title' => '设置路径',
+    'settings_paths_intro' => '本节描述 Cacti 中的路径设置。',
+    'settings_paths_description' => '路径设置定义 Cacti 可以找到各种外部程序和文件的位置。',
+    'settings_paths_note' => '请确保所有路径都为您的系统正确配置。',
+
+    'page_title_user_management' => 'Cacti - 用户管理',
+    'user_management_title' => '用户管理',
+    'user_management_intro' => '本节描述 Cacti 中的用户管理。',
+    'user_management_description' => '用户管理允许您创建、修改和删除用户账户。',
+    'user_management_note' => '正确的用户管理对系统安全至关重要。',
+
+    'page_title_frequently_asked_questions' => 'Cacti - 常见问题',
+    'frequently_asked_questions_title' => '常见问题',
+    'frequently_asked_questions_intro' => '本节包含有关 Cacti 的常见问题。',
+    'frequently_asked_questions_description' => '查找常见问题的答案和故障排除提示。',
+    'frequently_asked_questions_note' => '如果您在这里找不到答案，请查看社区论坛。'
 );
 ?>

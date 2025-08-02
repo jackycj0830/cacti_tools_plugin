@@ -312,6 +312,34 @@ if exist "Export-Template.php" (
     set missing_files=1
 )
 
+if exist "Settings-General.php" (
+    echo ✅ Settings-General.php - Found
+) else (
+    echo ❌ Settings-General.php - Missing
+    set missing_files=1
+)
+
+if exist "Settings-Paths.php" (
+    echo ✅ Settings-Paths.php - Found
+) else (
+    echo ❌ Settings-Paths.php - Missing
+    set missing_files=1
+)
+
+if exist "User-Management.php" (
+    echo ✅ User-Management.php - Found
+) else (
+    echo ❌ User-Management.php - Missing
+    set missing_files=1
+)
+
+if exist "Frequently-Asked-Questions.php" (
+    echo ✅ Frequently-Asked-Questions.php - Found
+) else (
+    echo ❌ Frequently-Asked-Questions.php - Missing
+    set missing_files=1
+)
+
 if exist "test-multilingual-system.php" (
     echo ✅ test-multilingual-system.php - Found
 ) else (
@@ -654,6 +682,38 @@ if errorlevel 1 (
     echo ✅ Export-Template.php syntax OK
 )
 
+php -l Settings-General.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Settings-General.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Settings-General.php syntax OK
+)
+
+php -l Settings-Paths.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Settings-Paths.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Settings-Paths.php syntax OK
+)
+
+php -l User-Management.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ User-Management.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ User-Management.php syntax OK
+)
+
+php -l Frequently-Asked-Questions.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Frequently-Asked-Questions.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Frequently-Asked-Questions.php syntax OK
+)
+
 echo.
 
 if defined syntax_errors (
@@ -712,6 +772,10 @@ echo   🎨 Colors:              http://localhost:8000/Colors.php
 echo   📝 GPRINTs:             http://localhost:8000/GPRINTs.php
 echo   📥 Import Template:     http://localhost:8000/Import-Template.php
 echo   📤 Export Template:     http://localhost:8000/Export-Template.php
+echo   ⚙️  Settings General:    http://localhost:8000/Settings-General.php
+echo   📁 Settings Paths:      http://localhost:8000/Settings-Paths.php
+echo   👤 User Management:     http://localhost:8000/User-Management.php
+echo   ❓ FAQ:                 http://localhost:8000/Frequently-Asked-Questions.php
 echo.
 echo 🔧 Test Instructions:
 echo   1. Open the URLs above in your web browser
