@@ -319,6 +319,14 @@ generatePageHeader('', 'test', true);
                 <td style="padding: 8px;">gprints_title</td>
                 <td style="padding: 8px;"><?php _e('gprints_title'); ?></td>
             </tr>
+            <tr style="background: #f5f5f5;">
+                <td style="padding: 8px;">import_template_title</td>
+                <td style="padding: 8px;"><?php _e('import_template_title'); ?></td>
+            </tr>
+            <tr>
+                <td style="padding: 8px;">export_template_title</td>
+                <td style="padding: 8px;"><?php _e('export_template_title'); ?></td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -361,6 +369,8 @@ generatePageHeader('', 'test', true);
         <li><a href="VDEFs.php">VDEF (VDEFs.php)</a></li>
         <li><a href="Colors.php">顏色 (Colors.php)</a></li>
         <li><a href="GPRINTs.php">GPRINT (GPRINTs.php)</a></li>
+        <li><a href="Import-Template.php">範本匯入 (Import-Template.php)</a></li>
+        <li><a href="Export-Template.php">範本匯出 (Export-Template.php)</a></li>
     </ul>
 </div>
 

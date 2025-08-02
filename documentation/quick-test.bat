@@ -298,6 +298,20 @@ if exist "GPRINTs.php" (
     set missing_files=1
 )
 
+if exist "Import-Template.php" (
+    echo ✅ Import-Template.php - Found
+) else (
+    echo ❌ Import-Template.php - Missing
+    set missing_files=1
+)
+
+if exist "Export-Template.php" (
+    echo ✅ Export-Template.php - Found
+) else (
+    echo ❌ Export-Template.php - Missing
+    set missing_files=1
+)
+
 if exist "test-multilingual-system.php" (
     echo ✅ test-multilingual-system.php - Found
 ) else (
@@ -624,6 +638,22 @@ if errorlevel 1 (
     echo ✅ GPRINTs.php syntax OK
 )
 
+php -l Import-Template.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Import-Template.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Import-Template.php syntax OK
+)
+
+php -l Export-Template.php >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Export-Template.php has syntax errors
+    set syntax_errors=1
+) else (
+    echo ✅ Export-Template.php syntax OK
+)
+
 echo.
 
 if defined syntax_errors (
@@ -680,6 +710,8 @@ echo   🧮 CDEFs:               http://localhost:8000/CDEFs.php
 echo   📈 VDEFs:               http://localhost:8000/VDEFs.php
 echo   🎨 Colors:              http://localhost:8000/Colors.php
 echo   📝 GPRINTs:             http://localhost:8000/GPRINTs.php
+echo   📥 Import Template:     http://localhost:8000/Import-Template.php
+echo   📤 Export Template:     http://localhost:8000/Export-Template.php
 echo.
 echo 🔧 Test Instructions:
 echo   1. Open the URLs above in your web browser
