@@ -2,7 +2,7 @@
 /**
  * Cacti Documentation - General Settings
  * 
- * This page provides comprehensive information about General Settings in Cacti
+ * This page explains the general settings configuration in Cacti
  * with multilingual support.
  * 
  * @package Cacti Documentation
