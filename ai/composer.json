@@ -1,0 +1,11 @@
+{
+  "require": {
+    "guzzlehttp/guzzle": "^7.0",
+    "predis/predis": "^2.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "CactiAI\\": "src/"
+    }
+  }
+}
