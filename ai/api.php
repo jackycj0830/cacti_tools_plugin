@@ -57,8 +57,7 @@ $messages[] = ['role' => 'user', 'content' => mb_substr($userMsg, 0, 2000)];
 
 $lm = new LMStudioClient('http://172.16.15.112:1234/v1');
 $start = microtime(true);
-$timeout = isset($input['timeout']) ? max(5, min(300, intval($input['timeout']))) : 300; // 允许前端指定 5-300 秒
-$result = $lm->sendMessage($messages, $model, $timeout);
+$result = $lm->sendMessage($messages, $model);
 $duration = round((microtime(true) - $start) * 1000);
 error_log('[AI api] duration=' . $duration . 'ms');
 

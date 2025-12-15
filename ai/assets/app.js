@@ -5,13 +5,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatBox = document.getElementById('chat-box');
     const errorMsg = document.getElementById('error-msg');
     let clearBtn = document.getElementById('clear-session');
-    let thinkingBar = document.getElementById('thinking-bar');
-    if (!thinkingBar) {
-        thinkingBar = document.createElement('div');
-        thinkingBar.id = 'thinking-bar';
-        thinkingBar.style.cssText = 'margin:6px 0;color:#555;font-size:13px;display:none;';
-        chatBox.parentNode.insertBefore(thinkingBar, chatBox.nextSibling);
-    }
     if (!clearBtn) {
         clearBtn = document.createElement('button');
         clearBtn.type = 'button';
@@ -54,70 +47,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    let thinkingTimer = null;
-    let thinkingSeconds = 0;
-    let abortController = null;
-
-    function startThinking() {
-        thinkingSeconds = 0;
-        thinkingBar.style.display = 'block';
-        thinkingBar.textContent = '正在思考 (0s)...';
-        thinkingTimer = setInterval(()=>{
-            thinkingSeconds++;
-            thinkingBar.textContent = '正在思考 (' + thinkingSeconds + 's)...';
-            if (thinkingSeconds >= 300) {
-                thinkingBar.textContent = '已达300s，可点击“强制停止”';
-                stopThinking();
-            }
-        },1000);
-    }
-    function stopThinking() {
-        if (thinkingTimer) clearInterval(thinkingTimer);
-        thinkingTimer = null;
-        abortController = null;
-        setTimeout(()=>{ if (!thinkingTimer) thinkingBar.style.display='none'; }, 800);
-    }
-
-    // 强制停止按钮
-    let forceBtn = document.getElementById('force-stop');
-    if (!forceBtn) {
-        forceBtn = document.createElement('button');
-        forceBtn.type = 'button';
-        forceBtn.id = 'force-stop';
-        forceBtn.textContent = '强制停止';
-        forceBtn.style.cssText='margin-left:8px;display:none;background:#d9534f;color:#fff;border:none;padding:6px 10px;border-radius:4px;';
-        form.appendChild(forceBtn);
-    }
-    forceBtn.addEventListener('click', ()=>{
-        if (abortController) {
-            abortController.abort();
-            errorMsg.textContent = '已强制停止';
-            forceBtn.style.display='none';
-            stopThinking();
-        }
-    });
-
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         errorMsg.textContent = '';
         const message = input.value.trim();
         if (!message) { errorMsg.textContent = '请输入内容再发送'; return; }
-        const model = modelSelect && modelSelect.value ? modelSelect.value : undefined;
-        abortController = new AbortController();
-        startThinking();
-        forceBtn.style.display='inline-block';
-        fetch('api.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, model, timeout:300 }),
-            signal: abortController.signal
-        })
-        .then(async res => {
-            let data;
-            try { data = await res.json(); }
-            catch (err) { throw new Error('NON_JSON:' + await res.text()); }
-            return data; })
-        .then(data => {
+    const model = modelSelect && modelSelect.value ? modelSelect.value : undefined;
+    post({ message, model }).then(data => {
             if (data.error) {
                 errorMsg.textContent = errorMap[data.error] || ('未知错误: ' + data.error);
                 console.error('后端错误:', data);
@@ -125,17 +61,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 render(data.messages);
                 input.value = '';
             }
-            forceBtn.style.display='none';
-            stopThinking();
         }).catch(err => {
-            if (err.name === 'AbortError') {
-                errorMsg.textContent = '请求已取消';
-            } else {
-                errorMsg.textContent = '网络或解析错误: ' + err.message;
-                console.error('Fetch异常:', err);
-            }
-            forceBtn.style.display='none';
-            stopThinking();
+            errorMsg.textContent = '网络或解析错误: ' + err.message;
+            console.error('Fetch异常:', err);
         });
     });
 
