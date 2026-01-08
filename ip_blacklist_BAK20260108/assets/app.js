@@ -1,0 +1,768 @@
+/**
+ * IP Blacklist Query System - Frontend JavaScript
+ * 黑名單IP查詢系統 - 前端腳本
+ */
+
+const API_URL = 'api.php';
+let currentLang = 'zh';
+
+const i18n = {
+    zh: {
+        total_blacklisted: '黑名單IP總數',
+        last_updated: '最後更新',
+        single_query: '單一查詢',
+        batch_query: '批量查詢',
+        history: '查詢歷史',
+        geoip_apis: 'GeoIP APIs',
+        query: '查詢',
+        refresh: '刷新',
+        quick_test: '快速測試:',
+        loading: '查詢中...',
+        no_results: '無查詢結果',
+        geo_info: '地理位置',
+        threat_info: '威脅情報',
+        country: '國家',
+        region: '地區',
+        city: '城市',
+        isp: 'ISP',
+        org: '組織',
+        threat_type: '威脅類型',
+        severity: '嚴重程度',
+        first_seen: '首次發現',
+        last_seen: '最近發現',
+        report_count: '舉報次數',
+        total: '總計',
+        blocked: '已封鎖',
+        safe: '安全',
+        ip: 'IP地址',
+        status: '狀態',
+        timestamp: '查詢時間',
+        cidr_range: 'CIDR範圍',
+        blacklisted_ips: '黑名單IP列表',
+        provider: '提供者',
+        priority: '優先順序',
+        rate_limit: '請求限制',
+        enabled: '已啟用',
+        disabled: '已停用',
+        requires_key: '需要API金鑰',
+        geo_source: '數據來源',
+        // New translations for aggregated display
+        providers_responded: '個提供者已回應',
+        provider_details: '各提供者詳細數據',
+        show_details: '顯示詳情',
+        hide_details: '隱藏詳情',
+        no_provider_data: '無提供者數據',
+        no_response: '無回應',
+        risk_assessment: '風險評估',
+        blacklist_check: '黑名單檢查',
+        providers_data: '提供者數據',
+        recommendation: '建議',
+        risk_factors: '風險因素',
+        high_risk: '高風險',
+        medium_risk: '中等風險',
+        low_risk: '低風險',
+        // Fortigate CLI translations
+        fortigate_cli: '防火牆指令',
+        input_ips: '輸入 IP 地址',
+        address_prefix: '地址名稱前綴',
+        subnet_mask: '子網掩碼',
+        generate_cli: '產生指令',
+        clear: '清除',
+        load_blacklist: '載入黑名單 IP',
+        generated_commands: '產生的指令',
+        ips_processed: '個 IP 已處理',
+        copy_to_clipboard: '複製到剪貼簿',
+        download_file: '下載檔案',
+        validation_errors: '驗證錯誤',
+        usage_tips: '使用提示',
+        tip_1: '輸入的 IP 地址會自動驗證，無效的 IP 會被忽略',
+        tip_2: '產生的指令可直接貼入 Fortigate CLI 執行',
+        tip_3: '建議先在測試環境驗證指令後再應用至生產環境',
+        tip_4: '點擊「載入黑名單 IP」可自動載入系統中的黑名單 IP',
+        copied_success: '已複製到剪貼簿！',
+        no_valid_ips: '未找到有效的 IP 地址',
+        invalid_ip_format: '無效的 IP 格式',
+        // Risk methodology and version history
+        risk_methodology: '風險評估說明',
+        version_history: '版本歷史'
+    },
+    en: {
+        total_blacklisted: 'Total Blacklisted',
+        last_updated: 'Last Updated',
+        single_query: 'Single Query',
+        batch_query: 'Batch Query',
+        history: 'History',
+        geoip_apis: 'GeoIP APIs',
+        query: 'Query',
+        refresh: 'Refresh',
+        quick_test: 'Quick Test:',
+        loading: 'Loading...',
+        no_results: 'No results',
+        geo_info: 'GeoIP Info',
+        threat_info: 'Threat Info',
+        country: 'Country',
+        region: 'Region',
+        city: 'City',
+        isp: 'ISP',
+        org: 'Organization',
+        threat_type: 'Threat Type',
+        severity: 'Severity',
+        first_seen: 'First Seen',
+        last_seen: 'Last Seen',
+        report_count: 'Reports',
+        total: 'Total',
+        blocked: 'Blocked',
+        safe: 'Safe',
+        ip: 'IP Address',
+        status: 'Status',
+        timestamp: 'Time',
+        cidr_range: 'CIDR Range',
+        blacklisted_ips: 'Blacklisted IPs',
+        provider: 'Provider',
+        priority: 'Priority',
+        rate_limit: 'Rate Limit',
+        enabled: 'Enabled',
+        disabled: 'Disabled',
+        requires_key: 'Requires API Key',
+        geo_source: 'Data Source',
+        // New translations for aggregated display
+        providers_responded: 'providers responded',
+        provider_details: 'Provider Details',
+        show_details: 'Show Details',
+        hide_details: 'Hide Details',
+        no_provider_data: 'No provider data available',
+        no_response: 'No response',
+        risk_assessment: 'Risk Assessment',
+        blacklist_check: 'Blacklist Check',
+        providers_data: 'Providers Data',
+        recommendation: 'Recommendation',
+        risk_factors: 'Risk Factors',
+        high_risk: 'High Risk',
+        medium_risk: 'Medium Risk',
+        low_risk: 'Low Risk',
+        // Fortigate CLI translations
+        fortigate_cli: 'Fortigate CLI',
+        input_ips: 'Input IP Addresses',
+        address_prefix: 'Address Name Prefix',
+        subnet_mask: 'Subnet Mask',
+        generate_cli: 'Generate CLI',
+        clear: 'Clear',
+        load_blacklist: 'Load Blacklist IPs',
+        generated_commands: 'Generated Commands',
+        ips_processed: 'IPs processed',
+        copy_to_clipboard: 'Copy to Clipboard',
+        download_file: 'Download File',
+        validation_errors: 'Validation Errors',
+        usage_tips: 'Usage Tips',
+        tip_1: 'Invalid IP addresses will be automatically filtered out',
+        tip_2: 'Generated commands can be pasted directly into Fortigate CLI',
+        tip_3: 'Test commands in a lab environment before applying to production',
+        tip_4: 'Click "Load Blacklist IPs" to automatically load system blacklist IPs',
+        copied_success: 'Copied to clipboard!',
+        no_valid_ips: 'No valid IP addresses found',
+        invalid_ip_format: 'Invalid IP format',
+        // Risk methodology and version history
+        risk_methodology: 'Risk Methodology',
+        version_history: 'Version History'
+    }
+};
+
+function t(key) { return i18n[currentLang][key] || key; }
+
+function setLang(lang) {
+    currentLang = lang;
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.getElementById('btn-zh').classList.toggle('active', lang === 'zh');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.textContent = t(el.dataset.i18n);
+    });
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+    document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+    document.getElementById(`${tab}Panel`).classList.remove('hidden');
+    if (tab === 'history') loadHistory();
+    if (tab === 'geoapi') loadGeoAPIProviders();
+}
+
+function showLoading(containerId) {
+    document.getElementById(containerId).innerHTML = `<div class="loading">${t('loading')}</div>`;
+}
+
+function showError(containerId, message) {
+    document.getElementById(containerId).innerHTML = `<div class="error">${message}</div>`;
+}
+
+async function loadStats() {
+    try {
+        const response = await fetch(`${API_URL}?action=stats`);
+        const data = await response.json();
+        document.getElementById('totalBlacklisted').textContent = data.totalBlacklisted || 0;
+        // Display timestamp with timezone information on two lines
+        const lastUpdatedEl = document.getElementById('lastUpdated');
+        if (data.lastUpdated) {
+            // Use innerHTML to render the <br> tag for line break
+            lastUpdatedEl.innerHTML = `${data.lastUpdated}<br><span class="timezone-info"><font color="#000000">(Asia/Taipei GMT+8)</font></span>`;
+        } else {
+            lastUpdatedEl.textContent = '-';
+        }
+    } catch (e) { console.error('Failed to load stats:', e); }
+}
+
+function testIP(ip) {
+    document.getElementById('ipInput').value = ip;
+    querySingleIP();
+}
+
+async function querySingleIP() {
+    const ip = document.getElementById('ipInput').value.trim();
+    if (!ip) return;
+
+    showLoading('singleResult');
+    try {
+        const response = await fetch(`${API_URL}?action=query&ip=${encodeURIComponent(ip)}`);
+        const data = await response.json();
+        if (data.error) {
+            showError('singleResult', data.error);
+            return;
+        }
+        document.getElementById('singleResult').innerHTML = data.type === 'cidr_query'
+            ? renderCIDRResult(data) : renderSingleResult(data);
+    } catch (e) { showError('singleResult', e.message); }
+}
+
+function renderSingleResult(data) {
+    const geo = data.geo || {};
+    const threat = data.threatInfo || {};
+    const providerResults = data.providerResults || {};
+    const riskAnalysis = data.riskAnalysis || {};
+    const providerStats = data.providerStats || {};
+
+    // Render provider results
+    const providerResultsHtml = renderProviderResults(providerResults);
+
+    // Render risk analysis
+    const riskAnalysisHtml = renderRiskAnalysis(riskAnalysis, data.blacklisted);
+
+    return `
+        <div class="result-card ${data.status}">
+            <div class="result-header">
+                <span class="result-ip">${data.ip}</span>
+                <span class="result-status ${data.status}">${data.status.toUpperCase()}</span>
+            </div>
+            <div class="result-message">${data.message}</div>
+
+            <!-- Risk Analysis Summary -->
+            ${riskAnalysisHtml}
+
+            <!-- Aggregated GeoIP Info -->
+            <div class="result-details">
+                <div class="detail-group aggregated-geo">
+                    <h4>📍 ${t('geo_info')} <span class="provider-count">${providerStats.successful || 0}/${providerStats.total || 4} ${t('providers_responded')}</span></h4>
+                    <p><strong>${t('country')}:</strong> ${geo.country || '-'} ${geo.countryCode ? '(' + geo.countryCode + ')' : ''}</p>
+                    <p><strong>${t('region')}:</strong> ${geo.region || '-'}</p>
+                    <p><strong>${t('city')}:</strong> ${geo.city || '-'}</p>
+                    <p><strong>${t('isp')}:</strong> ${geo.isp || '-'}</p>
+                    <p><strong>${t('org')}:</strong> ${geo.org || '-'}</p>
+                </div>
+                ${data.blacklisted ? `
+                <div class="detail-group threat-group">
+                    <h4>⚠️ ${t('threat_info')}</h4>
+                    <p><strong>${t('threat_type')}:</strong> ${threat.threatType || '-'}</p>
+                    <p><strong>${t('severity')}:</strong> <span style="color:${getSeverityColor(threat.severity)}">${threat.severity || '-'}</span></p>
+                    <p><strong>${t('first_seen')}:</strong> ${threat.firstSeen || '-'}</p>
+                    <p><strong>${t('last_seen')}:</strong> ${threat.lastSeen || '-'}</p>
+                    <p><strong>${t('report_count')}:</strong> ${threat.reportCount || '-'}</p>
+                </div>` : ''}
+            </div>
+
+            <!-- Individual Provider Results -->
+            <div class="provider-results-section">
+                <h4>📡 ${t('provider_details')} <span class="toggle-btn" onclick="toggleProviderDetails(this)">▼ ${t('show_details')}</span></h4>
+                <div class="provider-results-container" style="display:none;">
+                    ${providerResultsHtml}
+                </div>
+            </div>
+        </div>`;
+}
+
+/**
+ * Render individual provider results
+ */
+function renderProviderResults(providerResults) {
+    if (!providerResults || Object.keys(providerResults).length === 0) {
+        return `<div class="no-provider-data">${t('no_provider_data')}</div>`;
+    }
+
+    const providerOrder = ['ip-api', 'ipapi-co', 'ipinfo', 'ip-api-is'];
+    const providerCards = [];
+
+    for (const providerId of providerOrder) {
+        const result = providerResults[providerId];
+        if (result) {
+            providerCards.push(`
+                <div class="provider-card">
+                    <div class="provider-card-header">
+                        <span class="provider-name">${result._providerName || providerId}</span>
+                        <span class="provider-status success">✓</span>
+                    </div>
+                    <div class="provider-card-body">
+                        <p><strong>${t('country')}:</strong> ${result.country || '-'} ${result.countryCode ? '(' + result.countryCode + ')' : ''}</p>
+                        <p><strong>${t('region')}:</strong> ${result.region || '-'}</p>
+                        <p><strong>${t('city')}:</strong> ${result.city || '-'}</p>
+                        <p><strong>${t('isp')}:</strong> ${result.isp || '-'}</p>
+                    </div>
+                </div>
+            `);
+        } else {
+            // Provider didn't respond
+            const providerNames = {'ip-api': 'IP-API.com', 'ipapi-co': 'ipapi.co', 'ipinfo': 'IPinfo.io', 'ip-api-is': 'IP-API.is'};
+            providerCards.push(`
+                <div class="provider-card no-response">
+                    <div class="provider-card-header">
+                        <span class="provider-name">${providerNames[providerId] || providerId}</span>
+                        <span class="provider-status failed">✗</span>
+                    </div>
+                    <div class="provider-card-body">
+                        <p class="no-data">${t('no_response')}</p>
+                    </div>
+                </div>
+            `);
+        }
+    }
+
+    return `<div class="provider-cards-grid">${providerCards.join('')}</div>`;
+}
+
+/**
+ * Render risk analysis section
+ */
+function renderRiskAnalysis(riskAnalysis, isBlacklisted) {
+    if (!riskAnalysis || !riskAnalysis.riskLevel) {
+        return '';
+    }
+
+    const riskColors = { high: '#dc3545', medium: '#ffc107', low: '#28a745' };
+    const riskColor = riskColors[riskAnalysis.riskLevel] || '#666';
+
+    const factorsHtml = (riskAnalysis.riskFactors || []).map(f => `<li>${f}</li>`).join('');
+
+    return `
+        <div class="risk-analysis-panel ${riskAnalysis.riskLevel}">
+            <div class="risk-header">
+                <div class="risk-score-display">
+                    <span class="risk-label">${t('risk_assessment')}</span>
+                    <span class="risk-level" style="color: ${riskColor}">${riskAnalysis.riskLevelText}</span>
+                </div>
+                <div class="risk-stats">
+                    <div class="risk-stat">
+                        <span class="stat-label">${t('blacklist_check')}</span>
+                        <span class="stat-value ${isBlacklisted ? 'blocked' : 'safe'}">${riskAnalysis.blacklistStatus}</span>
+                    </div>
+                    <div class="risk-stat">
+                        <span class="stat-label">${t('providers_data')}</span>
+                        <span class="stat-value">${riskAnalysis.dataRatio}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="risk-recommendation">
+                <strong>💡 ${t('recommendation')}:</strong> ${riskAnalysis.recommendation}
+            </div>
+            ${factorsHtml ? `
+            <div class="risk-factors">
+                <strong>${t('risk_factors')}:</strong>
+                <ul>${factorsHtml}</ul>
+            </div>` : ''}
+        </div>
+    `;
+}
+
+/**
+ * Toggle provider details visibility
+ */
+function toggleProviderDetails(btn) {
+    const container = btn.parentElement.nextElementSibling;
+    const isHidden = container.style.display === 'none';
+    container.style.display = isHidden ? 'block' : 'none';
+    btn.textContent = isHidden ? `▲ ${t('hide_details')}` : `▼ ${t('show_details')}`;
+}
+
+function getSeverityColor(severity) {
+    const colors = { Low: '#28a745', Medium: '#ffc107', High: '#fd7e14', Critical: '#dc3545' };
+    return colors[severity] || '#666';
+}
+
+function renderCIDRResult(data) {
+    const ipsHtml = data.blacklistedIPs.length > 0
+        ? data.blacklistedIPs.map(ip => `<div>${ip}</div>`).join('')
+        : `<div>${t('no_results')}</div>`;
+    return `
+        <div class="result-card ${data.blacklistedCount > 0 ? 'blocked' : 'safe'}">
+            <div class="result-header">
+                <span class="result-ip">${data.cidr}</span>
+                <span class="result-status ${data.blacklistedCount > 0 ? 'blocked' : 'safe'}">
+                    ${data.blacklistedCount > 0 ? 'FOUND' : 'CLEAN'}
+                </span>
+            </div>
+            <div class="result-message">${data.message}</div>
+            <div class="result-details">
+                <div class="detail-group">
+                    <h4>📊 ${t('cidr_range')}</h4>
+                    <p><strong>Total IPs:</strong> ${data.totalIPs.toLocaleString()}</p>
+                    <p><strong>Blacklisted:</strong> ${data.blacklistedCount}</p>
+                </div>
+                ${data.blacklistedCount > 0 ? `
+                <div class="detail-group">
+                    <h4>🚫 ${t('blacklisted_ips')}</h4>
+                    <div class="cidr-ips">${ipsHtml}</div>
+                </div>` : ''}
+            </div>
+        </div>`;
+}
+
+async function queryBatchIP() {
+    const text = document.getElementById('batchInput').value.trim();
+    if (!text) return;
+
+    const ips = text.split('\n').map(ip => ip.trim()).filter(ip => ip);
+    showLoading('batchResult');
+
+    try {
+        const response = await fetch(`${API_URL}?action=batch`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `ips=${encodeURIComponent(JSON.stringify(ips))}`
+        });
+        const data = await response.json();
+        if (data.error) {
+            showError('batchResult', data.error);
+            return;
+        }
+        document.getElementById('batchResult').innerHTML = renderBatchResult(data);
+    } catch (e) { showError('batchResult', e.message); }
+}
+
+function renderBatchResult(data) {
+    const resultsHtml = data.results.map(r => `
+        <div class="batch-item ${r.status || 'error'}">
+            <span style="font-family: monospace;">${r.ip}</span>
+            <span class="result-status ${r.status || 'error'}">${r.error || r.status.toUpperCase()}</span>
+        </div>
+    `).join('');
+
+    return `
+        <div class="batch-summary">
+            <div class="batch-stat">
+                <div class="batch-stat-value">${data.total}</div>
+                <div>${t('total')}</div>
+            </div>
+            <div class="batch-stat">
+                <div class="batch-stat-value blocked">${data.blacklisted}</div>
+                <div>${t('blocked')}</div>
+            </div>
+            <div class="batch-stat">
+                <div class="batch-stat-value safe">${data.safe}</div>
+                <div>${t('safe')}</div>
+            </div>
+        </div>
+        <div class="batch-results-list">${resultsHtml}</div>`;
+}
+
+async function loadHistory() {
+    showLoading('historyResult');
+    try {
+        const response = await fetch(`${API_URL}?action=history`);
+        const data = await response.json();
+        if (!Array.isArray(data) || data.length === 0) {
+            document.getElementById('historyResult').innerHTML = `<div class="loading">${t('no_results')}</div>`;
+            return;
+        }
+        document.getElementById('historyResult').innerHTML = renderHistory(data);
+    } catch (e) { showError('historyResult', e.message); }
+}
+
+function renderHistory(data) {
+    const rows = data.slice(0, 50).map(r => `
+        <tr class="${r.status || ''}">
+            <td style="font-family: monospace;">${r.ip || r.cidr || '-'}</td>
+            <td><span class="result-status ${r.status || ''}">${(r.status || 'N/A').toUpperCase()}</span></td>
+            <td>${r.geo?.country || '-'}</td>
+            <td>${r.timestamp || '-'}</td>
+        </tr>
+    `).join('');
+
+    return `
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>${t('ip')}</th>
+                    <th>${t('status')}</th>
+                    <th>${t('country')}</th>
+                    <th>${t('timestamp')}</th>
+                </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+        </table>`;
+}
+
+function exportHistory(format) {
+    window.open(`${API_URL}?action=export&format=${format}`, '_blank');
+}
+
+/**
+ * Load and display GeoIP API providers information
+ */
+async function loadGeoAPIProviders() {
+    const container = document.getElementById('geoapiProviders');
+    container.innerHTML = `<div class="loading">${t('loading')}</div>`;
+
+    try {
+        const response = await fetch(`${API_URL}?action=providers`);
+        const providers = await response.json();
+
+        if (!Array.isArray(providers) || providers.length === 0) {
+            container.innerHTML = `<div class="error">No providers configured</div>`;
+            return;
+        }
+
+        container.innerHTML = renderGeoAPIProviders(providers);
+    } catch (e) {
+        container.innerHTML = `<div class="error">Failed to load providers: ${e.message}</div>`;
+    }
+}
+
+/**
+ * Render GeoIP providers table
+ */
+function renderGeoAPIProviders(providers) {
+    const rows = providers.map(p => `
+        <tr class="${p.enabled ? 'enabled' : 'disabled'}">
+            <td>
+                <strong>${p.name}</strong>
+                ${p.requiresApiKey ? '<span class="badge warning">🔑</span>' : ''}
+            </td>
+            <td class="priority-cell">#${p.priority}</td>
+            <td>
+                <span class="status-badge ${p.enabled ? 'active' : 'inactive'}">
+                    ${p.enabled ? '✓ ' + t('enabled') : '✗ ' + t('disabled')}
+                </span>
+            </td>
+            <td>${formatRateLimit(p.rateLimit)}</td>
+            <td class="desc-cell">${p.description}</td>
+            <td>
+                <a href="${p.website}" target="_blank" class="provider-link">🔗</a>
+            </td>
+        </tr>
+    `).join('');
+
+    return `
+        <table class="providers-table">
+            <thead>
+                <tr>
+                    <th>${t('provider')}</th>
+                    <th>${t('priority')}</th>
+                    <th>${t('status')}</th>
+                    <th>${t('rate_limit')}</th>
+                    <th>Description</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+        </table>
+        <p class="providers-note">
+            <em>Providers are queried in priority order. Lower number = higher priority.</em>
+        </p>`;
+}
+
+/**
+ * Format rate limit for display
+ */
+function formatRateLimit(limit) {
+    if (!limit || limit === 0) return 'Unlimited';
+    if (limit >= 50000) return `${(limit/1000).toFixed(0)}K/month`;
+    if (limit >= 1000) return `${(limit/1000).toFixed(0)}K/day`;
+    return `${limit}/min`;
+}
+
+// ============================================
+// Fortigate CLI Command Generator Functions
+// ============================================
+
+/**
+ * Validate IPv4 address format
+ */
+function isValidIPv4(ip) {
+    const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    return ipv4Regex.test(ip.trim());
+}
+
+/**
+ * Parse IP input and validate each IP
+ */
+function parseAndValidateIPs(input) {
+    const lines = input.split('\n');
+    const validIPs = [];
+    const invalidIPs = [];
+
+    lines.forEach((line, index) => {
+        const ip = line.trim();
+        if (ip === '') return; // Skip empty lines
+
+        if (isValidIPv4(ip)) {
+            // Avoid duplicates
+            if (!validIPs.includes(ip)) {
+                validIPs.push(ip);
+            }
+        } else {
+            invalidIPs.push({ line: index + 1, ip: ip });
+        }
+    });
+
+    return { validIPs, invalidIPs };
+}
+
+/**
+ * Generate Fortigate CLI commands
+ */
+function generateFortigateCLI() {
+    const input = document.getElementById('fortigateIpInput').value;
+    const prefix = document.getElementById('fortigatePrefix').value || 'Blacklist_IP_';
+    const subnetMask = document.getElementById('fortigateSubnetMask').value;
+
+    const { validIPs, invalidIPs } = parseAndValidateIPs(input);
+
+    // Show validation errors if any
+    const validationDiv = document.getElementById('fortigateValidation');
+    const errorsUl = document.getElementById('fortigateErrors');
+
+    if (invalidIPs.length > 0) {
+        errorsUl.innerHTML = invalidIPs.map(err =>
+            `<li>${t('invalid_ip_format')}: Line ${err.line} - "${err.ip}"</li>`
+        ).join('');
+        validationDiv.style.display = 'block';
+    } else {
+        validationDiv.style.display = 'none';
+    }
+
+    // Show output section
+    const outputSection = document.getElementById('fortigateOutputSection');
+    const outputTextarea = document.getElementById('fortigateOutput');
+    const ipCountSpan = document.getElementById('fortigateIpCount');
+
+    if (validIPs.length === 0) {
+        outputSection.style.display = 'block';
+        outputTextarea.value = `# ${t('no_valid_ips')}`;
+        ipCountSpan.textContent = '0';
+        return;
+    }
+
+    // Generate CLI commands
+    let commands = 'config firewall address\n';
+
+    validIPs.forEach(ip => {
+        // Determine CIDR suffix based on subnet mask
+        let cidrSuffix = '/32';
+        if (subnetMask === '255.255.255.0') cidrSuffix = '/24';
+        else if (subnetMask === '255.255.0.0') cidrSuffix = '/16';
+
+        const addressName = `${prefix}${ip}${cidrSuffix}`;
+        commands += `edit "${addressName}"\n`;
+        commands += `set subnet ${ip} ${subnetMask}\n`;
+        commands += `next\n`;
+    });
+
+    commands += 'end';
+
+    // Display output
+    outputSection.style.display = 'block';
+    outputTextarea.value = commands;
+    ipCountSpan.textContent = validIPs.length.toString();
+
+    // Clear copy status
+    document.getElementById('fortigateCopyStatus').textContent = '';
+}
+
+/**
+ * Clear Fortigate input and output
+ */
+function clearFortigateInput() {
+    document.getElementById('fortigateIpInput').value = '';
+    document.getElementById('fortigateOutput').value = '';
+    document.getElementById('fortigateOutputSection').style.display = 'none';
+    document.getElementById('fortigateValidation').style.display = 'none';
+    document.getElementById('fortigateCopyStatus').textContent = '';
+    document.getElementById('fortigateIpCount').textContent = '0';
+}
+
+/**
+ * Load blacklisted IPs from the system
+ */
+async function loadBlacklistedIPs() {
+    try {
+        const response = await fetch('api.php?action=stats');
+        const data = await response.json();
+
+        if (data.sampleBlacklistedIPs && data.sampleBlacklistedIPs.length > 0) {
+            // Load sample IPs (up to 100)
+            const ips = data.sampleBlacklistedIPs.slice(0, 100);
+            document.getElementById('fortigateIpInput').value = ips.join('\n');
+        } else {
+            // Fallback: query for some known blacklisted IPs
+            alert(currentLang === 'zh'
+                ? '無法載入黑名單 IP。請手動輸入 IP 地址。'
+                : 'Unable to load blacklist IPs. Please enter IP addresses manually.');
+        }
+    } catch (error) {
+        console.error('Error loading blacklist IPs:', error);
+        alert(currentLang === 'zh'
+            ? '載入黑名單 IP 時發生錯誤'
+            : 'Error loading blacklist IPs');
+    }
+}
+
+/**
+ * Copy Fortigate CLI commands to clipboard
+ */
+async function copyFortigateCLI() {
+    const output = document.getElementById('fortigateOutput').value;
+    const statusDiv = document.getElementById('fortigateCopyStatus');
+
+    try {
+        await navigator.clipboard.writeText(output);
+        statusDiv.textContent = t('copied_success');
+        statusDiv.className = 'copy-status success';
+
+        // Clear status after 3 seconds
+        setTimeout(() => {
+            statusDiv.textContent = '';
+            statusDiv.className = 'copy-status';
+        }, 3000);
+    } catch (error) {
+        // Fallback for older browsers
+        const textarea = document.getElementById('fortigateOutput');
+        textarea.select();
+        document.execCommand('copy');
+        statusDiv.textContent = t('copied_success');
+        statusDiv.className = 'copy-status success';
+    }
+}
+
+/**
+ * Download Fortigate CLI commands as a file
+ */
+function downloadFortigateCLI() {
+    const output = document.getElementById('fortigateOutput').value;
+    if (!output) return;
+
+    const blob = new Blob([output], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fortigate_blacklist_${new Date().toISOString().slice(0,10)}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
