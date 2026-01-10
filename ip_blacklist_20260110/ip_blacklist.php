@@ -378,56 +378,6 @@ define('GEOIP_QUERY_MODE', 'aggregate');
                 </p>
 
                 <div class="version-timeline">
-                    <!-- Version 2.1.0 -->
-                    <div class="version-entry">
-                        <div class="version-header">
-                            <span class="version-number">v2.1.0</span>
-                            <span class="version-date">2026-01-10</span>
-                            <span class="version-tag feature">Feature Release</span>
-                        </div>
-                        <div class="version-body">
-                            <h5>🆕 New Features / 新功能</h5>
-                            <ul>
-                                <li>Cache status display in query results (From Cache / Fresh Query) / 查詢結果中顯示快取狀態（來自快取/新鮮查詢）</li>
-                                <li>Cache info section showing creation time, expiration, remaining time, hit count / 快取資訊區塊顯示建立時間、過期時間、剩餘時間、命中次數</li>
-                                <li>Manual "Save to Cache" button for single query results / 單一查詢結果的手動「存入快取」按鈕</li>
-                                <li>Manual "Save All to Cache" button for batch query results / 批量查詢結果的手動「全部存入快取」按鈕</li>
-                                <li>Cache hit statistics display in batch results / 批量結果中顯示快取命中統計</li>
-                            </ul>
-                            <h5>🔧 Improvements / 改進</h5>
-                            <ul>
-                                <li>Visual cache badges (From Cache, Fresh Query, Just Cached) / 視覺化快取標籤</li>
-                                <li>Real-time feedback for cache save operations / 快取保存操作的即時回饋</li>
-                                <li>Enhanced bilingual support for cache-related UI / 增強快取相關UI的雙語支援</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Version 2.0.0 -->
-                    <div class="version-entry">
-                        <div class="version-header">
-                            <span class="version-number">v2.0.0</span>
-                            <span class="version-date">2026-01-10</span>
-                            <span class="version-tag feature">Major Release</span>
-                        </div>
-                        <div class="version-body">
-                            <h5>🆕 New Features / 新功能</h5>
-                            <ul>
-                                <li>Database caching system (SQLite/MySQL) for IP query results / 資料庫快取系統（SQLite/MySQL）用於IP查詢結果</li>
-                                <li>Cache management API endpoints (stats, cleanup, clear) / 快取管理API端點（統計、清理、清除）</li>
-                                <li>Configurable TTL for different IP statuses / 可配置不同IP狀態的TTL</li>
-                                <li>Cache hit/miss statistics in batch query results / 批量查詢結果中的快取命中/未命中統計</li>
-                            </ul>
-                            <h5>🔧 Improvements / 改進</h5>
-                            <ul>
-                                <li>Significantly reduced API calls through intelligent caching / 通過智能快取顯著減少API調用</li>
-                                <li>Faster query response times for cached IPs (~5ms vs ~500ms) / 快取IP的查詢響應時間更快</li>
-                                <li>Automatic cache cleanup with configurable probability / 可配置概率的自動快取清理</li>
-                                <li>Skip cache option for fresh queries (?nocache=1) / 跳過快取選項用於新鮮查詢</li>
-                            </ul>
-                        </div>
-                    </div>
-
                     <!-- Version 1.7.0 -->
                     <div class="version-entry">
                         <div class="version-header">
@@ -602,8 +552,8 @@ define('GEOIP_QUERY_MODE', 'aggregate');
                     <p class="footer-powered">Powered by TPV IT Global Infrastructure Team</p>
                 </div>
                 <div class="footer-version">
-                    <span class="version-badge">v2.1.0</span>
-                    <span class="version-date">Last Updated: 2026-01-10</span>
+                    <span class="version-badge">v1.7.0</span>
+                    <span class="version-date">Last Updated: 2026-01-08</span>
                 </div>
             </div>
         </footer>

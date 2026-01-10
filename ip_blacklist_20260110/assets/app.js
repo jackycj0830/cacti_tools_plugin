@@ -84,22 +84,7 @@ const i18n = {
         invalid_ip_format: '無效的 IP 格式',
         // Risk methodology and version history
         risk_methodology: '風險評估說明',
-        version_history: '版本歷史',
-        // Cache translations
-        cache_info: '快取資訊',
-        from_cache: '來自快取',
-        fresh_query: '新鮮查詢',
-        save_to_cache: '存入快取',
-        save_all_to_cache: '全部存入快取',
-        cached_at: '快取時間',
-        expires_at: '過期時間',
-        remaining_time: '剩餘時間',
-        cache_hits: '快取命中',
-        not_cached: '未快取',
-        already_cached: '已在快取中',
-        cache_saved: '已存入快取',
-        cache_save_failed: '快取存入失敗',
-        saving_to_cache: '存入快取中...'
+        version_history: '版本歷史'
     },
     en: {
         total_blacklisted: 'Total Blacklisted',
@@ -178,22 +163,7 @@ const i18n = {
         invalid_ip_format: 'Invalid IP format',
         // Risk methodology and version history
         risk_methodology: 'Risk Methodology',
-        version_history: 'Version History',
-        // Cache translations
-        cache_info: 'Cache Info',
-        from_cache: 'From Cache',
-        fresh_query: 'Fresh Query',
-        save_to_cache: 'Save to Cache',
-        save_all_to_cache: 'Save All to Cache',
-        cached_at: 'Cached At',
-        expires_at: 'Expires At',
-        remaining_time: 'Remaining Time',
-        cache_hits: 'Cache Hits',
-        not_cached: 'Not Cached',
-        already_cached: 'Already Cached',
-        cache_saved: 'Saved to Cache',
-        cache_save_failed: 'Failed to Save to Cache',
-        saving_to_cache: 'Saving to cache...'
+        version_history: 'Version History'
     }
 };
 
@@ -263,21 +233,12 @@ async function querySingleIP() {
     } catch (e) { showError('singleResult', e.message); }
 }
 
-// Store last query result for manual caching
-let lastQueryResult = null;
-
 function renderSingleResult(data) {
-    // Store for manual caching
-    lastQueryResult = data;
-
     const geo = data.geo || {};
     const threat = data.threatInfo || {};
     const providerResults = data.providerResults || {};
     const riskAnalysis = data.riskAnalysis || {};
     const providerStats = data.providerStats || {};
-
-    // Render cache status
-    const cacheStatusHtml = renderCacheStatus(data);
 
     // Render provider results
     const providerResultsHtml = renderProviderResults(providerResults);
@@ -290,12 +251,8 @@ function renderSingleResult(data) {
             <div class="result-header">
                 <span class="result-ip">${data.ip}</span>
                 <span class="result-status ${data.status}">${data.status.toUpperCase()}</span>
-                ${cacheStatusHtml}
             </div>
             <div class="result-message">${data.message}</div>
-
-            <!-- Cache Info Section -->
-            ${renderCacheInfoSection(data)}
 
             <!-- Risk Analysis Summary -->
             ${riskAnalysisHtml}
@@ -377,120 +334,6 @@ function renderProviderResults(providerResults) {
     }
 
     return `<div class="provider-cards-grid">${providerCards.join('')}</div>`;
-}
-
-/**
- * Render cache status badge in header
- */
-function renderCacheStatus(data) {
-    if (data.fromCache) {
-        return `<span class="cache-badge from-cache" title="${t('from_cache')}">💾 ${t('from_cache')}</span>`;
-    } else if (data.cacheSaved) {
-        return `<span class="cache-badge just-cached" title="${t('cache_saved')}">✓ ${t('cache_saved')}</span>`;
-    } else {
-        return `<span class="cache-badge fresh" title="${t('fresh_query')}">🔄 ${t('fresh_query')}</span>`;
-    }
-}
-
-/**
- * Render cache info section with details and manual save button
- */
-function renderCacheInfoSection(data) {
-    const cacheInfo = data.cacheInfo || {};
-
-    let cacheDetailsHtml = '';
-    let actionButtonHtml = '';
-
-    if (cacheInfo.isCached) {
-        cacheDetailsHtml = `
-            <div class="cache-details">
-                <p><strong>${t('cached_at')}:</strong> ${cacheInfo.createdAt || '-'}</p>
-                <p><strong>${t('expires_at')}:</strong> ${cacheInfo.expiresAt || '-'}</p>
-                <p><strong>${t('remaining_time')}:</strong> ${cacheInfo.remainingHuman || '-'}</p>
-                <p><strong>${t('cache_hits')}:</strong> ${cacheInfo.hitCount || 0}</p>
-            </div>
-        `;
-        actionButtonHtml = `<span class="already-cached">✓ ${t('already_cached')}</span>`;
-    } else {
-        cacheDetailsHtml = `<p class="not-cached-msg">${t('not_cached')}</p>`;
-        actionButtonHtml = `
-            <button class="cache-save-btn" onclick="saveToCache()" id="singleCacheSaveBtn">
-                💾 ${t('save_to_cache')}
-            </button>
-        `;
-    }
-
-    return `
-        <div class="cache-info-section">
-            <h4>💾 ${t('cache_info')}</h4>
-            <div class="cache-info-content">
-                ${cacheDetailsHtml}
-                <div class="cache-action">
-                    ${actionButtonHtml}
-                    <span id="cacheSaveStatus" class="cache-save-status"></span>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Save current query result to cache manually
- */
-async function saveToCache() {
-    if (!lastQueryResult || !lastQueryResult.ip) {
-        return;
-    }
-
-    const btn = document.getElementById('singleCacheSaveBtn');
-    const statusSpan = document.getElementById('cacheSaveStatus');
-
-    if (btn) {
-        btn.disabled = true;
-        btn.textContent = t('saving_to_cache');
-    }
-
-    try {
-        const response = await fetch(`${API_URL}?action=cache_save`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(lastQueryResult)
-        });
-        const result = await response.json();
-
-        if (result.success) {
-            if (btn) {
-                btn.textContent = `✓ ${t('cache_saved')}`;
-                btn.classList.add('saved');
-            }
-            if (statusSpan) {
-                statusSpan.textContent = result.message;
-                statusSpan.className = 'cache-save-status success';
-            }
-            // Update cache info display
-            if (result.cacheInfo) {
-                lastQueryResult.cacheInfo = result.cacheInfo;
-            }
-        } else {
-            if (btn) {
-                btn.disabled = false;
-                btn.textContent = `💾 ${t('save_to_cache')}`;
-            }
-            if (statusSpan) {
-                statusSpan.textContent = result.error || t('cache_save_failed');
-                statusSpan.className = 'cache-save-status error';
-            }
-        }
-    } catch (e) {
-        if (btn) {
-            btn.disabled = false;
-            btn.textContent = `💾 ${t('save_to_cache')}`;
-        }
-        if (statusSpan) {
-            statusSpan.textContent = e.message;
-            statusSpan.className = 'cache-save-status error';
-        }
-    }
 }
 
 /**
@@ -651,10 +494,6 @@ function renderBatchResultWithFilter(data, filter, sortBy, sortDir) {
                 valA = a.countryName || a.country || '';
                 valB = b.countryName || b.country || '';
                 break;
-            case 'city':
-                valA = a.city || '';
-                valB = b.city || '';
-                break;
             case 'score':
                 valA = a.riskScore || 0;
                 valB = b.riskScore || 0;
@@ -677,16 +516,14 @@ function renderBatchResultWithFilter(data, filter, sortBy, sortDir) {
         if (r.error) {
             return `<tr class="error-row" data-status="error" data-risk="">
                 <td class="ip-cell">${r.ip}</td>
-                <td colspan="7" class="error-cell">${r.error}</td>
+                <td colspan="6" class="error-cell">${r.error}</td>
             </tr>`;
         }
         const threatType = r.threatInfo?.threatType || '-';
-        const cityName = r.city || '-';
         return `<tr class="${r.status}-row" data-status="${r.status}" data-risk="${r.riskLevel}">
             <td class="ip-cell">${r.ip}</td>
             <td><span class="status-badge ${r.status}">${r.blacklisted ? '🚫 BLOCKED' : '✅ SAFE'}</span></td>
             <td>${r.countryName || r.country || '-'}</td>
-            <td class="city-cell">${cityName}</td>
             <td class="isp-cell" title="${r.isp}">${(r.isp || '-').substring(0, 25)}${(r.isp || '').length > 25 ? '...' : ''}</td>
             <td class="score-cell">${r.riskScore}</td>
             <td>${getRiskBadge(r.riskLevel)}</td>
@@ -763,27 +600,19 @@ function renderBatchResultWithFilter(data, filter, sortBy, sortDir) {
                 <option value="low" ${filter === 'low' ? 'selected' : ''}>Low Risk</option>
             </select>
             <span class="filter-count">(${filtered.length} of ${data.total})</span>
-            <div class="batch-cache-actions">
-                ${renderBatchCacheInfo(data)}
-                <button class="cache-save-btn batch-cache-btn" onclick="saveAllToCache()" id="batchCacheSaveBtn">
-                    💾 ${t('save_all_to_cache')}
-                </button>
-                <span id="batchCacheSaveStatus" class="cache-save-status"></span>
-            </div>
         </div>
         ${data.note ? `<div class="batch-note">⚠️ ${data.note}</div>` : ''}
         <div>
             <table id="batchTable" border="1" style="border-collapse: collapse; border: 1px solid #000; width: 100%;">
                 <thead>
                     <tr>
-                        <th class="sortable" onclick="sortBatchResults('ip')" style="border: 1px solid #000; width: 12%;">${t('ip')} ${getSortIcon('ip')}</th>
-                        <th class="sortable" onclick="sortBatchResults('status')" style="border: 1px solid #000; width: 11%;">${t('status')} ${getSortIcon('status')}</th>
-                        <th class="sortable" onclick="sortBatchResults('country')" style="border: 1px solid #000; width: 12%;">${t('country')} ${getSortIcon('country')}</th>
-                        <th class="sortable" onclick="sortBatchResults('city')" style="border: 1px solid #000; width: 12%;">${t('city')} ${getSortIcon('city')}</th>
-                        <th style="border: 1px solid #000; width: 15%;">ISP</th>
-                        <th class="sortable" onclick="sortBatchResults('score')" style="border: 1px solid #000; width: 8%;">Score ${getSortIcon('score')}</th>
-                        <th class="sortable" onclick="sortBatchResults('risk')" style="border: 1px solid #000; width: 10%;">Risk ${getSortIcon('risk')}</th>
-                        <th style="border: 1px solid #000; width: 20%;">Threat Type</th>
+                        <th class="sortable" onclick="sortBatchResults('ip')" style="border: 1px solid #000; width: 14.28%;">${t('ip')} ${getSortIcon('ip')}</th>
+                        <th class="sortable" onclick="sortBatchResults('status')" style="border: 1px solid #000; width: 14.28%;">${t('status')} ${getSortIcon('status')}</th>
+                        <th class="sortable" onclick="sortBatchResults('country')" style="border: 1px solid #000; width: 14.28%;">${t('country')} ${getSortIcon('country')}</th>
+                        <th style="border: 1px solid #000; width: 14.28%;">ISP</th>
+                        <th class="sortable" onclick="sortBatchResults('score')" style="border: 1px solid #000; width: 14.28%;">Score ${getSortIcon('score')}</th>
+                        <th class="sortable" onclick="sortBatchResults('risk')" style="border: 1px solid #000; width: 14.28%;">Risk ${getSortIcon('risk')}</th>
+                        <th style="border: 1px solid #000; width: 14.32%;">Threat Type</th>
                     </tr>
                 </thead>
                 <tbody>${tableRows}</tbody>
@@ -823,82 +652,6 @@ function filterBatchResults(filter) {
 function applyBatchFilter() {
     const filter = document.getElementById('batchFilter').value;
     filterBatchResults(filter);
-}
-
-/**
- * Render batch cache info summary
- */
-function renderBatchCacheInfo(data) {
-    const cacheStats = data.cacheStats || {};
-    const hits = cacheStats.hits || 0;
-    const misses = cacheStats.misses || 0;
-    const hitRate = cacheStats.hitRate || 0;
-
-    if (hits === 0 && misses === 0) {
-        return '';
-    }
-
-    return `
-        <span class="batch-cache-stats">
-            💾 ${t('cache_hits')}: ${hits}/${hits + misses} (${hitRate}%)
-        </span>
-    `;
-}
-
-/**
- * Save all batch results to cache
- */
-async function saveAllToCache() {
-    if (!batchResultsData || !batchResultsData.results) {
-        return;
-    }
-
-    const btn = document.getElementById('batchCacheSaveBtn');
-    const statusSpan = document.getElementById('batchCacheSaveStatus');
-
-    if (btn) {
-        btn.disabled = true;
-        btn.textContent = t('saving_to_cache');
-    }
-
-    try {
-        const response = await fetch(`${API_URL}?action=cache_save_batch`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(batchResultsData)
-        });
-        const result = await response.json();
-
-        if (result.success) {
-            const summary = result.summary || {};
-            if (btn) {
-                btn.textContent = `✓ ${summary.saved} ${t('cache_saved')}`;
-                btn.classList.add('saved');
-            }
-            if (statusSpan) {
-                statusSpan.textContent = result.message;
-                statusSpan.className = 'cache-save-status success';
-            }
-        } else {
-            if (btn) {
-                btn.disabled = false;
-                btn.textContent = `💾 ${t('save_all_to_cache')}`;
-            }
-            if (statusSpan) {
-                statusSpan.textContent = result.error || t('cache_save_failed');
-                statusSpan.className = 'cache-save-status error';
-            }
-        }
-    } catch (e) {
-        if (btn) {
-            btn.disabled = false;
-            btn.textContent = `💾 ${t('save_all_to_cache')}`;
-        }
-        if (statusSpan) {
-            statusSpan.textContent = e.message;
-            statusSpan.className = 'cache-save-status error';
-        }
-    }
 }
 
 async function loadHistory() {

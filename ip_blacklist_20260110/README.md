@@ -23,10 +23,9 @@ A web-based IP blacklist query system that allows real-time querying of blacklis
 - **Bilingual Support** - English and Chinese interface
 
 ### Technical Features / 技術特性
-- Real-time file reading for blacklist
-- **Database Caching System** - SQLite/MySQL caching for query results (NEW!)
+- Real-time file reading (no database required)
 - Multi-provider GeoIP with automatic fallback
-- GeoIP caching with configurable TTL (24-48 hours)
+- GeoIP caching (24-hour cache to reduce API calls)
 - Responsive design (mobile/desktop compatible)
 - Export to JSON/CSV formats
 
@@ -40,15 +39,9 @@ ip_blacklist/
 ├── assets/
 │   ├── style.css       # Styles / 樣式
 │   └── app.js          # Frontend JavaScript / 前端腳本
-├── database/           # Database caching system (NEW!)
-│   ├── db_config.php   # Database configuration
-│   ├── IPCacheDB.php   # Database connection class
-│   ├── IPCache.php     # Cache operations class
-│   ├── schema.sql      # Database schema reference
-│   └── ip_cache.db     # SQLite database (auto-created)
 └── data/
     ├── IP_From_Oversea.txt    # Blacklist file / 黑名單文件
-    ├── geoip_cache.json       # Legacy GeoIP cache
+    ├── geoip_cache.json       # GeoIP cache (auto-generated)
     └── query_history.json     # Query history (auto-generated)
 ```
 
@@ -195,90 +188,12 @@ GET api.php?action=export&format=json
 GET api.php?action=export&format=csv
 ```
 
-### Cache Management (v2.1.0+)
-```
-GET api.php?action=cache_stats     # Get cache statistics
-GET api.php?action=cache_cleanup   # Clean expired entries
-GET api.php?action=cache_clear     # Clear all cache
-
-# Skip cache for single query
-GET api.php?action=query&ip=8.8.8.8&nocache=1
-```
-
-## 🗄️ Database Caching System / 資料庫快取系統
-
-### Overview / 概述
-The database caching system stores IP query results to reduce external API calls and improve performance. It supports both SQLite (default, zero-config) and MySQL.
-
-### Setup / 設置
-
-**SQLite (Default - No setup required)**
-- The SQLite database is automatically created at `database/ip_cache.db`
-- No configuration needed - works out of the box
-
-**MySQL (For production environments)**
-1. Create a MySQL database:
-   ```sql
-   CREATE DATABASE ip_blacklist CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-   ```
-2. Edit `database/db_config.php`:
-   ```php
-   define('DB_TYPE', 'mysql');
-   define('MYSQL_HOST', 'localhost');
-   define('MYSQL_DATABASE', 'ip_blacklist');
-   define('MYSQL_USERNAME', 'your_user');
-   define('MYSQL_PASSWORD', 'your_password');
-   ```
-
-### Configuration Options / 配置選項
-
-Edit `database/db_config.php` to customize:
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `DB_TYPE` | `sqlite` | Database type: `sqlite` or `mysql` |
-| `CACHE_TTL_DEFAULT` | 86400 (24h) | Default cache lifetime |
-| `CACHE_TTL_BLACKLISTED` | 43200 (12h) | TTL for blacklisted IPs (check more frequently) |
-| `CACHE_TTL_SAFE` | 172800 (48h) | TTL for safe IPs (longer cache) |
-| `CACHE_ENABLED` | true | Enable/disable caching entirely |
-| `CACHE_CLEANUP_PROBABILITY` | 5 | Chance (%) to auto-cleanup on each request |
-
-### Performance Benefits / 性能優勢
-
-| Scenario | Without Cache | With Cache |
-|----------|---------------|------------|
-| Single IP Query | ~500ms (API calls) | ~5ms (database lookup) |
-| Batch 50 IPs | ~8-10 seconds | <500ms (if all cached) |
-| API Calls Saved | 0% | Up to 95%+ |
-
-### Cache Statistics API Response
-```json
-{
-  "success": true,
-  "stats": {
-    "totalCached": 1250,
-    "activeCached": 1180,
-    "byStatus": {"blocked": 450, "safe": 800},
-    "byRiskLevel": {"high": 450, "medium": 120, "low": 680},
-    "totalHits": 5420,
-    "today": {"cache_hits": 230, "cache_misses": 45}
-  }
-}
-```
-
-### Maintenance / 維護
-
-1. **Automatic Cleanup**: Expired entries are automatically removed (5% chance per request)
-2. **Manual Cleanup**: Call `api.php?action=cache_cleanup` to remove all expired entries
-3. **Clear All Cache**: Call `api.php?action=cache_clear` to reset the entire cache
-
 ## 🔒 Security Notes / 安全注意事項
 
-1. Ensure `data/` and `database/` directories are not directly accessible via web
+1. Ensure `data/` directory is not directly accessible via web
 2. Consider adding authentication for production use
 3. Rate limit API calls to prevent abuse
 4. Regularly update the blacklist file
-5. Protect database credentials in `db_config.php`
 
 ## 📞 Support / 支援
 
@@ -286,5 +201,5 @@ For issues or feature requests, contact the Cacti Tools team.
 
 ---
 
-&copy; 2024-2026 Cacti Tools | Powered by TPV IT Global Infrastructure Team
+&copy; 2024-<?php echo date('Y'); ?> Cacti Tools | Powered by TPV IT Global Infrastructure Team
 

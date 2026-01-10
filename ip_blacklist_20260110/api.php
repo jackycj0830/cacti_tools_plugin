@@ -2,29 +2,10 @@
 /**
  * IP Blacklist Query System API / 黑名單IP查詢系統API
  * @author Cacti Tools Team
- * @version 2.1.0
+ * @version 2.0.0
  *
- * Enhanced with Multi-Provider GeoIP Support and Database Caching
+ * Enhanced with Multi-Provider GeoIP Support
  */
-
-// ============================================================================
-// DATABASE CACHE INTEGRATION / 資料庫快取整合
-// ============================================================================
-require_once __DIR__ . '/database/IPCache.php';
-
-// Global cache instance (lazy loaded)
-$ipCache = null;
-function getIPCache() {
-    global $ipCache;
-    if ($ipCache === null) {
-        try {
-            $ipCache = new IPCache();
-        } catch (Exception $e) {
-            $ipCache = false; // Mark as unavailable
-        }
-    }
-    return $ipCache;
-}
 
 // ============================================================================
 // CONFIGURATION SECTION / 配置區
@@ -145,33 +126,13 @@ define('GEOIP_QUERY_MODE', 'aggregate');
 header('Content-Type: application/json; charset=utf-8');
 $action = $_GET['action'] ?? '';
 switch ($action) {
-    case 'query':
-        $skipCache = isset($_GET['nocache']) && $_GET['nocache'] === '1';
-        echo json_encode(queryIP(trim($_GET['ip'] ?? ''), $skipCache));
-        break;
+    case 'query': echo json_encode(queryIP(trim($_GET['ip'] ?? ''))); break;
     case 'batch': echo json_encode(batchQuery(json_decode($_POST['ips'] ?? '[]', true))); break;
     case 'stats': echo json_encode(getStatistics()); break;
     case 'history': echo json_encode(getQueryHistory()); break;
     case 'providers': echo json_encode(getGeoIPProviders()); break;
     case 'export': exportResults($_GET['format'] ?? 'json'); break;
-
-    // Cache management endpoints
-    case 'cache_stats': echo json_encode(getCacheStatistics()); break;
-    case 'cache_cleanup': echo json_encode(cleanupCache()); break;
-    case 'cache_clear': echo json_encode(clearCache()); break;
-
-    // Manual cache operations
-    case 'cache_save':
-        echo json_encode(manualCacheSave(json_decode(file_get_contents('php://input'), true)));
-        break;
-    case 'cache_save_batch':
-        echo json_encode(manualCacheSaveBatch(json_decode(file_get_contents('php://input'), true)));
-        break;
-    case 'cache_info':
-        echo json_encode(getCacheInfo(trim($_GET['ip'] ?? '')));
-        break;
-
-    default: echo json_encode(['error' => 'Unknown action. Use: query, batch, stats, history, providers, export, cache_stats, cache_cleanup, cache_clear, cache_save, cache_save_batch, cache_info']);
+    default: echo json_encode(['error' => 'Unknown action. Use: query, batch, stats, history, providers, export']);
 }
 
 function loadBlacklist() {
@@ -481,36 +442,11 @@ function getGeoIPProviders() {
     return $providers;
 }
 
-function queryIP($ip, $skipCache = false) {
+function queryIP($ip) {
     if (empty($ip)) return ['error' => '請輸入IP地址 / Please enter an IP address'];
     if (strpos($ip, '/') !== false) return queryCIDR($ip);
     if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) return ['error' => '無效的IPv4地址 / Invalid IPv4 address'];
 
-    // Check database cache first (unless skipCache is true)
-    $cache = getIPCache();
-    $cacheInfo = null;
-
-    if ($cache && !$skipCache) {
-        $cached = $cache->get($ip);
-        if ($cached) {
-            // Re-check blacklist status (blacklist file may have changed)
-            $currentBlacklisted = isBlacklisted($ip);
-            if ($cached['blacklisted'] === $currentBlacklisted) {
-                $cached['message'] = $currentBlacklisted
-                    ? '⚠️ 此IP在黑名單中 / This IP is blacklisted'
-                    : '✅ 此IP不在黑名單中 / This IP is not blacklisted';
-                $cached['timestamp'] = date('Y-m-d H:i:s');
-                $cached['fromCache'] = true;
-                // Add cache info
-                $cached['cacheInfo'] = $cache->getCacheInfoForIP($ip);
-                saveQueryHistory($cached);
-                return $cached;
-            }
-            // Blacklist status changed, need fresh data
-        }
-    }
-
-    // Cache miss or expired - query APIs
     $isBlacklisted = isBlacklisted($ip);
     $geoData = getGeoIP($ip, true); // Get all provider results
 
@@ -530,23 +466,8 @@ function queryIP($ip, $skipCache = false) {
         ],
         'riskAnalysis' => $riskAnalysis,
         'threatInfo' => $isBlacklisted ? getThreatInfo($ip) : null,
-        'timestamp' => date('Y-m-d H:i:s'),
-        'fromCache' => false,
-        'cacheInfo' => null
+        'timestamp' => date('Y-m-d H:i:s')
     ];
-
-    // Store in database cache automatically
-    $cacheSaveSuccess = false;
-    if ($cache) {
-        $cacheSaveSuccess = $cache->set($ip, $result);
-        if ($cacheSaveSuccess) {
-            // Update cache info after saving
-            $result['cacheInfo'] = $cache->getCacheInfoForIP($ip);
-            $result['cacheInfo']['justCached'] = true;
-        }
-    }
-    $result['cacheSaved'] = $cacheSaveSuccess;
-
     saveQueryHistory($result);
     return $result;
 }
@@ -651,26 +572,12 @@ function batchQuery($ips) {
     $highRiskCount = 0;
     $mediumRiskCount = 0;
     $lowRiskCount = 0;
-    $cacheHits = 0;
-    $apiCalls = 0;
+    $geoCache = [];
 
     // Limit to 50 IPs for batch with full analysis
     $ipsToProcess = array_slice($ips, 0, 50);
     $totalToProcess = count($ipsToProcess);
 
-    // Check database cache for all IPs first
-    $cache = getIPCache();
-    $cachedResults = [];
-    $uncachedIPs = $ipsToProcess;
-
-    if ($cache) {
-        $cacheResult = $cache->getMultiple($ipsToProcess);
-        $cachedResults = $cacheResult['cached'];
-        $uncachedIPs = $cacheResult['missing'];
-        $cacheHits = count($cachedResults);
-    }
-
-    // Process all IPs (cached and uncached)
     foreach ($ipsToProcess as $index => $ip) {
         $ip = trim($ip);
         if (empty($ip)) continue;
@@ -680,50 +587,33 @@ function batchQuery($ips) {
             continue;
         }
 
-        // Check if we have cached data for this IP
-        if (isset($cachedResults[$ip])) {
-            $cached = $cachedResults[$ip];
-            // Re-verify blacklist status
-            $isBlacklisted = isBlacklisted($ip);
-            $isBlacklisted ? $blacklistedCount++ : $safeCount++;
-
-            $riskLevel = $cached['riskAnalysis']['riskLevel'] ?? 'low';
-            if ($riskLevel === 'high') $highRiskCount++;
-            elseif ($riskLevel === 'medium') $mediumRiskCount++;
-            else $lowRiskCount++;
-
-            $results[] = [
-                'ip' => $ip,
-                'blacklisted' => $isBlacklisted,
-                'status' => $isBlacklisted ? 'blocked' : 'safe',
-                'country' => $cached['geo']['country'] ?? '',
-                'countryName' => $cached['geo']['countryName'] ?? '-',
-                'city' => $cached['geo']['city'] ?? '-',
-                'isp' => $cached['geo']['isp'] ?? '-',
-                'riskScore' => $cached['riskAnalysis']['riskScore'] ?? 0,
-                'riskLevel' => $riskLevel,
-                'riskFactors' => $cached['riskAnalysis']['riskFactors'] ?? [],
-                'threatInfo' => $cached['threatInfo'],
-                'providerCount' => $cached['providerStats']['successful'] ?? 0,
-                'fromCache' => true
-            ];
-            continue;
-        }
-
-        // Cache miss - query APIs
-        $apiCalls++;
         $isBlacklisted = isBlacklisted($ip);
         $isBlacklisted ? $blacklistedCount++ : $safeCount++;
 
-        // Query multiple providers for more accurate risk assessment
-        $multiGeo = getBatchGeoIPMulti($ip);
-        $geoData = $multiGeo['aggregated'];
-        $providerCount = $multiGeo['providerCount'];
-        $countryConsensus = $multiGeo['countryConsensus'];
+        // Get GeoIP data with multi-provider support for better risk assessment
+        $geoData = null;
+        $providerCount = 0;
+        $countryConsensus = [];
 
-        // Rate limiting: 150ms delay between API calls
-        if ($apiCalls > 1) {
-            usleep(150000);
+        if (isset($geoCache[$ip])) {
+            $geoData = $geoCache[$ip]['data'];
+            $providerCount = $geoCache[$ip]['providerCount'];
+            $countryConsensus = $geoCache[$ip]['countryConsensus'];
+        } else {
+            // Query multiple providers for more accurate risk assessment
+            $multiGeo = getBatchGeoIPMulti($ip);
+            $geoData = $multiGeo['aggregated'];
+            $providerCount = $multiGeo['providerCount'];
+            $countryConsensus = $multiGeo['countryConsensus'];
+            $geoCache[$ip] = [
+                'data' => $geoData,
+                'providerCount' => $providerCount,
+                'countryConsensus' => $countryConsensus
+            ];
+            // Rate limiting: 150ms delay between IPs
+            if ($index < $totalToProcess - 1) {
+                usleep(150000);
+            }
         }
 
         // Calculate risk score (same 3-factor algorithm as single query)
@@ -737,7 +627,7 @@ function batchQuery($ips) {
         }
 
         // Factor 2: Provider data availability (+10 points if <50% respond)
-        $totalProviders = 3;
+        $totalProviders = 3; // We query 3 providers in batch mode
         $dataRatio = $providerCount / $totalProviders;
         if ($dataRatio < 0.5) {
             $riskScore += 10;
@@ -749,6 +639,8 @@ function batchQuery($ips) {
             $riskScore += 5;
             $riskFactors[] = 'Inconsistent country data / 國家數據不一致';
         }
+
+        $country = $geoData['country'] ?? '';
 
         // Determine risk level
         if ($riskScore >= 50) {
@@ -764,11 +656,11 @@ function batchQuery($ips) {
 
         $threatInfo = $isBlacklisted ? getThreatInfo($ip) : null;
 
-        $resultItem = [
+        $results[] = [
             'ip' => $ip,
             'blacklisted' => $isBlacklisted,
             'status' => $isBlacklisted ? 'blocked' : 'safe',
-            'country' => $geoData['country'] ?? '',
+            'country' => $country,
             'countryName' => $geoData['countryName'] ?? '-',
             'city' => $geoData['city'] ?? '-',
             'isp' => $geoData['isp'] ?? '-',
@@ -776,16 +668,8 @@ function batchQuery($ips) {
             'riskLevel' => $riskLevel,
             'riskFactors' => $riskFactors,
             'threatInfo' => $threatInfo,
-            'providerCount' => $providerCount,
-            'fromCache' => false
+            'providerCount' => $providerCount
         ];
-
-        // Store in cache
-        if ($cache) {
-            $cache->setBatch($ip, $resultItem);
-        }
-
-        $results[] = $resultItem;
     }
 
     return [
@@ -796,11 +680,6 @@ function batchQuery($ips) {
         'highRisk' => $highRiskCount,
         'mediumRisk' => $mediumRiskCount,
         'lowRisk' => $lowRiskCount,
-        'cacheStats' => [
-            'hits' => $cacheHits,
-            'misses' => $apiCalls,
-            'hitRate' => $totalToProcess > 0 ? round(($cacheHits / $totalToProcess) * 100, 1) : 0
-        ],
         'results' => $results,
         'timestamp' => date('Y-m-d H:i:s'),
         'note' => count($ips) > 50 ? 'Limited to 50 IPs / 限制為50個IP' : null
@@ -943,202 +822,5 @@ function exportResults($format) {
         header('Content-Disposition: attachment; filename="ip_blacklist_export_' . date('Ymd_His') . '.json"');
         echo json_encode($history, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     }
-}
-
-// ============================================================================
-// CACHE MANAGEMENT FUNCTIONS / 快取管理功能
-// ============================================================================
-
-/**
- * Get cache statistics
- */
-function getCacheStatistics() {
-    $cache = getIPCache();
-    if (!$cache) {
-        return [
-            'error' => 'Cache not available / 快取不可用',
-            'cacheEnabled' => false
-        ];
-    }
-
-    $stats = $cache->getStats();
-    return [
-        'success' => true,
-        'cacheEnabled' => defined('CACHE_ENABLED') ? CACHE_ENABLED : true,
-        'dbType' => defined('DB_TYPE') ? DB_TYPE : 'sqlite',
-        'stats' => $stats,
-        'settings' => [
-            'ttlDefault' => defined('CACHE_TTL_DEFAULT') ? CACHE_TTL_DEFAULT : 86400,
-            'ttlBlacklisted' => defined('CACHE_TTL_BLACKLISTED') ? CACHE_TTL_BLACKLISTED : 43200,
-            'ttlSafe' => defined('CACHE_TTL_SAFE') ? CACHE_TTL_SAFE : 172800,
-            'cleanupProbability' => defined('CACHE_CLEANUP_PROBABILITY') ? CACHE_CLEANUP_PROBABILITY : 5
-        ],
-        'timestamp' => date('Y-m-d H:i:s')
-    ];
-}
-
-/**
- * Clean up expired cache entries
- */
-function cleanupCache() {
-    $cache = getIPCache();
-    if (!$cache) {
-        return ['error' => 'Cache not available / 快取不可用'];
-    }
-
-    $deletedCount = $cache->cleanup();
-    return [
-        'success' => true,
-        'message' => "Cleaned up {$deletedCount} expired entries / 清理了 {$deletedCount} 個過期條目",
-        'deletedCount' => $deletedCount,
-        'timestamp' => date('Y-m-d H:i:s')
-    ];
-}
-
-/**
- * Clear all cache entries
- */
-function clearCache() {
-    $cache = getIPCache();
-    if (!$cache) {
-        return ['error' => 'Cache not available / 快取不可用'];
-    }
-
-    $success = $cache->clearAll();
-    return [
-        'success' => $success,
-        'message' => $success
-            ? 'All cache entries cleared / 所有快取已清除'
-            : 'Failed to clear cache / 清除快取失敗',
-        'timestamp' => date('Y-m-d H:i:s')
-    ];
-}
-
-/**
- * Manual cache save for single IP
- * @param array $data Query result data to cache
- */
-function manualCacheSave($data) {
-    if (!$data || !isset($data['ip'])) {
-        return ['success' => false, 'error' => 'Invalid data: IP required / 無效資料：需要IP'];
-    }
-
-    $cache = getIPCache();
-    if (!$cache) {
-        return ['success' => false, 'error' => 'Cache not available / 快取不可用'];
-    }
-
-    $ip = $data['ip'];
-
-    // Check if already cached
-    $existing = $cache->getCacheInfoForIP($ip);
-    if ($existing['isCached'] && !$existing['isExpired']) {
-        return [
-            'success' => true,
-            'alreadyCached' => true,
-            'message' => "IP {$ip} already in cache / IP {$ip} 已在快取中",
-            'cacheInfo' => $existing,
-            'timestamp' => date('Y-m-d H:i:s')
-        ];
-    }
-
-    // Save to cache
-    $success = $cache->set($ip, $data);
-    $cacheInfo = $success ? $cache->getCacheInfoForIP($ip) : null;
-
-    return [
-        'success' => $success,
-        'ip' => $ip,
-        'message' => $success
-            ? "IP {$ip} saved to cache / IP {$ip} 已存入快取"
-            : "Failed to save IP {$ip} to cache / 無法將 IP {$ip} 存入快取",
-        'cacheInfo' => $cacheInfo,
-        'timestamp' => date('Y-m-d H:i:s')
-    ];
-}
-
-/**
- * Manual cache save for batch results
- * @param array $data Batch query results
- */
-function manualCacheSaveBatch($data) {
-    if (!$data || !isset($data['results']) || !is_array($data['results'])) {
-        return ['success' => false, 'error' => 'Invalid data: results array required / 無效資料：需要results陣列'];
-    }
-
-    $cache = getIPCache();
-    if (!$cache) {
-        return ['success' => false, 'error' => 'Cache not available / 快取不可用'];
-    }
-
-    $results = $data['results'];
-    $savedCount = 0;
-    $skippedCount = 0;
-    $failedCount = 0;
-    $details = [];
-
-    foreach ($results as $item) {
-        if (!isset($item['ip']) || $item['status'] === 'error') {
-            $skippedCount++;
-            continue;
-        }
-
-        $ip = $item['ip'];
-
-        // Check if already cached
-        $existing = $cache->getCacheInfoForIP($ip);
-        if ($existing['isCached'] && !$existing['isExpired']) {
-            $skippedCount++;
-            $details[] = ['ip' => $ip, 'status' => 'skipped', 'reason' => 'already cached'];
-            continue;
-        }
-
-        // Save to cache
-        $success = $cache->setBatch($ip, $item);
-        if ($success) {
-            $savedCount++;
-            $details[] = ['ip' => $ip, 'status' => 'saved'];
-        } else {
-            $failedCount++;
-            $details[] = ['ip' => $ip, 'status' => 'failed'];
-        }
-    }
-
-    return [
-        'success' => true,
-        'summary' => [
-            'total' => count($results),
-            'saved' => $savedCount,
-            'skipped' => $skippedCount,
-            'failed' => $failedCount
-        ],
-        'message' => "Saved {$savedCount} IPs to cache, skipped {$skippedCount}, failed {$failedCount} / 已存入 {$savedCount} 個IP，跳過 {$skippedCount} 個，失敗 {$failedCount} 個",
-        'details' => $details,
-        'timestamp' => date('Y-m-d H:i:s')
-    ];
-}
-
-/**
- * Get cache info for specific IP
- */
-function getCacheInfo($ip) {
-    if (empty($ip)) {
-        return ['error' => 'IP address required / 需要IP地址'];
-    }
-
-    if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-        return ['error' => 'Invalid IP address / 無效的IP地址'];
-    }
-
-    $cache = getIPCache();
-    if (!$cache) {
-        return ['error' => 'Cache not available / 快取不可用'];
-    }
-
-    $info = $cache->getCacheInfoForIP($ip);
-    $info['ip'] = $ip;
-    $info['timestamp'] = date('Y-m-d H:i:s');
-
-    return $info;
 }
 
