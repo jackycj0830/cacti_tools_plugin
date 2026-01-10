@@ -99,7 +99,25 @@ const i18n = {
         already_cached: '已在快取中',
         cache_saved: '已存入快取',
         cache_save_failed: '快取存入失敗',
-        saving_to_cache: '存入快取中...'
+        saving_to_cache: '存入快取中...',
+        // Custom notes translations
+        custom_notes: '自訂備註',
+        add_note: '新增備註',
+        edit_note: '編輯備註',
+        save_note: '儲存備註',
+        delete_note: '刪除備註',
+        cancel: '取消',
+        note_placeholder: '在此輸入關於此黑名單IP的備註...',
+        no_notes_yet: '尚無備註',
+        note_created: '建立於',
+        note_updated: '更新於',
+        saving_note: '儲存中...',
+        deleting_note: '刪除中...',
+        note_saved: '備註已儲存',
+        note_deleted: '備註已刪除',
+        note_save_failed: '備註儲存失敗',
+        note_delete_failed: '備註刪除失敗',
+        confirm_delete_note: '確定要刪除此備註嗎？'
     },
     en: {
         total_blacklisted: 'Total Blacklisted',
@@ -193,7 +211,25 @@ const i18n = {
         already_cached: 'Already Cached',
         cache_saved: 'Saved to Cache',
         cache_save_failed: 'Failed to Save to Cache',
-        saving_to_cache: 'Saving to cache...'
+        saving_to_cache: 'Saving to cache...',
+        // Custom notes translations
+        custom_notes: 'Custom Notes',
+        add_note: 'Add Note',
+        edit_note: 'Edit Note',
+        save_note: 'Save Note',
+        delete_note: 'Delete Note',
+        cancel: 'Cancel',
+        note_placeholder: 'Enter your notes about this blacklisted IP here...',
+        no_notes_yet: 'No notes yet',
+        note_created: 'Created',
+        note_updated: 'Updated',
+        saving_note: 'Saving...',
+        deleting_note: 'Deleting...',
+        note_saved: 'Note saved',
+        note_deleted: 'Note deleted',
+        note_save_failed: 'Failed to save note',
+        note_delete_failed: 'Failed to delete note',
+        confirm_delete_note: 'Are you sure you want to delete this note?'
     }
 };
 
@@ -320,6 +356,9 @@ function renderSingleResult(data) {
                     <p><strong>${t('report_count')}:</strong> ${threat.reportCount || '-'}</p>
                 </div>` : ''}
             </div>
+
+            <!-- Custom Notes Section for Blacklisted IPs -->
+            ${data.blacklisted ? renderCustomNotesSection(data) : ''}
 
             <!-- Individual Provider Results -->
             <div class="provider-results-section">
@@ -490,6 +529,235 @@ async function saveToCache() {
             statusSpan.textContent = e.message;
             statusSpan.className = 'cache-save-status error';
         }
+    }
+}
+
+// ============================================================================
+// CUSTOM NOTES FUNCTIONS / 自訂備註功能
+// ============================================================================
+
+/**
+ * Render custom notes section for blacklisted IPs
+ */
+function renderCustomNotesSection(data) {
+    const ip = data.ip;
+    const note = data.customNote || '';
+    const noteCreatedAt = data.noteCreatedAt || '';
+    const noteUpdatedAt = data.noteUpdatedAt || '';
+
+    const hasNote = note && note.trim().length > 0;
+
+    return `
+        <div class="custom-notes-section detail-group">
+            <h4>📝 ${t('custom_notes')}
+                <span class="note-toggle-btn" onclick="toggleNoteEditor('${ip}')">
+                    ${hasNote ? `✏️ ${t('edit_note')}` : `➕ ${t('add_note')}`}
+                </span>
+            </h4>
+
+            <!-- Display existing note -->
+            <div id="noteDisplay-${ip}" class="note-display ${hasNote ? '' : 'hidden'}">
+                ${hasNote ? `
+                    <div class="note-content">${note}</div>
+                    <div class="note-metadata">
+                        <span>${t('note_created')}: ${formatDateTime(noteCreatedAt)}</span>
+                        ${noteUpdatedAt && noteUpdatedAt !== noteCreatedAt ?
+                            `<span> | ${t('note_updated')}: ${formatDateTime(noteUpdatedAt)}</span>` : ''}
+                    </div>
+                ` : `<p class="no-note-message">${t('no_notes_yet')}</p>`}
+            </div>
+
+            <!-- Note editor (hidden by default) -->
+            <div id="noteEditor-${ip}" class="note-editor hidden">
+                <textarea id="noteText-${ip}" class="note-textarea" placeholder="${t('note_placeholder')}" maxlength="2000">${note}</textarea>
+                <div class="note-char-count">
+                    <span id="charCount-${ip}">${note.length}</span>/2000
+                </div>
+                <div class="note-actions">
+                    <button class="btn btn-primary btn-sm" onclick="saveNote('${ip}')">${t('save_note')}</button>
+                    <button class="btn btn-secondary btn-sm" onclick="cancelNoteEdit('${ip}')">${t('cancel')}</button>
+                    ${hasNote ? `<button class="btn btn-danger btn-sm" onclick="deleteNote('${ip}')">${t('delete_note')}</button>` : ''}
+                </div>
+                <div id="noteStatus-${ip}" class="note-status"></div>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Toggle note editor visibility
+ */
+function toggleNoteEditor(ip) {
+    const display = document.getElementById(`noteDisplay-${ip}`);
+    const editor = document.getElementById(`noteEditor-${ip}`);
+    const textarea = document.getElementById(`noteText-${ip}`);
+
+    if (display && editor) {
+        display.classList.toggle('hidden');
+        editor.classList.toggle('hidden');
+
+        // Focus on textarea and update char count when showing editor
+        if (!editor.classList.contains('hidden') && textarea) {
+            textarea.focus();
+            updateNoteCharCount(ip);
+            // Add input listener for character count
+            textarea.oninput = () => updateNoteCharCount(ip);
+        }
+    }
+}
+
+/**
+ * Update character count for note textarea
+ */
+function updateNoteCharCount(ip) {
+    const textarea = document.getElementById(`noteText-${ip}`);
+    const countSpan = document.getElementById(`charCount-${ip}`);
+    if (textarea && countSpan) {
+        countSpan.textContent = textarea.value.length;
+    }
+}
+
+/**
+ * Cancel note editing
+ */
+function cancelNoteEdit(ip) {
+    const display = document.getElementById(`noteDisplay-${ip}`);
+    const editor = document.getElementById(`noteEditor-${ip}`);
+    const textarea = document.getElementById(`noteText-${ip}`);
+
+    // Reset textarea to original value
+    if (textarea && lastQueryResult && lastQueryResult.customNote !== undefined) {
+        textarea.value = lastQueryResult.customNote || '';
+    }
+
+    if (display && editor) {
+        display.classList.remove('hidden');
+        editor.classList.add('hidden');
+    }
+}
+
+/**
+ * Save custom note for an IP
+ */
+async function saveNote(ip) {
+    const textarea = document.getElementById(`noteText-${ip}`);
+    const statusDiv = document.getElementById(`noteStatus-${ip}`);
+
+    if (!textarea) return;
+
+    const note = textarea.value.trim();
+
+    try {
+        statusDiv.textContent = t('saving_note');
+        statusDiv.className = 'note-status saving';
+
+        const response = await fetch(`${API_URL}?action=save_note`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ip, note })
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            statusDiv.textContent = result.message || t('note_saved');
+            statusDiv.className = 'note-status success';
+
+            // Update lastQueryResult
+            if (lastQueryResult && lastQueryResult.ip === ip) {
+                lastQueryResult.customNote = note;
+                lastQueryResult.noteCreatedAt = result.noteCreatedAt;
+                lastQueryResult.noteUpdatedAt = result.noteUpdatedAt;
+            }
+
+            // Refresh display after short delay
+            setTimeout(() => {
+                toggleNoteEditor(ip);
+                // Refresh the note display content
+                const display = document.getElementById(`noteDisplay-${ip}`);
+                if (display) {
+                    if (note) {
+                        display.innerHTML = `
+                            <div class="note-content">${note}</div>
+                            <div class="note-metadata">
+                                <span>${t('note_created')}: ${formatDateTime(result.noteCreatedAt)}</span>
+                                ${result.noteUpdatedAt ? `<span> | ${t('note_updated')}: ${formatDateTime(result.noteUpdatedAt)}</span>` : ''}
+                            </div>
+                        `;
+                        display.classList.remove('hidden');
+                    } else {
+                        display.innerHTML = `<p class="no-note-message">${t('no_notes_yet')}</p>`;
+                    }
+                }
+            }, 1000);
+        } else {
+            statusDiv.textContent = result.error || t('note_save_failed');
+            statusDiv.className = 'note-status error';
+        }
+    } catch (e) {
+        statusDiv.textContent = e.message;
+        statusDiv.className = 'note-status error';
+    }
+}
+
+/**
+ * Delete custom note for an IP
+ */
+async function deleteNote(ip) {
+    if (!confirm(t('confirm_delete_note'))) {
+        return;
+    }
+
+    const statusDiv = document.getElementById(`noteStatus-${ip}`);
+
+    try {
+        statusDiv.textContent = t('deleting_note');
+        statusDiv.className = 'note-status saving';
+
+        const response = await fetch(`${API_URL}?action=delete_note&ip=${encodeURIComponent(ip)}`);
+        const result = await response.json();
+
+        if (result.success) {
+            statusDiv.textContent = result.message || t('note_deleted');
+            statusDiv.className = 'note-status success';
+
+            // Update lastQueryResult
+            if (lastQueryResult && lastQueryResult.ip === ip) {
+                lastQueryResult.customNote = null;
+                lastQueryResult.noteCreatedAt = null;
+                lastQueryResult.noteUpdatedAt = null;
+            }
+
+            // Clear and refresh display
+            const textarea = document.getElementById(`noteText-${ip}`);
+            if (textarea) textarea.value = '';
+
+            setTimeout(() => {
+                toggleNoteEditor(ip);
+                const display = document.getElementById(`noteDisplay-${ip}`);
+                if (display) {
+                    display.innerHTML = `<p class="no-note-message">${t('no_notes_yet')}</p>`;
+                }
+            }, 1000);
+        } else {
+            statusDiv.textContent = result.error || t('note_delete_failed');
+            statusDiv.className = 'note-status error';
+        }
+    } catch (e) {
+        statusDiv.textContent = e.message;
+        statusDiv.className = 'note-status error';
+    }
+}
+
+/**
+ * Format datetime string for display
+ */
+function formatDateTime(dateStr) {
+    if (!dateStr) return '-';
+    try {
+        const date = new Date(dateStr);
+        return date.toLocaleString(currentLang === 'zh' ? 'zh-TW' : 'en-US');
+    } catch {
+        return dateStr;
     }
 }
 

@@ -215,8 +215,108 @@ class IPCache {
             'cached' => true,
             'cacheHits' => (int)$row['hit_count'],
             'cachedAt' => $row['created_at'],
-            'expiresAt' => $row['expires_at']
+            'expiresAt' => $row['expires_at'],
+            // Custom notes for blacklisted IPs
+            'customNote' => $row['custom_note'] ?? null,
+            'noteCreatedAt' => $row['note_created_at'] ?? null,
+            'noteUpdatedAt' => $row['note_updated_at'] ?? null
         ];
+    }
+
+    /**
+     * Save or update custom note for an IP
+     * @param string $ip IP address
+     * @param string $note Custom note text
+     * @return array Result with success status and message
+     */
+    public function saveNote($ip, $note) {
+        if (empty($ip)) {
+            return ['success' => false, 'error' => 'IP address is required'];
+        }
+
+        $now = date('Y-m-d H:i:s');
+        $note = trim($note);
+
+        try {
+            // Check if IP exists in cache
+            $stmt = $this->pdo->prepare("SELECT ip_address, custom_note, note_created_at FROM ip_cache WHERE ip_address = ?");
+            $stmt->execute([$ip]);
+            $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($existing) {
+                // Update existing record
+                $noteCreatedAt = $existing['note_created_at'] ?? $now;
+                $stmt = $this->pdo->prepare("UPDATE ip_cache SET custom_note = ?, note_created_at = ?, note_updated_at = ? WHERE ip_address = ?");
+                $stmt->execute([$note, $noteCreatedAt, $now, $ip]);
+            } else {
+                // Insert new record with note only
+                $stmt = $this->pdo->prepare("INSERT INTO ip_cache (ip_address, custom_note, note_created_at, note_updated_at) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$ip, $note, $now, $now]);
+            }
+
+            return [
+                'success' => true,
+                'ip' => $ip,
+                'note' => $note,
+                'noteCreatedAt' => $existing['note_created_at'] ?? $now,
+                'noteUpdatedAt' => $now,
+                'message' => 'Note saved successfully / 備註已成功儲存'
+            ];
+        } catch (PDOException $e) {
+            return ['success' => false, 'error' => 'Database error: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Get custom note for an IP
+     * @param string $ip IP address
+     * @return array|null Note data or null if not found
+     */
+    public function getNote($ip) {
+        if (empty($ip)) {
+            return null;
+        }
+
+        try {
+            $stmt = $this->pdo->prepare("SELECT custom_note, note_created_at, note_updated_at FROM ip_cache WHERE ip_address = ?");
+            $stmt->execute([$ip]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($row && !empty($row['custom_note'])) {
+                return [
+                    'ip' => $ip,
+                    'note' => $row['custom_note'],
+                    'createdAt' => $row['note_created_at'],
+                    'updatedAt' => $row['note_updated_at']
+                ];
+            }
+            return null;
+        } catch (PDOException $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Delete custom note for an IP
+     * @param string $ip IP address
+     * @return array Result with success status
+     */
+    public function deleteNote($ip) {
+        if (empty($ip)) {
+            return ['success' => false, 'error' => 'IP address is required'];
+        }
+
+        try {
+            $stmt = $this->pdo->prepare("UPDATE ip_cache SET custom_note = NULL, note_created_at = NULL, note_updated_at = NULL WHERE ip_address = ?");
+            $stmt->execute([$ip]);
+            return [
+                'success' => true,
+                'ip' => $ip,
+                'message' => 'Note deleted successfully / 備註已成功刪除'
+            ];
+        } catch (PDOException $e) {
+            return ['success' => false, 'error' => 'Database error: ' . $e->getMessage()];
+        }
     }
 
     /**

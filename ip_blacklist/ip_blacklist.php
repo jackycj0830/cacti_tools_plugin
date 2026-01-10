@@ -378,6 +378,30 @@ define('GEOIP_QUERY_MODE', 'aggregate');
                 </p>
 
                 <div class="version-timeline">
+                    <!-- Version 2.2.0 -->
+                    <div class="version-entry">
+                        <div class="version-header">
+                            <span class="version-number">v2.2.0</span>
+                            <span class="version-date">2026-01-10</span>
+                            <span class="version-tag feature">Feature Release</span>
+                        </div>
+                        <div class="version-body">
+                            <h5>🆕 New Features / 新功能</h5>
+                            <ul>
+                                <li>Custom notes/annotations for blacklisted IPs / 黑名單IP自訂備註功能</li>
+                                <li>Add, edit, and delete notes for any blacklisted IP / 新增、編輯、刪除任何黑名單IP的備註</li>
+                                <li>Notes stored in database with creation and update timestamps / 備註存儲在資料庫中，含建立和更新時間戳</li>
+                                <li>Notes displayed inline in query results / 備註在查詢結果中顯示</li>
+                            </ul>
+                            <h5>🔧 Improvements / 改進</h5>
+                            <ul>
+                                <li>Note character limit (2000 characters) with live counter / 備註字符限制（2000字符）含即時計數器</li>
+                                <li>Bilingual UI for all note-related features / 所有備註相關功能的雙語UI</li>
+                                <li>Notes persist even when cache expires / 備註在快取過期後仍保留</li>
+                            </ul>
+                        </div>
+                    </div>
+
                     <!-- Version 2.1.0 -->
                     <div class="version-entry">
                         <div class="version-header">
@@ -602,7 +626,7 @@ define('GEOIP_QUERY_MODE', 'aggregate');
                     <p class="footer-powered">Powered by TPV IT Global Infrastructure Team</p>
                 </div>
                 <div class="footer-version">
-                    <span class="version-badge">v2.1.0</span>
+                    <span class="version-badge">v2.2.0</span>
                     <span class="version-date">Last Updated: 2026-01-10</span>
                 </div>
             </div>

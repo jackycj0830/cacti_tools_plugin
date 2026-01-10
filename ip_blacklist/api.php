@@ -171,7 +171,18 @@ switch ($action) {
         echo json_encode(getCacheInfo(trim($_GET['ip'] ?? '')));
         break;
 
-    default: echo json_encode(['error' => 'Unknown action. Use: query, batch, stats, history, providers, export, cache_stats, cache_cleanup, cache_clear, cache_save, cache_save_batch, cache_info']);
+    // Custom notes for blacklisted IPs
+    case 'save_note':
+        echo json_encode(saveIPNote(json_decode(file_get_contents('php://input'), true)));
+        break;
+    case 'get_note':
+        echo json_encode(getIPNote(trim($_GET['ip'] ?? '')));
+        break;
+    case 'delete_note':
+        echo json_encode(deleteIPNote(trim($_GET['ip'] ?? '')));
+        break;
+
+    default: echo json_encode(['error' => 'Unknown action. Use: query, batch, stats, history, providers, export, cache_stats, cache_cleanup, cache_clear, cache_save, cache_save_batch, cache_info, save_note, get_note, delete_note']);
 }
 
 function loadBlacklist() {
@@ -503,6 +514,11 @@ function queryIP($ip, $skipCache = false) {
                 $cached['fromCache'] = true;
                 // Add cache info
                 $cached['cacheInfo'] = $cache->getCacheInfoForIP($ip);
+                // Include custom note if available
+                $noteData = $cache->getNote($ip);
+                $cached['customNote'] = $noteData['note'] ?? null;
+                $cached['noteCreatedAt'] = $noteData['createdAt'] ?? null;
+                $cached['noteUpdatedAt'] = $noteData['updatedAt'] ?? null;
                 saveQueryHistory($cached);
                 return $cached;
             }
@@ -516,6 +532,12 @@ function queryIP($ip, $skipCache = false) {
 
     // Generate risk analysis based on aggregated data
     $riskAnalysis = generateRiskAnalysis($ip, $isBlacklisted, $geoData);
+
+    // Get custom note if exists (may have been saved previously)
+    $noteData = null;
+    if ($cache) {
+        $noteData = $cache->getNote($ip);
+    }
 
     $result = [
         'ip' => $ip,
@@ -532,7 +554,11 @@ function queryIP($ip, $skipCache = false) {
         'threatInfo' => $isBlacklisted ? getThreatInfo($ip) : null,
         'timestamp' => date('Y-m-d H:i:s'),
         'fromCache' => false,
-        'cacheInfo' => null
+        'cacheInfo' => null,
+        // Custom notes
+        'customNote' => $noteData['note'] ?? null,
+        'noteCreatedAt' => $noteData['createdAt'] ?? null,
+        'noteUpdatedAt' => $noteData['updatedAt'] ?? null
     ];
 
     // Store in database cache automatically
@@ -1140,5 +1166,87 @@ function getCacheInfo($ip) {
     $info['timestamp'] = date('Y-m-d H:i:s');
 
     return $info;
+}
+
+// ============================================================================
+// CUSTOM NOTES API FUNCTIONS / 自訂備註API函數
+// ============================================================================
+
+/**
+ * Save custom note for an IP
+ * @param array $data Request data with 'ip' and 'note' fields
+ */
+function saveIPNote($data) {
+    if (!$data || !isset($data['ip']) || !isset($data['note'])) {
+        return ['success' => false, 'error' => 'IP and note are required / 需要IP和備註'];
+    }
+
+    $ip = trim($data['ip']);
+    $note = trim($data['note']);
+
+    if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        return ['success' => false, 'error' => 'Invalid IP address / 無效的IP地址'];
+    }
+
+    // Validate note length (max 2000 characters)
+    if (strlen($note) > 2000) {
+        return ['success' => false, 'error' => 'Note too long (max 2000 characters) / 備註太長（最多2000字符）'];
+    }
+
+    // Sanitize note content
+    $note = htmlspecialchars($note, ENT_QUOTES, 'UTF-8');
+
+    $cache = getIPCache();
+    if (!$cache) {
+        return ['success' => false, 'error' => 'Cache not available / 快取不可用'];
+    }
+
+    return $cache->saveNote($ip, $note);
+}
+
+/**
+ * Get custom note for an IP
+ * @param string $ip IP address
+ */
+function getIPNote($ip) {
+    if (empty($ip)) {
+        return ['success' => false, 'error' => 'IP address is required / 需要IP地址'];
+    }
+
+    if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        return ['success' => false, 'error' => 'Invalid IP address / 無效的IP地址'];
+    }
+
+    $cache = getIPCache();
+    if (!$cache) {
+        return ['success' => false, 'error' => 'Cache not available / 快取不可用'];
+    }
+
+    $note = $cache->getNote($ip);
+    if ($note) {
+        return ['success' => true, 'data' => $note];
+    }
+    return ['success' => true, 'data' => null, 'message' => 'No note found for this IP / 此IP沒有備註'];
+}
+
+/**
+ * Delete custom note for an IP
+ * @param string $ip IP address
+ */
+function deleteIPNote($ip) {
+    if (empty($ip)) {
+        return ['success' => false, 'error' => 'IP address is required / 需要IP地址'];
+    }
+
+    if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        return ['success' => false, 'error' => 'Invalid IP address / 無效的IP地址'];
+    }
+
+    $cache = getIPCache();
+    if (!$cache) {
+        return ['success' => false, 'error' => 'Cache not available / 快取不可用'];
+    }
+
+    return $cache->deleteNote($ip);
 }
 
