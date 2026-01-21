@@ -184,9 +184,19 @@ class IPCache {
      * Convert database row to result array
      */
     private function rowToResult(array $row) {
+        $isBlacklisted = (bool)$row['is_blacklisted'];
+        $riskScore = (int)$row['risk_score'];
+        $riskLevel = $row['risk_level'] ?? 'low';
+        $providersQueried = (int)$row['providers_queried'];
+        $providersResponded = (int)$row['providers_responded'];
+
+        // Regenerate display fields for risk analysis (not stored in DB)
+        $riskLevelText = $this->getRiskLevelText($riskLevel);
+        $recommendation = $this->getRecommendation($riskLevel, $isBlacklisted);
+
         return [
             'ip' => $row['ip_address'],
-            'blacklisted' => (bool)$row['is_blacklisted'],
+            'blacklisted' => $isBlacklisted,
             'status' => $row['status'],
             'geo' => [
                 'country' => $row['country_code'],
@@ -202,15 +212,21 @@ class IPCache {
                 'timezone' => $row['timezone']
             ],
             'riskAnalysis' => [
-                'riskScore' => (int)$row['risk_score'],
-                'riskLevel' => $row['risk_level'],
-                'riskFactors' => json_decode($row['risk_factors'] ?? '[]', true) ?: []
+                'riskScore' => $riskScore,
+                'riskLevel' => $riskLevel,
+                'riskLevelText' => $riskLevelText,
+                'recommendation' => $recommendation,
+                'riskFactors' => json_decode($row['risk_factors'] ?? '[]', true) ?: [],
+                'providersQueried' => $providersQueried,
+                'providersResponded' => $providersResponded,
+                'dataRatio' => sprintf('%d/%d', $providersResponded, $providersQueried),
+                'blacklistStatus' => $isBlacklisted ? '1/1' : '0/1'
             ],
             'threatInfo' => json_decode($row['threat_info'] ?? 'null', true),
             'providerResults' => json_decode($row['provider_results'] ?? '[]', true) ?: [],
             'providerStats' => [
-                'total' => (int)$row['providers_queried'],
-                'successful' => (int)$row['providers_responded']
+                'total' => $providersQueried,
+                'successful' => $providersResponded
             ],
             'cached' => true,
             'cacheHits' => (int)$row['hit_count'],
@@ -221,6 +237,36 @@ class IPCache {
             'noteCreatedAt' => $row['note_created_at'] ?? null,
             'noteUpdatedAt' => $row['note_updated_at'] ?? null
         ];
+    }
+
+    /**
+     * Get risk level text based on risk level
+     */
+    private function getRiskLevelText($riskLevel) {
+        switch ($riskLevel) {
+            case 'high':
+                return '高風險 / High Risk';
+            case 'medium':
+                return '中等風險 / Medium Risk';
+            case 'low':
+            default:
+                return '低風險 / Low Risk';
+        }
+    }
+
+    /**
+     * Get recommendation based on risk level and blacklist status
+     */
+    private function getRecommendation($riskLevel, $isBlacklisted) {
+        if ($riskLevel === 'high') {
+            return $isBlacklisted
+                ? '建議封鎖此IP。此IP已被列入黑名單。/ Recommend blocking this IP. This IP is blacklisted.'
+                : '需要進一步調查。/ Requires further investigation.';
+        } elseif ($riskLevel === 'medium') {
+            return '建議監控此IP的活動。/ Recommend monitoring this IP\'s activity.';
+        } else {
+            return '此IP目前看起來是安全的。/ This IP appears to be safe.';
+        }
     }
 
     /**

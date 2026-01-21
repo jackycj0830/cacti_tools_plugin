@@ -117,7 +117,22 @@ const i18n = {
         note_deleted: '備註已刪除',
         note_save_failed: '備註儲存失敗',
         note_delete_failed: '備註刪除失敗',
-        confirm_delete_note: '確定要刪除此備註嗎？'
+        confirm_delete_note: '確定要刪除此備註嗎？',
+        note_editor: '備註編輯器',
+        expand_editor: '展開編輯器',
+        collapse_editor: '收合編輯器',
+        clear_content: '清除內容',
+        confirm_clear_content: '確定要清除所有內容嗎？',
+        drag_to_resize: '拖曳調整大小',
+        characters: '字元',
+        font_size: '字體大小',
+        font_color: '字體顏色',
+        select_color: '選擇顏色',
+        // External lookup translations
+        external_lookups: '外部查詢',
+        check_on_whois365: '在 Whois365 檢查',
+        check_on_trendmicro: '在 Trend Micro 檢查',
+        check_on_virustotal: '在 VirusTotal 檢查'
     },
     en: {
         total_blacklisted: 'Total Blacklisted',
@@ -229,7 +244,22 @@ const i18n = {
         note_deleted: 'Note deleted',
         note_save_failed: 'Failed to save note',
         note_delete_failed: 'Failed to delete note',
-        confirm_delete_note: 'Are you sure you want to delete this note?'
+        confirm_delete_note: 'Are you sure you want to delete this note?',
+        note_editor: 'Note Editor',
+        expand_editor: 'Expand Editor',
+        collapse_editor: 'Collapse Editor',
+        clear_content: 'Clear Content',
+        confirm_clear_content: 'Are you sure you want to clear all content?',
+        drag_to_resize: 'Drag to resize',
+        characters: 'characters',
+        font_size: 'Font Size',
+        font_color: 'Font Color',
+        select_color: 'Select color',
+        // External lookup translations
+        external_lookups: 'External Lookups',
+        check_on_whois365: 'Check on Whois365',
+        check_on_trendmicro: 'Check on Trend Micro',
+        check_on_virustotal: 'Check on VirusTotal'
     }
 };
 
@@ -332,6 +362,9 @@ function renderSingleResult(data) {
 
             <!-- Cache Info Section -->
             ${renderCacheInfoSection(data)}
+
+            <!-- External Lookup Section -->
+            ${renderExternalLookupSection(data.ip)}
 
             <!-- Risk Analysis Summary -->
             ${riskAnalysisHtml}
@@ -474,6 +507,37 @@ function renderCacheInfoSection(data) {
 }
 
 /**
+ * Render external lookup buttons section
+ * @param {string} ip - The IP address to look up
+ * @returns {string} HTML for external lookup section
+ */
+function renderExternalLookupSection(ip) {
+    // Extract base IP for CIDR ranges (e.g., "192.168.1.0/24" -> "192.168.1.0")
+    const baseIp = ip.includes('/') ? ip.split('/')[0] : ip;
+
+    const whois365Url = `https://whois365.com/tw/ip/${encodeURIComponent(baseIp)}`;
+    const trendMicroUrl = `https://servicecentral.trendmicro.com/zh-tw/ers/ip-lookup/?ip=${encodeURIComponent(baseIp)}`;
+    const virusTotalUrl = `https://www.virustotal.com/gui/ip-address/${encodeURIComponent(baseIp)}`;
+
+    return `
+        <div class="external-lookup-section">
+            <h4>🔍 ${t('external_lookups')}</h4>
+            <div class="external-lookup-buttons">
+                <a href="${whois365Url}" target="_blank" rel="noopener noreferrer" class="external-lookup-btn whois365-btn">
+                    🌐 ${t('check_on_whois365')}
+                </a>
+                <a href="${trendMicroUrl}" target="_blank" rel="noopener noreferrer" class="external-lookup-btn trendmicro-btn">
+                    🛡️ ${t('check_on_trendmicro')}
+                </a>
+                <a href="${virusTotalUrl}" target="_blank" rel="noopener noreferrer" class="external-lookup-btn virustotal-btn">
+                    🦠 ${t('check_on_virustotal')}
+                </a>
+            </div>
+        </div>
+    `;
+}
+
+/**
  * Save current query result to cache manually
  */
 async function saveToCache() {
@@ -567,17 +631,83 @@ function renderCustomNotesSection(data) {
                 ` : `<p class="no-note-message">${t('no_notes_yet')}</p>`}
             </div>
 
-            <!-- Note editor (hidden by default) -->
-            <div id="noteEditor-${ip}" class="note-editor hidden">
-                <textarea id="noteText-${ip}" class="note-textarea" placeholder="${t('note_placeholder')}" maxlength="2000">${note}</textarea>
-                <div class="note-char-count">
-                    <span id="charCount-${ip}">${note.length}</span>/2000
+            <!-- Enhanced Note Editor (hidden by default) -->
+            <div id="noteEditor-${ip}" class="note-editor-container hidden">
+                <!-- Editor Toolbar -->
+                <div class="note-editor-toolbar">
+                    <div class="toolbar-left">
+                        <span class="toolbar-title">📝 ${t('note_editor')}</span>
+                    </div>
+                    <div class="toolbar-center">
+                        <!-- Font Size Control -->
+                        <div class="toolbar-control">
+                            <label>${t('font_size')}:</label>
+                            <select id="fontSize-${ip}" onchange="changeEditorFontSize('${ip}')" class="toolbar-select">
+                                <option value="12">12px</option>
+                                <option value="14">14px</option>
+                                <option value="16" selected>16px</option>
+                                <option value="18">18px</option>
+                                <option value="20">20px</option>
+                                <option value="24">24px</option>
+                                <option value="28">28px</option>
+                                <option value="32">32px</option>
+                            </select>
+                        </div>
+                        <!-- Font Color Control -->
+                        <div class="toolbar-control">
+                            <label>${t('font_color')}:</label>
+                            <input type="color" id="fontColor-${ip}" value="#333333" onchange="changeEditorFontColor('${ip}')" class="toolbar-color-picker" title="${t('select_color')}">
+                        </div>
+                    </div>
+                    <div class="toolbar-right">
+                        <button type="button" class="toolbar-btn" onclick="expandNoteEditor('${ip}')" title="${t('expand_editor')}">
+                            <span id="expandIcon-${ip}">⛶</span>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick="clearNoteEditor('${ip}')" title="${t('clear_content')}">
+                            🗑️
+                        </button>
+                    </div>
                 </div>
+
+                <!-- Resizable Editor Area -->
+                <div id="editorWrapper-${ip}" class="note-editor-wrapper">
+                    <textarea
+                        id="noteText-${ip}"
+                        class="note-editor-textarea"
+                        placeholder="${t('note_placeholder')}"
+                        maxlength="2000"
+                        style="width: 550px; height: 100px; min-width: 550px; min-height: 100px;"
+                    >${note}</textarea>
+                    <div class="resize-handle" title="${t('drag_to_resize')}">
+                        <span>⋮⋮</span>
+                    </div>
+                </div>
+
+                <!-- Editor Footer -->
+                <div class="note-editor-footer">
+                    <div class="char-counter">
+                        <span id="charCount-${ip}">${note.length}</span>/2000 ${t('characters')}
+                    </div>
+                    <div class="editor-dimensions" id="editorDimensions-${ip}">
+                        500 × 300 px
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
                 <div class="note-actions">
-                    <button class="btn btn-primary btn-sm" onclick="saveNote('${ip}')">${t('save_note')}</button>
-                    <button class="btn btn-secondary btn-sm" onclick="cancelNoteEdit('${ip}')">${t('cancel')}</button>
-                    ${hasNote ? `<button class="btn btn-danger btn-sm" onclick="deleteNote('${ip}')">${t('delete_note')}</button>` : ''}
+                    <button class="btn btn-primary btn-sm" onclick="saveNote('${ip}')">
+                        💾 ${t('save_note')}
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="cancelNoteEdit('${ip}')">
+                        ✖ ${t('cancel')}
+                    </button>
+                    ${hasNote ? `
+                    <button class="btn btn-danger btn-sm" onclick="deleteNote('${ip}')">
+                        🗑️ ${t('delete_note')}
+                    </button>` : ''}
                 </div>
+
+                <!-- Status Message -->
                 <div id="noteStatus-${ip}" class="note-status"></div>
             </div>
         </div>
@@ -596,13 +726,100 @@ function toggleNoteEditor(ip) {
         display.classList.toggle('hidden');
         editor.classList.toggle('hidden');
 
-        // Focus on textarea and update char count when showing editor
+        // Initialize editor when showing
         if (!editor.classList.contains('hidden') && textarea) {
             textarea.focus();
             updateNoteCharCount(ip);
             // Add input listener for character count
             textarea.oninput = () => updateNoteCharCount(ip);
+            // Initialize resize observer
+            initEditorResizeObserver(ip);
+            // Update initial dimensions display
+            updateEditorDimensions(ip);
         }
+    }
+}
+
+/**
+ * Initialize resize observer for editor
+ */
+function initEditorResizeObserver(ip) {
+    const textarea = document.getElementById(`noteText-${ip}`);
+    if (!textarea || textarea._resizeObserverInitialized) return;
+
+    // Use ResizeObserver if available
+    if (typeof ResizeObserver !== 'undefined') {
+        const observer = new ResizeObserver(() => {
+            updateEditorDimensions(ip);
+        });
+        observer.observe(textarea);
+        textarea._resizeObserverInitialized = true;
+    }
+}
+
+/**
+ * Update editor dimensions display
+ */
+function updateEditorDimensions(ip) {
+    const textarea = document.getElementById(`noteText-${ip}`);
+    const dimensionsSpan = document.getElementById(`editorDimensions-${ip}`);
+    if (textarea && dimensionsSpan) {
+        const width = textarea.offsetWidth;
+        const height = textarea.offsetHeight;
+        dimensionsSpan.textContent = `${width} × ${height} px`;
+    }
+}
+
+/**
+ * Expand/collapse note editor to fullscreen
+ */
+function expandNoteEditor(ip) {
+    const wrapper = document.getElementById(`editorWrapper-${ip}`);
+    const textarea = document.getElementById(`noteText-${ip}`);
+    const icon = document.getElementById(`expandIcon-${ip}`);
+
+    if (wrapper && textarea) {
+        const isExpanded = wrapper.classList.toggle('expanded');
+        if (icon) {
+            icon.textContent = isExpanded ? '⛶' : '⛶';
+            icon.title = isExpanded ? t('collapse_editor') : t('expand_editor');
+        }
+        // Update dimensions display
+        setTimeout(() => updateEditorDimensions(ip), 100);
+    }
+}
+
+/**
+ * Clear note editor content
+ */
+function clearNoteEditor(ip) {
+    const textarea = document.getElementById(`noteText-${ip}`);
+    if (textarea && confirm(t('confirm_clear_content'))) {
+        textarea.value = '';
+        updateNoteCharCount(ip);
+        textarea.focus();
+    }
+}
+
+/**
+ * Change editor font size
+ */
+function changeEditorFontSize(ip) {
+    const textarea = document.getElementById(`noteText-${ip}`);
+    const fontSizeSelect = document.getElementById(`fontSize-${ip}`);
+    if (textarea && fontSizeSelect) {
+        textarea.style.fontSize = fontSizeSelect.value + 'px';
+    }
+}
+
+/**
+ * Change editor font color
+ */
+function changeEditorFontColor(ip) {
+    const textarea = document.getElementById(`noteText-${ip}`);
+    const fontColorInput = document.getElementById(`fontColor-${ip}`);
+    if (textarea && fontColorInput) {
+        textarea.style.color = fontColorInput.value;
     }
 }
 
@@ -613,7 +830,14 @@ function updateNoteCharCount(ip) {
     const textarea = document.getElementById(`noteText-${ip}`);
     const countSpan = document.getElementById(`charCount-${ip}`);
     if (textarea && countSpan) {
-        countSpan.textContent = textarea.value.length;
+        const count = textarea.value.length;
+        countSpan.textContent = count;
+        // Add warning color when approaching limit
+        if (count > 1800) {
+            countSpan.classList.add('char-warning');
+        } else {
+            countSpan.classList.remove('char-warning');
+        }
     }
 }
 
@@ -624,10 +848,16 @@ function cancelNoteEdit(ip) {
     const display = document.getElementById(`noteDisplay-${ip}`);
     const editor = document.getElementById(`noteEditor-${ip}`);
     const textarea = document.getElementById(`noteText-${ip}`);
+    const wrapper = document.getElementById(`editorWrapper-${ip}`);
 
     // Reset textarea to original value
     if (textarea && lastQueryResult && lastQueryResult.customNote !== undefined) {
         textarea.value = lastQueryResult.customNote || '';
+    }
+
+    // Reset expanded state
+    if (wrapper) {
+        wrapper.classList.remove('expanded');
     }
 
     if (display && editor) {
