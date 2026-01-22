@@ -84,6 +84,60 @@ CREATE TABLE IF NOT EXISTS api_rate_limits (
 );
 
 -- ============================================================================
+-- IP Database (Archive) Table - Stores archived IP data from expired cache
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS ip_database (
+    ip_address VARCHAR(45) PRIMARY KEY,
+
+    -- Blacklist Status
+    is_blacklisted BOOLEAN DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'safe',
+
+    -- GeoIP Information
+    country_code VARCHAR(10),
+    country_name VARCHAR(100),
+    city VARCHAR(100),
+    region VARCHAR(100),
+    isp VARCHAR(255),
+    org VARCHAR(255),
+    asn VARCHAR(50),
+    latitude DECIMAL(10, 8),
+    longitude DECIMAL(11, 8),
+    timezone VARCHAR(50),
+
+    -- Risk Analysis Data
+    risk_score INTEGER DEFAULT 0,
+    risk_level VARCHAR(20) DEFAULT 'low',
+    risk_factors TEXT,
+
+    -- Threat Information (JSON)
+    threat_info TEXT,
+
+    -- Provider Data
+    provider_results TEXT,
+    providers_queried INTEGER DEFAULT 0,
+    providers_responded INTEGER DEFAULT 0,
+
+    -- Archive Metadata
+    original_created_at DATETIME,
+    original_expires_at DATETIME,
+    archived_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    total_hit_count INTEGER DEFAULT 0,
+
+    -- Custom Notes
+    custom_note TEXT,
+    note_created_at DATETIME,
+    note_updated_at DATETIME,
+
+    -- Indexes
+    INDEX idx_archive_status (status),
+    INDEX idx_archive_risk (risk_level),
+    INDEX idx_archive_country (country_code),
+    INDEX idx_archive_date (archived_at),
+    INDEX idx_archive_blacklisted (is_blacklisted)
+);
+
+-- ============================================================================
 -- SQLite-specific version (no AUTO_INCREMENT, uses AUTOINCREMENT)
 -- ============================================================================
 -- For SQLite, run these instead:

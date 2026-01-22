@@ -10,7 +10,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IP Blacklist Query System / 黑名單IP查詢系統</title>
-    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="assets/style.css?v=<?php echo time(); ?>">
 </head>
 <body>
     <div class="container">
@@ -40,6 +40,7 @@
         <div class="tabs">
             <button class="tab active" onclick="switchTab('single')" data-i18n="single_query">單一查詢</button>
             <button class="tab" onclick="switchTab('batch')" data-i18n="batch_query">批量查詢</button>
+            <button class="tab" onclick="switchTab('localdb')" data-i18n="local_database">本地數據查詢</button>
             <!--<button class="tab" onclick="switchTab('history')" data-i18n="history">查詢歷史</button>-->
             <button class="tab" onclick="switchTab('fortigate')" data-i18n="fortigate_cli">防火牆指令</button>
             <button class="tab" onclick="switchTab('riskinfo')" data-i18n="risk_methodology">風險評估說明</button>
@@ -69,6 +70,135 @@
                 <button onclick="queryBatchIP()" class="btn-primary" data-i18n="batch_query">批量查詢</button>
             </div>
             <div id="batchResult" class="result-container"></div>
+        </div>
+
+        <!-- Local Database Query Panel -->
+        <div class="panel hidden" id="localdbPanel">
+            <div class="localdb-container">
+                <div class="localdb-header">
+                    <h3>📁 Local Database Query / 本地數據查詢</h3>
+                    <p class="localdb-desc">
+                        Search the archived IP database for historical records. These are previously queried IPs that have been archived from the cache.
+                    </p>
+                    <p class="localdb-desc zh">
+                        搜尋已歸檔的IP資料庫以查詢歷史記錄。這些是先前查詢過並從快取歸檔的IP。
+                    </p>
+                </div>
+
+                <!-- Archive Statistics -->
+                <div class="archive-stats-panel" id="archiveStatsPanel">
+                    <h4>📊 <span data-i18n="archive_statistics">歸檔統計</span></h4>
+                    <div class="archive-stats-grid" id="archiveStatsGrid">
+                        <div class="archive-stat-item">
+                            <span class="archive-stat-value" id="archiveTotalRecords">-</span>
+                            <span class="archive-stat-label" data-i18n="total_archived">總歸檔數</span>
+                        </div>
+                        <div class="archive-stat-item">
+                            <span class="archive-stat-value" id="archiveBlacklisted">-</span>
+                            <span class="archive-stat-label" data-i18n="blacklisted_archived">黑名單IP</span>
+                        </div>
+                        <div class="archive-stat-item">
+                            <span class="archive-stat-value" id="archiveHighRisk">-</span>
+                            <span class="archive-stat-label" data-i18n="high_risk_archived">高風險</span>
+                        </div>
+                        <div class="archive-stat-item">
+                            <span class="archive-stat-value" id="archiveCountries">-</span>
+                            <span class="archive-stat-label" data-i18n="countries_archived">國家數</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Filters -->
+                <div class="localdb-search-section">
+                    <h4>🔍 <span data-i18n="search_filters">搜尋篩選</span></h4>
+                    <div class="localdb-filters">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label for="localIpInput" data-i18n="ip_address">IP 地址</label>
+                                <input type="text" id="localIpInput" class="filter-input" placeholder="例: 192.168.1.1 或部分IP">
+                            </div>
+                            <div class="filter-group">
+                                <label for="localCountryFilter" data-i18n="country">國家</label>
+                                <select id="localCountryFilter" class="filter-select">
+                                    <option value="" data-i18n="all_countries">所有國家</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="localRiskFilter" data-i18n="risk_level">風險等級</label>
+                                <select id="localRiskFilter" class="filter-select">
+                                    <option value="" data-i18n="all_levels">所有等級</option>
+                                    <option value="high" data-i18n="high_risk">高風險</option>
+                                    <option value="medium" data-i18n="medium_risk">中等風險</option>
+                                    <option value="low" data-i18n="low_risk">低風險</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="localStatusFilter" data-i18n="status">狀態</label>
+                                <select id="localStatusFilter" class="filter-select">
+                                    <option value="" data-i18n="all_status">所有狀態</option>
+                                    <option value="blocked" data-i18n="blocked">已封鎖</option>
+                                    <option value="safe" data-i18n="safe">安全</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label for="localDateFrom" data-i18n="date_from">開始日期</label>
+                                <input type="date" id="localDateFrom" class="filter-input">
+                            </div>
+                            <div class="filter-group">
+                                <label for="localDateTo" data-i18n="date_to">結束日期</label>
+                                <input type="date" id="localDateTo" class="filter-input">
+                            </div>
+                            <div class="filter-group filter-actions">
+                                <button onclick="searchLocalDatabase()" class="btn-primary" data-i18n="search">搜尋</button>
+                                <button onclick="clearLocalFilters()" class="btn-secondary" data-i18n="clear_filters">清除篩選</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick IP Lookup -->
+                <div class="localdb-quick-lookup">
+                    <h4>⚡ <span data-i18n="quick_lookup">快速查詢</span></h4>
+                    <div class="quick-lookup-form">
+                        <input type="text" id="localQuickIpInput" class="quick-ip-input" placeholder="輸入完整IP地址進行精確查詢">
+                        <button onclick="queryLocalIP()" class="btn-primary" data-i18n="lookup">查詢</button>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div class="localdb-results-section" id="localdbResultsSection" style="display:none;">
+                    <div class="results-header">
+                        <h4>📋 <span data-i18n="search_results">搜尋結果</span></h4>
+                        <div class="results-info">
+                            <span id="localResultCount">0</span> <span data-i18n="records_found">筆記錄</span>
+                        </div>
+                    </div>
+                    <div id="localdbResults" class="localdb-results"></div>
+                    <div class="pagination-controls" id="localPagination" style="display:none;">
+                        <button onclick="loadLocalPage('prev')" class="btn-secondary" id="localPrevBtn" disabled data-i18n="previous">上一頁</button>
+                        <span id="localPageInfo">1 / 1</span>
+                        <button onclick="loadLocalPage('next')" class="btn-secondary" id="localNextBtn" disabled data-i18n="next">下一頁</button>
+                    </div>
+                </div>
+
+                <!-- Single IP Result -->
+                <div class="localdb-single-result" id="localdbSingleResult" style="display:none;">
+                    <div class="single-result-header">
+                        <h4>📍 <span data-i18n="ip_details">IP 詳情</span></h4>
+                        <span class="archived-badge" data-i18n="archived_data">歷史數據</span>
+                    </div>
+                    <div id="localSingleResultContent"></div>
+                </div>
+
+                <!-- No Results Message -->
+                <div class="localdb-no-results" id="localdbNoResults" style="display:none;">
+                    <div class="no-results-icon">🔍</div>
+                    <p data-i18n="no_archived_records">本地數據庫中沒有找到符合條件的記錄</p>
+                    <p class="no-results-hint" data-i18n="no_results_hint">嘗試調整搜尋條件或等待更多數據被歸檔</p>
+                </div>
+            </div>
         </div>
 
         <!-- History Panel -->
@@ -115,6 +245,31 @@
                                 <option value="255.255.255.0">/24 (255.255.255.0) - Class C</option>
                                 <option value="255.255.0.0">/16 (255.255.0.0) - Class B</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <!-- Group Management Section -->
+                    <div class="fortigate-group-section">
+                        <div class="group-header">
+                            <h4>📁 <span data-i18n="group_management">群組管理</span></h4>
+                        </div>
+                        <div class="group-options">
+                            <div class="group-checkbox-wrapper">
+                                <input type="checkbox" id="enableGroupAssignment" class="group-checkbox">
+                                <label for="enableGroupAssignment" data-i18n="enable_group_assignment">將 IP 加入群組</label>
+                            </div>
+                            <div class="group-number-wrapper">
+                                <label for="fortigateGroupNumber" data-i18n="group_number">群組編號</label>
+                                <input type="number" id="fortigateGroupNumber" value="18" min="1" max="999" class="group-number-input" oninput="updateGroupPreview()" onchange="updateGroupPreview()">
+                            </div>
+                            <div class="group-preview-wrapper">
+                                <label data-i18n="group_name_preview">群組名稱預覽</label>
+                                <span id="groupNamePreview" class="group-name-preview">Blacklist_Group_IPs_18</span>
+                            </div>
+                        </div>
+                        <div class="group-tip">
+                            <span class="tip-icon">💡</span>
+                            <span data-i18n="group_tip">使用 append member 指令，不會覆蓋現有成員</span>
                         </div>
                     </div>
 
@@ -378,6 +533,37 @@ define('GEOIP_QUERY_MODE', 'aggregate');
                 </p>
 
                 <div class="version-timeline">
+                    <!-- Version 2.3.0 -->
+                    <div class="version-entry">
+                        <div class="version-header">
+                            <span class="version-number">v2.3.0</span>
+                            <span class="version-date">2026-01-22</span>
+                            <span class="version-tag feature">Feature Release</span>
+                        </div>
+                        <div class="version-body">
+                            <h5>🆕 New Features / 新功能</h5>
+                            <ul>
+                                <li>Fortigate CLI Two-Phase Workflow - Phase 1: Individual address objects, Phase 2: Group assignment / Fortigate CLI 兩階段工作流程</li>
+                                <li>Group Management UI with enable checkbox, group number input (1-999), and dynamic name preview / 群組管理介面含啟用核取方塊、群組編號輸入、動態名稱預覽</li>
+                                <li>Uses "append member" command for safe group assignment (won't overwrite existing members) / 使用 append member 指令安全添加成員</li>
+                                <li>External IP Lookup buttons: Whois365, Trend Micro, VirusTotal / 外部 IP 查詢按鈕</li>
+                                <li>Enhanced Note Editor with toolbar, font controls, expand/collapse, character counter / 增強備註編輯器含工具列、字體控制、展開收合、字數計數</li>
+                            </ul>
+                            <h5>🔧 Improvements / 改進</h5>
+                            <ul>
+                                <li>Cache-busting implementation for JS/CSS files to ensure latest version loads / 快取破壞機制確保載入最新版本</li>
+                                <li>Note display area updated to fixed dimensions (500px × 200px) / 備註顯示區更新為固定尺寸</li>
+                                <li>Group management section with light blue gradient styling / 群組管理區塊淺藍色漸層樣式</li>
+                            </ul>
+                            <h5>🐛 Bug Fixes / 修復</h5>
+                            <ul>
+                                <li>Fixed checkbox state detection in group assignment feature / 修復群組分配核取方塊狀態偵測</li>
+                                <li>Fixed Phase 2 command generation when checkbox is enabled / 修復 Phase 2 指令產生</li>
+                                <li>Fixed cached results showing "undefined" in risk analysis / 修復快取結果在風險分析顯示 undefined</li>
+                            </ul>
+                        </div>
+                    </div>
+
                     <!-- Version 2.2.0 -->
                     <div class="version-entry">
                         <div class="version-header">
@@ -626,14 +812,14 @@ define('GEOIP_QUERY_MODE', 'aggregate');
                     <p class="footer-powered">Powered by TPV IT Global Infrastructure Team</p>
                 </div>
                 <div class="footer-version">
-                    <span class="version-badge">v2.2.0</span>
-                    <span class="version-date">Last Updated: 2026-01-10</span>
+                    <span class="version-badge">v2.3.0</span>
+                    <span class="version-date">Last Updated:  2026-01-22</span>
                 </div>
             </div>
         </footer>
     </div>
 
-    <script src="assets/app.js"></script>
+    <script src="assets/app.js?v=<?php echo time(); ?>"></script>
     <script>
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {

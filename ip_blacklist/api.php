@@ -182,7 +182,21 @@ switch ($action) {
         echo json_encode(deleteIPNote(trim($_GET['ip'] ?? '')));
         break;
 
-    default: echo json_encode(['error' => 'Unknown action. Use: query, batch, stats, history, providers, export, cache_stats, cache_cleanup, cache_clear, cache_save, cache_save_batch, cache_info, save_note, get_note, delete_note']);
+    // Local database (archive) query endpoints
+    case 'local_query':
+        echo json_encode(queryLocalDatabase($_GET));
+        break;
+    case 'local_search':
+        echo json_encode(searchLocalDatabase($_GET));
+        break;
+    case 'archive_stats':
+        echo json_encode(getArchiveStatistics());
+        break;
+    case 'archive_countries':
+        echo json_encode(getArchiveCountries());
+        break;
+
+    default: echo json_encode(['error' => 'Unknown action. Use: query, batch, stats, history, providers, export, cache_stats, cache_cleanup, cache_clear, cache_save, cache_save_batch, cache_info, save_note, get_note, delete_note, local_query, local_search, archive_stats, archive_countries']);
 }
 
 function loadBlacklist() {
@@ -1004,7 +1018,7 @@ function getCacheStatistics() {
 }
 
 /**
- * Clean up expired cache entries
+ * Clean up expired cache entries (archives before deletion)
  */
 function cleanupCache() {
     $cache = getIPCache();
@@ -1012,11 +1026,15 @@ function cleanupCache() {
         return ['error' => 'Cache not available / 快取不可用'];
     }
 
-    $deletedCount = $cache->cleanup();
+    $result = $cache->cleanup();
+    $archived = $result['archived'] ?? 0;
+    $deleted = $result['deleted'] ?? 0;
+
     return [
         'success' => true,
-        'message' => "Cleaned up {$deletedCount} expired entries / 清理了 {$deletedCount} 個過期條目",
-        'deletedCount' => $deletedCount,
+        'message' => "Archived {$archived} and deleted {$deleted} expired entries / 歸檔了 {$archived} 個並刪除了 {$deleted} 個過期條目",
+        'archivedCount' => $archived,
+        'deletedCount' => $deleted,
         'timestamp' => date('Y-m-d H:i:s')
     ];
 }
@@ -1248,5 +1266,148 @@ function deleteIPNote($ip) {
     }
 
     return $cache->deleteNote($ip);
+}
+
+// ============================================================================
+// LOCAL DATABASE (ARCHIVE) QUERY API FUNCTIONS / 本地數據庫（歸檔）查詢API函數
+// ============================================================================
+
+/**
+ * Query local database for a specific IP
+ * @param array $params Query parameters with 'ip' field
+ * @return array Query result
+ */
+function queryLocalDatabase($params) {
+    $ip = trim($params['ip'] ?? '');
+
+    if (empty($ip)) {
+        return [
+            'success' => false,
+            'error' => 'IP address is required / 需要IP地址'
+        ];
+    }
+
+    if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        return [
+            'success' => false,
+            'error' => 'Invalid IP address / 無效的IP地址'
+        ];
+    }
+
+    $cache = getIPCache();
+    if (!$cache) {
+        return [
+            'success' => false,
+            'error' => 'Database not available / 資料庫不可用'
+        ];
+    }
+
+    $result = $cache->queryLocal($ip);
+    if ($result) {
+        return [
+            'success' => true,
+            'found' => true,
+            'data' => $result,
+            'message' => '找到歸檔記錄 / Archived record found',
+            'timestamp' => date('Y-m-d H:i:s')
+        ];
+    }
+
+    return [
+        'success' => true,
+        'found' => false,
+        'data' => null,
+        'message' => '本地數據庫中未找到此IP / IP not found in local database',
+        'timestamp' => date('Y-m-d H:i:s')
+    ];
+}
+
+/**
+ * Search local database with filters
+ * @param array $params Search parameters
+ * @return array Search results with pagination
+ */
+function searchLocalDatabase($params) {
+    $cache = getIPCache();
+    if (!$cache) {
+        return [
+            'success' => false,
+            'error' => 'Database not available / 資料庫不可用'
+        ];
+    }
+
+    // Build filters from parameters
+    $filters = [
+        'ip' => trim($params['ip'] ?? ''),
+        'dateFrom' => trim($params['dateFrom'] ?? ''),
+        'dateTo' => trim($params['dateTo'] ?? ''),
+        'country' => trim($params['country'] ?? ''),
+        'riskLevel' => trim($params['riskLevel'] ?? ''),
+        'status' => trim($params['status'] ?? '')
+    ];
+
+    // Remove empty filters
+    $filters = array_filter($filters, fn($v) => $v !== '');
+
+    $limit = (int)($params['limit'] ?? 100);
+    $offset = (int)($params['offset'] ?? 0);
+
+    $result = $cache->searchLocal($filters, $limit, $offset);
+    $result['filters'] = $filters;
+    $result['timestamp'] = date('Y-m-d H:i:s');
+
+    return $result;
+}
+
+/**
+ * Get statistics for archived data
+ * @return array Archive statistics
+ */
+function getArchiveStatistics() {
+    $cache = getIPCache();
+    if (!$cache) {
+        return [
+            'success' => false,
+            'error' => 'Database not available / 資料庫不可用'
+        ];
+    }
+
+    $stats = $cache->getArchiveStats();
+
+    if (isset($stats['error'])) {
+        return [
+            'success' => false,
+            'error' => $stats['error']
+        ];
+    }
+
+    return [
+        'success' => true,
+        'stats' => $stats,
+        'timestamp' => date('Y-m-d H:i:s')
+    ];
+}
+
+/**
+ * Get list of countries in archive for filter dropdown
+ * @return array Countries list
+ */
+function getArchiveCountries() {
+    $cache = getIPCache();
+    if (!$cache) {
+        return [
+            'success' => false,
+            'error' => 'Database not available / 資料庫不可用',
+            'countries' => []
+        ];
+    }
+
+    $countries = $cache->getArchiveCountries();
+    return [
+        'success' => true,
+        'countries' => $countries,
+        'count' => count($countries),
+        'timestamp' => date('Y-m-d H:i:s')
+    ];
 }
 

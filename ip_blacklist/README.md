@@ -1,5 +1,7 @@
 # IP Blacklist Query System / 黑名單IP查詢系統
 
+**Version / 版本: v2.3.0** | **Last Updated / 最後更新: 2026-01-22**
+
 ## 📋 Overview / 概述
 
 A web-based IP blacklist query system that allows real-time querying of blacklisted IP addresses from overseas sources.
@@ -22,9 +24,27 @@ A web-based IP blacklist query system that allows real-time querying of blacklis
 - **Query History** - Tracks last 100 queries with export functionality
 - **Bilingual Support** - English and Chinese interface
 
+### Fortigate CLI Command Generator / 防火牆指令產生器 (v2.3.0)
+- **Two-Phase IP Blocking Workflow** - Complete firewall configuration generation
+  - Phase 1: Create individual firewall address objects
+  - Phase 2: Add addresses to firewall address group (optional)
+- **Group Management UI** - Configure group assignment settings
+  - Enable/disable group assignment with checkbox
+  - Configurable group number (1-999, default: 18)
+  - Dynamic group name preview (e.g., `Blacklist_Group_IPs_18`)
+  - Uses `append member` command for safety (won't overwrite existing members)
+- **Command Chunking** - Splits long member lists into chunks of 30 IPs to avoid CLI buffer overflow
+- **Copy & Download** - One-click copy to clipboard or download as file
+
+### External IP Lookups / 外部 IP 查詢 (v2.3.0)
+- **Whois365** - Domain/IP WHOIS information lookup
+- **Trend Micro** - Threat intelligence check
+- **VirusTotal** - Multi-engine malware analysis
+
 ### Technical Features / 技術特性
 - Real-time file reading for blacklist
-- **Database Caching System** - SQLite/MySQL caching for query results (NEW!)
+- **Database Caching System** - SQLite/MySQL caching for query results
+- **Cache-Busting** - Automatic reloading of updated JS/CSS assets
 - Multi-provider GeoIP with automatic fallback
 - GeoIP caching with configurable TTL (24-48 hours)
 - Responsive design (mobile/desktop compatible)
@@ -205,7 +225,65 @@ GET api.php?action=cache_clear     # Clear all cache
 GET api.php?action=query&ip=8.8.8.8&nocache=1
 ```
 
-## 🗄️ Database Caching System / 資料庫快取系統
+## � Fortigate CLI Command Generator / 防火牆指令產生器
+
+### Two-Phase IP Blocking Workflow / 兩階段 IP 封鎖工作流程
+
+The Fortigate CLI Command Generator creates ready-to-execute firewall configuration commands in two phases:
+
+**Phase 1: Individual Address Objects / 個別地址物件**
+- Creates individual firewall address objects for each IP
+- Format: `Blacklist_IP_{IP_ADDRESS}/32`
+
+**Phase 2: Group Assignment (Optional) / 群組分配（可選）**
+- Adds all address objects to a firewall address group
+- Uses `append member` command (safe - won't overwrite existing members)
+- Group name format: `Blacklist_Group_IPs_XX` (XX = padded group number)
+
+### Usage / 使用方法
+
+1. Navigate to the "防火牆指令" (Fortigate CLI) tab
+2. Enter IP addresses (one per line)
+3. Configure prefix and subnet mask if needed
+4. **Enable Group Assignment**: Check "將 IP 加入群組" to generate Phase 2 commands
+5. **Set Group Number**: Configure the group number (1-999, default: 18)
+6. Click "產生指令" (Generate CLI)
+7. Copy or download the generated commands
+
+### Example Output / 輸出範例
+
+```
+# ========================================
+# Phase 1: Create individual firewall address objects
+# ========================================
+config firewall address
+edit "Blacklist_IP_192.168.1.1/32"
+set subnet 192.168.1.1 255.255.255.255
+next
+edit "Blacklist_IP_192.168.1.2/32"
+set subnet 192.168.1.2 255.255.255.255
+next
+end
+
+# ========================================
+# Phase 2: Add addresses to firewall address group
+# Group: Blacklist_Group_IPs_18
+# ========================================
+config firewall addrgrp
+    edit "Blacklist_Group_IPs_18"
+        append member "Blacklist_IP_192.168.1.1/32" "Blacklist_IP_192.168.1.2/32"
+    next
+end
+```
+
+### Safety Features / 安全特性
+- Uses `append member` (not `set member`) to preserve existing group members
+- Splits long member lists into chunks of 30 IPs to avoid CLI buffer overflow
+- Customizable group number with real-time name preview
+
+---
+
+## �🗄️ Database Caching System / 資料庫快取系統
 
 ### Overview / 概述
 The database caching system stores IP query results to reduce external API calls and improve performance. It supports both SQLite (default, zero-config) and MySQL.

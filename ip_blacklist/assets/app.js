@@ -82,6 +82,12 @@ const i18n = {
         copied_success: '已複製到剪貼簿！',
         no_valid_ips: '未找到有效的 IP 地址',
         invalid_ip_format: '無效的 IP 格式',
+        // Group management translations
+        group_management: '群組管理',
+        enable_group_assignment: '將 IP 加入群組',
+        group_number: '群組編號',
+        group_name_preview: '群組名稱預覽',
+        group_tip: '使用 append member 指令，不會覆蓋現有成員',
         // Risk methodology and version history
         risk_methodology: '風險評估說明',
         version_history: '版本歷史',
@@ -132,7 +138,38 @@ const i18n = {
         external_lookups: '外部查詢',
         check_on_whois365: '在 Whois365 檢查',
         check_on_trendmicro: '在 Trend Micro 檢查',
-        check_on_virustotal: '在 VirusTotal 檢查'
+        check_on_virustotal: '在 VirusTotal 檢查',
+        // Local database (archive) translations
+        local_database: '本地數據查詢',
+        archive_statistics: '歸檔統計',
+        total_archived: '總歸檔數',
+        blacklisted_archived: '黑名單IP',
+        high_risk_archived: '高風險',
+        countries_archived: '國家數',
+        search_filters: '搜尋篩選',
+        ip_address: 'IP 地址',
+        all_countries: '所有國家',
+        all_levels: '所有等級',
+        all_status: '所有狀態',
+        date_from: '開始日期',
+        date_to: '結束日期',
+        search: '搜尋',
+        clear_filters: '清除篩選',
+        quick_lookup: '快速查詢',
+        lookup: '查詢',
+        search_results: '搜尋結果',
+        records_found: '筆記錄',
+        previous: '上一頁',
+        next: '下一頁',
+        ip_details: 'IP 詳情',
+        archived_data: '歷史數據',
+        no_archived_records: '本地數據庫中沒有找到符合條件的記錄',
+        no_results_hint: '嘗試調整搜尋條件或等待更多數據被歸檔',
+        original_cached: '原始快取時間',
+        original_expired: '原始過期時間',
+        archived_at: '歸檔時間',
+        total_hits: '總命中次數',
+        searching: '搜尋中...'
     },
     en: {
         total_blacklisted: 'Total Blacklisted',
@@ -209,6 +246,12 @@ const i18n = {
         copied_success: 'Copied to clipboard!',
         no_valid_ips: 'No valid IP addresses found',
         invalid_ip_format: 'Invalid IP format',
+        // Group management translations
+        group_management: 'Group Management',
+        enable_group_assignment: 'Add IPs to Group',
+        group_number: 'Group Number',
+        group_name_preview: 'Group Name Preview',
+        group_tip: 'Uses append member command, will not overwrite existing members',
         // Risk methodology and version history
         risk_methodology: 'Risk Methodology',
         version_history: 'Version History',
@@ -259,7 +302,38 @@ const i18n = {
         external_lookups: 'External Lookups',
         check_on_whois365: 'Check on Whois365',
         check_on_trendmicro: 'Check on Trend Micro',
-        check_on_virustotal: 'Check on VirusTotal'
+        check_on_virustotal: 'Check on VirusTotal',
+        // Local database (archive) translations
+        local_database: 'Local Database',
+        archive_statistics: 'Archive Statistics',
+        total_archived: 'Total Archived',
+        blacklisted_archived: 'Blacklisted IPs',
+        high_risk_archived: 'High Risk',
+        countries_archived: 'Countries',
+        search_filters: 'Search Filters',
+        ip_address: 'IP Address',
+        all_countries: 'All Countries',
+        all_levels: 'All Levels',
+        all_status: 'All Status',
+        date_from: 'From Date',
+        date_to: 'To Date',
+        search: 'Search',
+        clear_filters: 'Clear Filters',
+        quick_lookup: 'Quick Lookup',
+        lookup: 'Lookup',
+        search_results: 'Search Results',
+        records_found: 'records found',
+        previous: 'Previous',
+        next: 'Next',
+        ip_details: 'IP Details',
+        archived_data: 'Archived Data',
+        no_archived_records: 'No matching records found in local database',
+        no_results_hint: 'Try adjusting your search criteria or wait for more data to be archived',
+        original_cached: 'Original Cached',
+        original_expired: 'Original Expired',
+        archived_at: 'Archived At',
+        total_hits: 'Total Hits',
+        searching: 'Searching...'
     }
 };
 
@@ -281,6 +355,10 @@ function switchTab(tab) {
     document.getElementById(`${tab}Panel`).classList.remove('hidden');
     if (tab === 'history') loadHistory();
     if (tab === 'geoapi') loadGeoAPIProviders();
+    if (tab === 'localdb') {
+        loadArchiveStats();
+        loadArchiveCountries();
+    }
 }
 
 function showLoading(containerId) {
@@ -1553,64 +1631,165 @@ function parseAndValidateIPs(input) {
 }
 
 /**
+ * Update group name preview based on group number
+ */
+function updateGroupPreview() {
+    var groupNumberEl = document.getElementById('fortigateGroupNumber');
+    var previewEl = document.getElementById('groupNamePreview');
+
+    if (groupNumberEl && previewEl) {
+        var num = groupNumberEl.value || '18';
+        var paddedNum = String(num).padStart(2, '0');
+        previewEl.textContent = 'Blacklist_Group_IPs_' + paddedNum;
+    }
+}
+
+/**
+ * Check if group assignment is enabled
+ */
+function isGroupAssignmentEnabled() {
+    var checkbox = document.getElementById('enableGroupAssignment');
+    if (checkbox) {
+        return checkbox.checked === true;
+    }
+    return false;
+}
+
+/**
+ * Get current group number
+ */
+function getGroupNumber() {
+    var input = document.getElementById('fortigateGroupNumber');
+    if (input && input.value) {
+        return input.value;
+    }
+    return '18';
+}
+
+/**
  * Generate Fortigate CLI commands
  */
 function generateFortigateCLI() {
-    const input = document.getElementById('fortigateIpInput').value;
-    const prefix = document.getElementById('fortigatePrefix').value || 'Blacklist_IP_';
-    const subnetMask = document.getElementById('fortigateSubnetMask').value;
+    var input = document.getElementById('fortigateIpInput').value;
+    var prefix = document.getElementById('fortigatePrefix').value || 'Blacklist_IP_';
+    var subnetMask = document.getElementById('fortigateSubnetMask').value;
 
-    const { validIPs, invalidIPs } = parseAndValidateIPs(input);
+    // Get group management settings using helper functions
+    var enableGroup = isGroupAssignmentEnabled();
+    var groupNumber = getGroupNumber();
+
+    // Debug logging
+    console.log('=== Fortigate CLI Generator Debug ===');
+    console.log('enableGroup:', enableGroup);
+    console.log('groupNumber:', groupNumber);
+
+    var result = parseAndValidateIPs(input);
+    var validIPs = result.validIPs;
+    var invalidIPs = result.invalidIPs;
 
     // Show validation errors if any
-    const validationDiv = document.getElementById('fortigateValidation');
-    const errorsUl = document.getElementById('fortigateErrors');
+    var validationDiv = document.getElementById('fortigateValidation');
+    var errorsUl = document.getElementById('fortigateErrors');
 
     if (invalidIPs.length > 0) {
-        errorsUl.innerHTML = invalidIPs.map(err =>
-            `<li>${t('invalid_ip_format')}: Line ${err.line} - "${err.ip}"</li>`
-        ).join('');
+        errorsUl.innerHTML = invalidIPs.map(function(err) {
+            return '<li>' + t('invalid_ip_format') + ': Line ' + err.line + ' - "' + err.ip + '"</li>';
+        }).join('');
         validationDiv.style.display = 'block';
     } else {
         validationDiv.style.display = 'none';
     }
 
     // Show output section
-    const outputSection = document.getElementById('fortigateOutputSection');
-    const outputTextarea = document.getElementById('fortigateOutput');
-    const ipCountSpan = document.getElementById('fortigateIpCount');
+    var outputSection = document.getElementById('fortigateOutputSection');
+    var outputTextarea = document.getElementById('fortigateOutput');
+    var ipCountSpan = document.getElementById('fortigateIpCount');
 
     if (validIPs.length === 0) {
         outputSection.style.display = 'block';
-        outputTextarea.value = `# ${t('no_valid_ips')}`;
+        outputTextarea.value = '# ' + t('no_valid_ips');
         ipCountSpan.textContent = '0';
         return;
     }
 
-    // Generate CLI commands
-    let commands = 'config firewall address\n';
+    // Determine CIDR suffix based on subnet mask
+    var cidrSuffix = '/32';
+    if (subnetMask === '255.255.255.0') {
+        cidrSuffix = '/24';
+    } else if (subnetMask === '255.255.0.0') {
+        cidrSuffix = '/16';
+    }
 
-    validIPs.forEach(ip => {
-        // Determine CIDR suffix based on subnet mask
-        let cidrSuffix = '/32';
-        if (subnetMask === '255.255.255.0') cidrSuffix = '/24';
-        else if (subnetMask === '255.255.0.0') cidrSuffix = '/16';
+    // Build commands string
+    var commands = '';
+    var addressNames = [];
 
-        const addressName = `${prefix}${ip}${cidrSuffix}`;
-        commands += `edit "${addressName}"\n`;
-        commands += `set subnet ${ip} ${subnetMask}\n`;
-        commands += `next\n`;
-    });
+    // ========================================
+    // Phase 1: Individual address objects
+    // ========================================
+    commands += '# ========================================\n';
+    commands += '# Phase 1: Create individual firewall address objects\n';
+    commands += '# ========================================\n';
+    commands += 'config firewall address\n';
 
-    commands += 'end';
+    for (var i = 0; i < validIPs.length; i++) {
+        var ip = validIPs[i];
+        var addressName = prefix + ip + cidrSuffix;
+        addressNames.push(addressName);
+        commands += 'edit "' + addressName + '"\n';
+        commands += 'set subnet ' + ip + ' ' + subnetMask + '\n';
+        commands += 'next\n';
+    }
+
+    commands += 'end\n';
+
+    // ========================================
+    // Phase 2: Group assignment (if enabled)
+    // ========================================
+    console.log('Phase 2 - enableGroup value:', enableGroup, 'type:', typeof enableGroup);
+    console.log('Phase 2 - addressNames count:', addressNames.length);
+
+    if (enableGroup && addressNames.length > 0) {
+        console.log('>>> Generating Phase 2 commands...');
+
+        var paddedGroupNumber = String(groupNumber).padStart(2, '0');
+        var groupName = 'Blacklist_Group_IPs_' + paddedGroupNumber;
+        var MEMBERS_PER_COMMAND = 30;
+
+        commands += '\n';
+        commands += '# ========================================\n';
+        commands += '# Phase 2: Add addresses to firewall address group\n';
+        commands += '# Group: ' + groupName + '\n';
+        commands += '# ========================================\n';
+        commands += 'config firewall addrgrp\n';
+        commands += '    edit "' + groupName + '"\n';
+
+        // Split address names into chunks
+        for (var j = 0; j < addressNames.length; j += MEMBERS_PER_COMMAND) {
+            var chunk = addressNames.slice(j, j + MEMBERS_PER_COMMAND);
+            var memberList = chunk.map(function(name) {
+                return '"' + name + '"';
+            }).join(' ');
+            commands += '        append member ' + memberList + '\n';
+        }
+
+        commands += '    next\n';
+        commands += 'end\n';
+
+        console.log('>>> Phase 2 commands generated successfully');
+    } else {
+        console.log('>>> Phase 2 SKIPPED. enableGroup=' + enableGroup + ', addressNames.length=' + addressNames.length);
+    }
 
     // Display output
     outputSection.style.display = 'block';
     outputTextarea.value = commands;
-    ipCountSpan.textContent = validIPs.length.toString();
+    ipCountSpan.textContent = String(validIPs.length);
 
     // Clear copy status
     document.getElementById('fortigateCopyStatus').textContent = '';
+
+    console.log('=== CLI Generation Complete ===');
 }
 
 /**
@@ -1694,4 +1873,358 @@ function downloadFortigateCLI() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+}
+
+// ============================================================================
+// LOCAL DATABASE (ARCHIVE) QUERY FUNCTIONS
+// 本地數據庫（歸檔）查詢功能
+// ============================================================================
+
+// Pagination state for local database queries
+let localDbPage = 0;
+let localDbLimit = 50;
+let localDbTotalPages = 1;
+let localDbFilters = {};
+
+/**
+ * Load archive statistics
+ */
+async function loadArchiveStats() {
+    try {
+        const response = await fetch(`${API_URL}?action=archive_stats`);
+        const data = await response.json();
+
+        if (data.success && data.stats) {
+            document.getElementById('archiveTotalRecords').textContent = data.stats.total_records || 0;
+            document.getElementById('archiveBlacklisted').textContent = data.stats.blacklisted_count || 0;
+            document.getElementById('archiveHighRisk').textContent = data.stats.high_risk_count || 0;
+            document.getElementById('archiveCountries').textContent = data.stats.country_count || 0;
+        } else {
+            document.getElementById('archiveTotalRecords').textContent = '0';
+            document.getElementById('archiveBlacklisted').textContent = '0';
+            document.getElementById('archiveHighRisk').textContent = '0';
+            document.getElementById('archiveCountries').textContent = '0';
+        }
+    } catch (error) {
+        console.error('Failed to load archive stats:', error);
+    }
+}
+
+/**
+ * Load countries for filter dropdown
+ */
+async function loadArchiveCountries() {
+    try {
+        const response = await fetch(`${API_URL}?action=archive_countries`);
+        const data = await response.json();
+
+        const select = document.getElementById('localCountryFilter');
+        // Clear existing options except the first one
+        while (select.options.length > 1) {
+            select.remove(1);
+        }
+
+        if (data.success && data.countries) {
+            data.countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.country_code;
+                option.textContent = `${country.country_name} (${country.count})`;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Failed to load archive countries:', error);
+    }
+}
+
+/**
+ * Query a single IP from local database
+ */
+async function queryLocalIP() {
+    const ip = document.getElementById('localQuickIpInput').value.trim();
+    if (!ip) return;
+
+    // Hide other result sections
+    document.getElementById('localdbResultsSection').style.display = 'none';
+    document.getElementById('localdbNoResults').style.display = 'none';
+
+    const singleResultSection = document.getElementById('localdbSingleResult');
+    const contentDiv = document.getElementById('localSingleResultContent');
+    contentDiv.innerHTML = `<div class="loading">${t('loading')}</div>`;
+    singleResultSection.style.display = 'block';
+
+    try {
+        const response = await fetch(`${API_URL}?action=local_query&ip=${encodeURIComponent(ip)}`);
+        const data = await response.json();
+
+        if (data.success && data.found) {
+            contentDiv.innerHTML = renderArchivedIPResult(data.data);
+        } else {
+            singleResultSection.style.display = 'none';
+            document.getElementById('localdbNoResults').style.display = 'block';
+        }
+    } catch (error) {
+        contentDiv.innerHTML = `<div class="error">${error.message}</div>`;
+    }
+}
+
+/**
+ * Search local database with filters
+ */
+async function searchLocalDatabase() {
+    localDbFilters = {
+        ip: document.getElementById('localIpInput').value.trim(),
+        country: document.getElementById('localCountryFilter').value,
+        riskLevel: document.getElementById('localRiskFilter').value,
+        status: document.getElementById('localStatusFilter').value,
+        dateFrom: document.getElementById('localDateFrom').value,
+        dateTo: document.getElementById('localDateTo').value
+    };
+    localDbPage = 0;
+    await loadLocalResults();
+}
+
+/**
+ * Load local database results with current filters and pagination
+ */
+async function loadLocalResults() {
+    // Hide single result and no results sections
+    document.getElementById('localdbSingleResult').style.display = 'none';
+    document.getElementById('localdbNoResults').style.display = 'none';
+
+    const resultsSection = document.getElementById('localdbResultsSection');
+    const resultsDiv = document.getElementById('localdbResults');
+    resultsDiv.innerHTML = `<div class="loading">${t('searching')}</div>`;
+    resultsSection.style.display = 'block';
+
+    try {
+        const params = new URLSearchParams({
+            action: 'local_search',
+            limit: localDbLimit,
+            offset: localDbPage * localDbLimit,
+            ...localDbFilters
+        });
+
+        const response = await fetch(`${API_URL}?${params}`);
+        const data = await response.json();
+
+        if (data.success && data.results && data.results.length > 0) {
+            document.getElementById('localResultCount').textContent = data.total || data.results.length;
+            localDbTotalPages = Math.ceil((data.total || data.results.length) / localDbLimit);
+            resultsDiv.innerHTML = renderLocalResultsTable(data.results);
+            updateLocalPagination();
+        } else {
+            resultsSection.style.display = 'none';
+            document.getElementById('localdbNoResults').style.display = 'block';
+        }
+    } catch (error) {
+        resultsDiv.innerHTML = `<div class="error">${error.message}</div>`;
+    }
+}
+
+
+/**
+ * Render table of local database search results
+ */
+function renderLocalResultsTable(results) {
+    let html = `
+        <table class="local-results-table">
+            <thead>
+                <tr>
+                    <th>${t('ip_address')}</th>
+                    <th>${t('status')}</th>
+                    <th>${t('country')}</th>
+                    <th>${t('risk_level')}</th>
+                    <th>${t('archived_at')}</th>
+                    <th>${t('total_hits')}</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    results.forEach(row => {
+        const statusClass = row.is_blacklisted ? 'status-blocked' : 'status-safe';
+        const statusText = row.is_blacklisted ? t('blocked') : t('safe');
+        const riskClass = `risk-${row.risk_level || 'low'}`;
+        const riskText = t(`${row.risk_level || 'low'}_risk`);
+        const archivedAt = row.archived_at ? new Date(row.archived_at).toLocaleString() : '-';
+
+        html += `
+            <tr class="local-result-row" onclick="showArchivedIPDetails('${row.ip_address}')">
+                <td class="ip-cell">
+                    <span class="ip-value">${row.ip_address}</span>
+                    <span class="archived-badge-mini" title="${t('archived_data')}">📁</span>
+                </td>
+                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td>${row.country_name || row.country_code || '-'}</td>
+                <td><span class="risk-badge ${riskClass}">${riskText}</span></td>
+                <td class="date-cell">${archivedAt}</td>
+                <td>${row.total_hit_count || 0}</td>
+            </tr>
+        `;
+    });
+
+    html += '</tbody></table>';
+    return html;
+}
+
+/**
+ * Show archived IP details in single result section
+ */
+async function showArchivedIPDetails(ip) {
+    document.getElementById('localQuickIpInput').value = ip;
+    await queryLocalIP();
+}
+
+/**
+ * Render single archived IP result
+ */
+function renderArchivedIPResult(data) {
+    const statusClass = data.is_blacklisted ? 'blacklisted' : 'safe';
+    const statusText = data.is_blacklisted ? t('blocked') : t('safe');
+    const riskClass = `risk-${data.risk_level || 'low'}`;
+    const riskText = t(`${data.risk_level || 'low'}_risk`);
+
+    let html = `
+        <div class="archived-result-card ${statusClass}">
+            <div class="archived-result-header">
+                <div class="ip-title">
+                    <h3>${data.ip_address}</h3>
+                    <span class="status-badge ${statusClass === 'blacklisted' ? 'status-blocked' : 'status-safe'}">${statusText}</span>
+                    <span class="risk-badge ${riskClass}">${riskText}</span>
+                </div>
+            </div>
+
+            <div class="archived-result-body">
+                <div class="info-section">
+                    <h4>📍 ${t('geo_info')}</h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">${t('country')}:</span>
+                            <span class="info-value">${data.country_name || '-'} ${data.country_code ? `(${data.country_code})` : ''}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">${t('region')}:</span>
+                            <span class="info-value">${data.region || '-'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">${t('city')}:</span>
+                            <span class="info-value">${data.city || '-'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">${t('isp')}:</span>
+                            <span class="info-value">${data.isp || '-'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">${t('org')}:</span>
+                            <span class="info-value">${data.org || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h4>📊 ${t('risk_assessment')}</h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Risk Score:</span>
+                            <span class="info-value">${data.risk_score || 0}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">${t('risk_level')}:</span>
+                            <span class="info-value"><span class="risk-badge ${riskClass}">${riskText}</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-section archive-meta">
+                    <h4>📁 ${t('archived_data')}</h4>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">${t('original_cached')}:</span>
+                            <span class="info-value">${data.original_created_at ? new Date(data.original_created_at).toLocaleString() : '-'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">${t('original_expired')}:</span>
+                            <span class="info-value">${data.original_expires_at ? new Date(data.original_expires_at).toLocaleString() : '-'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">${t('archived_at')}:</span>
+                            <span class="info-value">${data.archived_at ? new Date(data.archived_at).toLocaleString() : '-'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">${t('total_hits')}:</span>
+                            <span class="info-value">${data.total_hit_count || 0}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add custom notes if available
+    if (data.custom_note) {
+        html += `
+            <div class="info-section notes-section">
+                <h4>📝 ${t('custom_notes')}</h4>
+                <div class="note-display">${data.custom_note}</div>
+                ${data.note_updated_at ? `<div class="note-meta">${t('note_updated')}: ${new Date(data.note_updated_at).toLocaleString()}</div>` : ''}
+            </div>
+        `;
+    }
+
+    return html;
+}
+
+/**
+ * Update pagination controls
+ */
+function updateLocalPagination() {
+    const paginationDiv = document.getElementById('localPagination');
+    const prevBtn = document.getElementById('localPrevBtn');
+    const nextBtn = document.getElementById('localNextBtn');
+    const pageInfo = document.getElementById('localPageInfo');
+
+    if (localDbTotalPages <= 1) {
+        paginationDiv.style.display = 'none';
+        return;
+    }
+
+    paginationDiv.style.display = 'flex';
+    pageInfo.textContent = `${localDbPage + 1} / ${localDbTotalPages}`;
+    prevBtn.disabled = localDbPage === 0;
+    nextBtn.disabled = localDbPage >= localDbTotalPages - 1;
+}
+
+/**
+ * Load next/previous page of local results
+ */
+async function loadLocalPage(direction) {
+    if (direction === 'next' && localDbPage < localDbTotalPages - 1) {
+        localDbPage++;
+    } else if (direction === 'prev' && localDbPage > 0) {
+        localDbPage--;
+    }
+    await loadLocalResults();
+}
+
+/**
+ * Clear all local database filters
+ */
+function clearLocalFilters() {
+    document.getElementById('localIpInput').value = '';
+    document.getElementById('localCountryFilter').value = '';
+    document.getElementById('localRiskFilter').value = '';
+    document.getElementById('localStatusFilter').value = '';
+    document.getElementById('localDateFrom').value = '';
+    document.getElementById('localDateTo').value = '';
+    document.getElementById('localQuickIpInput').value = '';
+
+    // Hide results
+    document.getElementById('localdbResultsSection').style.display = 'none';
+    document.getElementById('localdbSingleResult').style.display = 'none';
+    document.getElementById('localdbNoResults').style.display = 'none';
+
+    // Reset pagination
+    localDbPage = 0;
+    localDbFilters = {};
 }
