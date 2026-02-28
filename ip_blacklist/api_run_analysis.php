@@ -16,23 +16,22 @@ set_time_limit(0);
 @ini_set('zlib.output_compression', 0);
 @ini_set('implicit_flush', 1);
 
-$python = 'C:/Python314/python.exe';
-if (!file_exists($python)) {
-    $python = 'python'; // Fallback to PATH
+$phpExec = 'C:/xampp/php/php.exe';
+if (!file_exists($phpExec)) {
+    $phpExec = 'php'; // Fallback to PATH
 }
-// Point to the script in the older project
-$script = realpath(__DIR__ . '/../Block_IP_20260223/analyze_faz_ips.py');
-// Use the exact same log file location that the python script writes to
-$logFile = realpath(__DIR__ . '/../Block_IP_20260223/web/') . '/analysis_progress.log';
+// Point to the new PHP script we created
+$script = realpath(__DIR__ . '/faz_analyzer.php');
+// Use the exact same log file location
+$logFile = __DIR__ . '/web/analysis_progress.log';
 
 // 1. Clear previous log
 @file_put_contents($logFile, "");
 
-// 2. Start Python script in background (redirecting stderr to stdout to capture errors)
+// 2. Start PHP script in background
 $days = isset($_GET['days']) ? intval($_GET['days']) : 7;
-// Note: We'll set the working directory to the python script's directory so it finds its db and csvs properly
-$scriptDir = realpath(__DIR__ . '/../Block_IP_20260223/');
-$cmd = "cd /D \"$scriptDir\" && start /B $python -u \"$script\" --days $days > NUL 2>&1";
+$scriptDir = realpath(__DIR__);
+$cmd = "cd /D \"$scriptDir\" && start /B $phpExec -f \"$script\" --days $days > NUL 2>&1";
 
 pclose(popen($cmd, "r"));
 
