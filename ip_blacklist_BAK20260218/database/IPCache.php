@@ -1255,16 +1255,7 @@ class IPCache {
             // Custom notes
             'customNote' => $row['custom_note'] ?? null,
             'noteCreatedAt' => $row['note_created_at'] ?? null,
-            'noteUpdatedAt' => $row['note_updated_at'] ?? null,
-            // VirusTotal fields
-            'vtMalicious' => isset($row['vt_malicious']) ? (int)$row['vt_malicious'] : null,
-            'vtSuspicious' => isset($row['vt_suspicious']) ? (int)$row['vt_suspicious'] : null,
-            'vtHarmless' => isset($row['vt_harmless']) ? (int)$row['vt_harmless'] : null,
-            'vtUndetected' => isset($row['vt_undetected']) ? (int)$row['vt_undetected'] : null,
-            'vtDetectionFlagged' => isset($row['vt_detection_flagged']) ? (int)$row['vt_detection_flagged'] : null,
-            'vtDetectionTotal' => isset($row['vt_detection_total']) ? (int)$row['vt_detection_total'] : null,
-            'vtLink' => $row['vt_link'] ?? null,
-            'vtQueriedAt' => $row['vt_queried_at'] ?? null
+            'noteUpdatedAt' => $row['note_updated_at'] ?? null
         ];
     }
 

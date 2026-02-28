@@ -177,14 +177,6 @@ const i18n = {
         not_found: '未找到',
         not_in_archive: '歸檔數據庫中無此IP記錄',
         found: '已找到',
-        // Pagination translations
-        page_of: '第 {current} 頁，共 {total} 頁',
-        showing_range: '顯示 {start}-{end}，共 {total} 筆結果',
-        prev_page: '上一頁',
-        next_page: '下一頁',
-        first_page: '首頁',
-        last_page: '末頁',
-        go_to_page: '跳至',
         // Chart translations
         show_charts: '顯示圖表分析',
         hide_charts: '隱藏圖表分析',
@@ -405,14 +397,6 @@ const i18n = {
         not_found: 'Not Found',
         not_in_archive: 'IP not found in archive database',
         found: 'Found',
-        // Pagination translations
-        page_of: 'Page {current} of {total}',
-        showing_range: 'Showing {start}-{end} of {total} results',
-        prev_page: 'Previous',
-        next_page: 'Next',
-        first_page: 'First',
-        last_page: 'Last',
-        go_to_page: 'Go to',
         // Chart translations
         show_charts: 'Show Charts',
         hide_charts: 'Hide Charts',
@@ -2040,8 +2024,6 @@ let localBatchResultsData = null;
 let localBatchSortBy = 'ip';
 let localBatchSortDir = 'asc';
 let localBatchFilter = 'all';
-let localBatchPage = 1;
-const LOCAL_BATCH_PAGE_SIZE = 50;
 
 /**
  * Load archive statistics
@@ -2118,7 +2100,6 @@ function renderLocalBatchResult(data) {
     localBatchSortBy = 'ip';
     localBatchSortDir = 'asc';
     localBatchFilter = 'all';
-    localBatchPage = 1;
     return renderLocalBatchResultWithFilter(data, 'all', 'ip', 'asc');
 }
 
@@ -2155,25 +2136,22 @@ function renderLocalBatchResultWithFilter(data, filter, sortBy, sortDir) {
                 valA = a.notFound ? 2 : (a.blacklisted ? 1 : 0);
                 valB = b.notFound ? 2 : (b.blacklisted ? 1 : 0);
                 break;
-            case 'risk': {
-                const riskOrder = { high: 3, medium: 2, low: 1, unknown: 0 };
-                valA = riskOrder[a.riskLevel] || 0;
-                valB = riskOrder[b.riskLevel] || 0;
-                break;
-            }
-            case 'vt_detection':
-                valA = a.vtFlagged ?? -1;
-                valB = b.vtFlagged ?? -1;
-                break;
-            case 'vt_status': {
-                const vtOrder = { malicious: 2, safe: 1 };
-                valA = vtOrder[a.vtStatus] || 0;
-                valB = vtOrder[b.vtStatus] || 0;
-                break;
-            }
             case 'country':
                 valA = a.countryName || a.country || '';
                 valB = b.countryName || b.country || '';
+                break;
+            case 'city':
+                valA = a.city || '';
+                valB = b.city || '';
+                break;
+            case 'score':
+                valA = a.riskScore || 0;
+                valB = b.riskScore || 0;
+                break;
+            case 'risk':
+                const riskOrder = { high: 3, medium: 2, low: 1, unknown: 0 };
+                valA = riskOrder[a.riskLevel] || 0;
+                valB = riskOrder[b.riskLevel] || 0;
                 break;
             default:
                 valA = a.ip;
@@ -2184,98 +2162,7 @@ function renderLocalBatchResultWithFilter(data, filter, sortBy, sortDir) {
         return 0;
     });
 
-    // Pagination calculations
-    const totalFiltered = filtered.length;
-    const totalPages = Math.max(1, Math.ceil(totalFiltered / LOCAL_BATCH_PAGE_SIZE));
-    if (localBatchPage > totalPages) localBatchPage = totalPages;
-    if (localBatchPage < 1) localBatchPage = 1;
-    const startIdx = (localBatchPage - 1) * LOCAL_BATCH_PAGE_SIZE;
-    const endIdx = Math.min(startIdx + LOCAL_BATCH_PAGE_SIZE, totalFiltered);
-    const pageResults = filtered.slice(startIdx, endIdx);
-
-    // Helper: VT detection badge
-    const getVtDetectionBadge = (flagged, total) => {
-        if (flagged === null || flagged === undefined || total === null || total === undefined) {
-            return '<span class="vt-badge vt-badge-na">N/A</span>';
-        }
-        let cls = 'low';
-        if (flagged >= 5) cls = 'high';
-        else if (flagged >= 1) cls = 'medium';
-        return `<span class="detection-ratio ${cls}">${flagged}/${total}</span>`;
-    };
-
-    // Helper: VT status badge
-    const getVtStatusBadge = (status) => {
-        if (!status) return '<span class="vt-badge vt-badge-na">N/A</span>';
-        if (status === 'malicious') return '<span class="vt-badge vt-badge-malicious">🔴 Malicious</span>';
-        return '<span class="vt-badge vt-badge-safe">🟢 Safe</span>';
-    };
-
-    // Helper: Links column
-    const getLinksHtml = (r) => {
-        const links = [];
-        if (r.ip) {
-            links.push(`<a href="?ip=${encodeURIComponent(r.ip)}" class="ext-link" title="Blacklist Detail">📋</a>`);
-        }
-        if (r.vtLink) {
-            links.push(`<a href="${r.vtLink}" target="_blank" class="ext-link" title="VirusTotal Report">🔍</a>`);
-        } else if (r.ip) {
-            links.push(`<a href="https://www.virustotal.com/gui/ip-address/${encodeURIComponent(r.ip)}" target="_blank" class="ext-link" title="VirusTotal Lookup">🔍</a>`);
-        }
-        return links.length > 0 ? links.join(' ') : '-';
-    };
-
-    // Helper: Pagination controls HTML
-    const getPaginationHtml = () => {
-        if (totalPages <= 1) return '';
-
-        const showingText = t('showing_range')
-            .replace('{start}', startIdx + 1)
-            .replace('{end}', endIdx)
-            .replace('{total}', totalFiltered);
-        const pageText = t('page_of')
-            .replace('{current}', localBatchPage)
-            .replace('{total}', totalPages);
-
-        // Generate page number buttons (show max 7 pages around current)
-        let pageButtons = '';
-        let startPage = Math.max(1, localBatchPage - 3);
-        let endPage = Math.min(totalPages, localBatchPage + 3);
-        if (endPage - startPage < 6) {
-            if (startPage === 1) endPage = Math.min(totalPages, startPage + 6);
-            else startPage = Math.max(1, endPage - 6);
-        }
-
-        if (startPage > 1) {
-            pageButtons += `<button class="page-btn" onclick="goToLocalBatchPage(1)" title="${t('first_page')}">1</button>`;
-            if (startPage > 2) pageButtons += '<span class="page-ellipsis">…</span>';
-        }
-        for (let i = startPage; i <= endPage; i++) {
-            pageButtons += `<button class="page-btn ${i === localBatchPage ? 'active' : ''}" onclick="goToLocalBatchPage(${i})">${i}</button>`;
-        }
-        if (endPage < totalPages) {
-            if (endPage < totalPages - 1) pageButtons += '<span class="page-ellipsis">…</span>';
-            pageButtons += `<button class="page-btn" onclick="goToLocalBatchPage(${totalPages})" title="${t('last_page')}">${totalPages}</button>`;
-        }
-
-        return `
-        <div class="pagination-controls">
-            <div class="pagination-info">
-                <span class="showing-range">${showingText}</span>
-                <span class="page-indicator">${pageText}</span>
-            </div>
-            <div class="pagination-nav">
-                <button class="page-btn nav-btn" onclick="goToLocalBatchPage(${localBatchPage - 1})" ${localBatchPage <= 1 ? 'disabled' : ''}>◀ ${t('prev_page')}</button>
-                ${pageButtons}
-                <button class="page-btn nav-btn" onclick="goToLocalBatchPage(${localBatchPage + 1})" ${localBatchPage >= totalPages ? 'disabled' : ''}>${t('next_page')} ▶</button>
-                <span class="page-jump">
-                    ${t('go_to')} <input type="number" class="page-jump-input" min="1" max="${totalPages}" value="${localBatchPage}" onkeydown="if(event.key==='Enter')goToLocalBatchPage(parseInt(this.value))"> / ${totalPages}
-                </span>
-            </div>
-        </div>`;
-    };
-
-    const tableRows = pageResults.map(r => {
+    const tableRows = filtered.map(r => {
         if (r.error) {
             return `<tr class="error-row" data-status="error" data-risk="">
                 <td class="ip-cell">${r.ip} <span class="archived-badge-mini">📁</span></td>
@@ -2289,16 +2176,17 @@ function renderLocalBatchResultWithFilter(data, filter, sortBy, sortDir) {
                 <td colspan="6" class="not-found-cell">${t('not_in_archive')}</td>
             </tr>`;
         }
-        const ispOrg = r.org && r.org !== '-' ? r.org : (r.isp || '-');
+        const threatType = r.threatInfo?.threatType || '-';
+        const cityName = r.city || '-';
         return `<tr class="${r.status}-row" data-status="${r.status}" data-risk="${r.riskLevel}">
             <td class="ip-cell">${r.ip} <span class="archived-badge-mini" title="${t('archived_data')}">📁</span></td>
             <td><span class="status-badge ${r.status}">${r.blacklisted ? '🚫 BLOCKED' : '✅ SAFE'}</span></td>
-            <td>${getRiskBadge(r.riskLevel)}</td>
-            <td class="vt-cell">${getVtDetectionBadge(r.vtFlagged, r.vtTotal)}</td>
-            <td class="vt-cell">${getVtStatusBadge(r.vtStatus)}</td>
             <td>${r.countryName || r.country || '-'}</td>
-            <td class="isp-cell" title="${ispOrg}">${(ispOrg).substring(0, 30)}${(ispOrg).length > 30 ? '...' : ''}</td>
-            <td class="links-cell">${getLinksHtml(r)}</td>
+            <td class="city-cell">${cityName}</td>
+            <td class="isp-cell" title="${r.isp}">${(r.isp || '-').substring(0, 25)}${(r.isp || '').length > 25 ? '...' : ''}</td>
+            <td class="score-cell">${r.riskScore}</td>
+            <td>${getRiskBadge(r.riskLevel)}</td>
+            <td class="threat-cell">${threatType}</td>
         </tr>`;
     }).join('');
 
@@ -2384,117 +2272,28 @@ function renderLocalBatchResultWithFilter(data, filter, sortBy, sortDir) {
             <table id="localBatchTable" class="batch-results-table" border="1" style="border-collapse: collapse; border: 1px solid #000; width: 100%;">
                 <thead>
                     <tr>
-                        <th class="sortable" onclick="sortLocalBatchResults('ip')" style="border: 1px solid #000; width: 13%;">${t('ip')} ${getSortIcon('ip')}</th>
-                        <th class="sortable" onclick="sortLocalBatchResults('status')" style="border: 1px solid #000; width: 11%;">Blacklist ${getSortIcon('status')}</th>
-                        <th class="sortable" onclick="sortLocalBatchResults('risk')" style="border: 1px solid #000; width: 10%;">Risk ${getSortIcon('risk')}</th>
-                        <th class="sortable" onclick="sortLocalBatchResults('vt_detection')" style="border: 1px solid #000; width: 10%;">VT Detection ${getSortIcon('vt_detection')}</th>
-                        <th class="sortable" onclick="sortLocalBatchResults('vt_status')" style="border: 1px solid #000; width: 12%;">VT Status ${getSortIcon('vt_status')}</th>
+                        <th class="sortable" onclick="sortLocalBatchResults('ip')" style="border: 1px solid #000; width: 12%;">${t('ip')} ${getSortIcon('ip')}</th>
+                        <th class="sortable" onclick="sortLocalBatchResults('status')" style="border: 1px solid #000; width: 11%;">${t('status')} ${getSortIcon('status')}</th>
                         <th class="sortable" onclick="sortLocalBatchResults('country')" style="border: 1px solid #000; width: 12%;">${t('country')} ${getSortIcon('country')}</th>
-                        <th style="border: 1px solid #000; width: 18%;">ISP / Org</th>
-                        <th style="border: 1px solid #000; width: 8%;">Links</th>
+                        <th class="sortable" onclick="sortLocalBatchResults('city')" style="border: 1px solid #000; width: 12%;">${t('city')} ${getSortIcon('city')}</th>
+                        <th style="border: 1px solid #000; width: 15%;">ISP</th>
+                        <th class="sortable" onclick="sortLocalBatchResults('score')" style="border: 1px solid #000; width: 8%;">Score ${getSortIcon('score')}</th>
+                        <th class="sortable" onclick="sortLocalBatchResults('risk')" style="border: 1px solid #000; width: 10%;">Risk ${getSortIcon('risk')}</th>
+                        <th style="border: 1px solid #000; width: 20%;">Threat Type</th>
                     </tr>
                 </thead>
                 <tbody>${tableRows}</tbody>
             </table>
         </div>
-        ${getPaginationHtml()}
         <div class="batch-timestamp">
             <small>${t('archive_query')} | Query Time: ${data.timestamp}</small>
-        </div>
-        <div class="local-export-buttons">
-            <button onclick="exportLocalBatchResults('csv')" class="export-btn export-csv" title="Export CSV">📥 CSV</button>
-            <button onclick="exportLocalBatchResults('json')" class="export-btn export-json" title="Export JSON">📥 JSON</button>
         </div>`;
-}
-
-/**
- * Export local batch query results as CSV or JSON
- */
-function exportLocalBatchResults(format) {
-    if (!localBatchResultsData || !localBatchResultsData.results) return;
-
-    const results = localBatchResultsData.results;
-    const timestamp = localBatchResultsData.timestamp || new Date().toISOString().slice(0, 19).replace('T', ' ');
-
-    if (format === 'csv') {
-        const headers = ['IP', 'Blacklisted', 'Risk Level', 'Risk Score', 'VT Flagged', 'VT Total', 'VT Status', 'Country', 'City', 'ISP/Org', 'VT Link'];
-        const rows = results.map(r => {
-            const ispOrg = r.org && r.org !== '-' ? r.org : (r.isp || '-');
-            return [
-                r.ip,
-                r.notFound ? 'N/A' : (r.blacklisted ? 'Yes' : 'No'),
-                r.riskLevel || 'unknown',
-                r.riskScore || 0,
-                r.vtFlagged !== null && r.vtFlagged !== undefined ? r.vtFlagged : 'N/A',
-                r.vtTotal !== null && r.vtTotal !== undefined ? r.vtTotal : 'N/A',
-                r.vtStatus || 'N/A',
-                r.countryName || r.country || '-',
-                r.city || '-',
-                ispOrg,
-                r.vtLink || ''
-            ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
-        });
-
-        const csvContent = '\uFEFF' + headers.join(',') + '\n' + rows.join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `local_db_query_${timestamp.replace(/[: ]/g, '_')}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-    } else if (format === 'json') {
-        const exportData = {
-            exportTime: new Date().toISOString(),
-            queryTime: timestamp,
-            source: 'local_database',
-            statistics: {
-                total: localBatchResultsData.total,
-                found: localBatchResultsData.found,
-                notFound: localBatchResultsData.notFound,
-                blacklisted: localBatchResultsData.blacklisted,
-                safe: localBatchResultsData.safe,
-                highRisk: localBatchResultsData.highRisk || 0,
-                mediumRisk: localBatchResultsData.mediumRisk || 0,
-                lowRisk: localBatchResultsData.lowRisk || 0
-            },
-            results: results.map(r => {
-                const ispOrg = r.org && r.org !== '-' ? r.org : (r.isp || '-');
-                return {
-                    ip: r.ip,
-                    blacklisted: r.blacklisted,
-                    status: r.status,
-                    riskLevel: r.riskLevel,
-                    riskScore: r.riskScore,
-                    vtDetection: r.vtFlagged !== null && r.vtFlagged !== undefined ? `${r.vtFlagged}/${r.vtTotal}` : null,
-                    vtFlagged: r.vtFlagged,
-                    vtTotal: r.vtTotal,
-                    vtStatus: r.vtStatus || null,
-                    country: r.countryName || r.country || '-',
-                    city: r.city || '-',
-                    ispOrg: ispOrg,
-                    vtLink: r.vtLink || null,
-                    notFound: r.notFound || false
-                };
-            })
-        };
-
-        const jsonContent = JSON.stringify(exportData, null, 2);
-        const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `local_db_query_${timestamp.replace(/[: ]/g, '_')}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-    }
 }
 
 /**
  * Sort local batch results by column
  */
 function sortLocalBatchResults(column) {
-    localBatchPage = 1;
     if (localBatchSortBy === column) {
         localBatchSortDir = localBatchSortDir === 'asc' ? 'desc' : 'asc';
     } else {
@@ -2512,7 +2311,6 @@ function sortLocalBatchResults(column) {
  */
 function filterLocalBatchResults(filter) {
     localBatchFilter = filter;
-    localBatchPage = 1;
     if (localBatchResultsData) {
         document.getElementById('localdbResult').innerHTML =
             renderLocalBatchResultWithFilter(localBatchResultsData, localBatchFilter, localBatchSortBy, localBatchSortDir);
@@ -2525,19 +2323,6 @@ function filterLocalBatchResults(filter) {
 function applyLocalBatchFilter() {
     const filter = document.getElementById('localBatchFilter').value;
     filterLocalBatchResults(filter);
-}
-
-/**
- * Navigate to a specific page in local batch results
- */
-function goToLocalBatchPage(page) {
-    page = parseInt(page);
-    if (isNaN(page) || page < 1) page = 1;
-    localBatchPage = page;
-    if (localBatchResultsData) {
-        document.getElementById('localdbResult').innerHTML =
-            renderLocalBatchResultWithFilter(localBatchResultsData, localBatchFilter, localBatchSortBy, localBatchSortDir);
-    }
 }
 
 // ============================================

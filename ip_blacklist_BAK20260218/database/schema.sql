@@ -50,16 +50,6 @@ CREATE TABLE IF NOT EXISTS ip_cache (
     note_created_at DATETIME,
     note_updated_at DATETIME,
 
-    -- VirusTotal API Results
-    vt_malicious INT DEFAULT NULL COMMENT 'VT: malicious vendor count',
-    vt_suspicious INT DEFAULT NULL COMMENT 'VT: suspicious vendor count',
-    vt_harmless INT DEFAULT NULL COMMENT 'VT: harmless vendor count',
-    vt_undetected INT DEFAULT NULL COMMENT 'VT: undetected vendor count',
-    vt_detection_flagged INT DEFAULT NULL COMMENT 'VT: flagged count (malicious + suspicious)',
-    vt_detection_total INT DEFAULT NULL COMMENT 'VT: total vendors queried',
-    vt_link VARCHAR(255) DEFAULT NULL COMMENT 'VT: VirusTotal report URL',
-    vt_queried_at DATETIME DEFAULT NULL COMMENT 'VT: last query timestamp',
-
     -- Indexes
     INDEX idx_expires (expires_at),
     INDEX idx_status (status),
@@ -139,16 +129,6 @@ CREATE TABLE IF NOT EXISTS ip_database (
     note_created_at DATETIME,
     note_updated_at DATETIME,
 
-    -- VirusTotal API Results
-    vt_malicious INT DEFAULT NULL COMMENT 'VT: malicious vendor count',
-    vt_suspicious INT DEFAULT NULL COMMENT 'VT: suspicious vendor count',
-    vt_harmless INT DEFAULT NULL COMMENT 'VT: harmless vendor count',
-    vt_undetected INT DEFAULT NULL COMMENT 'VT: undetected vendor count',
-    vt_detection_flagged INT DEFAULT NULL COMMENT 'VT: flagged count (malicious + suspicious)',
-    vt_detection_total INT DEFAULT NULL COMMENT 'VT: total vendors queried',
-    vt_link VARCHAR(255) DEFAULT NULL COMMENT 'VT: VirusTotal report URL',
-    vt_queried_at DATETIME DEFAULT NULL COMMENT 'VT: last query timestamp',
-
     -- Indexes
     INDEX idx_archive_status (status),
     INDEX idx_archive_risk (risk_level),
@@ -189,15 +169,7 @@ CREATE TABLE IF NOT EXISTS ip_database (
 --     hit_count INTEGER DEFAULT 0,
 --     custom_note TEXT,
 --     note_created_at TEXT,
---     note_updated_at TEXT,
---     vt_malicious INTEGER DEFAULT NULL,
---     vt_suspicious INTEGER DEFAULT NULL,
---     vt_harmless INTEGER DEFAULT NULL,
---     vt_undetected INTEGER DEFAULT NULL,
---     vt_detection_flagged INTEGER DEFAULT NULL,
---     vt_detection_total INTEGER DEFAULT NULL,
---     vt_link TEXT DEFAULT NULL,
---     vt_queried_at TEXT DEFAULT NULL
+--     note_updated_at TEXT
 -- );
 --
 -- CREATE INDEX idx_expires ON ip_cache(expires_at);
@@ -220,17 +192,3 @@ CREATE TABLE IF NOT EXISTS ip_database (
 -- ALTER TABLE ip_cache ADD COLUMN note_created_at TEXT;
 -- ALTER TABLE ip_cache ADD COLUMN note_updated_at TEXT;
 
--- ============================================================================
--- Migration SQL for VirusTotal fields (v2.7.0)
--- ============================================================================
--- See ip_cache_vt_fields.sql for the complete migration script.
--- Quick reference (MySQL):
--- ALTER TABLE ip_cache ADD COLUMN vt_malicious INT DEFAULT NULL;
--- ALTER TABLE ip_cache ADD COLUMN vt_suspicious INT DEFAULT NULL;
--- ALTER TABLE ip_cache ADD COLUMN vt_harmless INT DEFAULT NULL;
--- ALTER TABLE ip_cache ADD COLUMN vt_undetected INT DEFAULT NULL;
--- ALTER TABLE ip_cache ADD COLUMN vt_detection_flagged INT DEFAULT NULL;
--- ALTER TABLE ip_cache ADD COLUMN vt_detection_total INT DEFAULT NULL;
--- ALTER TABLE ip_cache ADD COLUMN vt_link VARCHAR(255) DEFAULT NULL;
--- ALTER TABLE ip_cache ADD COLUMN vt_queried_at DATETIME DEFAULT NULL;
--- (Same 8 columns for ip_database table)

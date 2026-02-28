@@ -1,0 +1,11 @@
+[*] Initializing analysis script...
+[VTDB] Failed to connect to central MySQL DB: (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] )")
+======================================================================
+  VT CACHE STATISTICS
+======================================================================
+  DB file    : D:\Antigravity-Projects\ip_blacklist\Source\Block_IP_20260223\vt_cache.db
+  DB size    : 8132.0 KB
+  Cache IPs  : 0
+  Blacklist  : 0 IP(s)
+  TTL        : 30 day(s)
+======================================================================

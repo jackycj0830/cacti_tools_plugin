@@ -177,14 +177,6 @@ const i18n = {
         not_found: '未找到',
         not_in_archive: '歸檔數據庫中無此IP記錄',
         found: '已找到',
-        // Pagination translations
-        page_of: '第 {current} 頁，共 {total} 頁',
-        showing_range: '顯示 {start}-{end}，共 {total} 筆結果',
-        prev_page: '上一頁',
-        next_page: '下一頁',
-        first_page: '首頁',
-        last_page: '末頁',
-        go_to_page: '跳至',
         // Chart translations
         show_charts: '顯示圖表分析',
         hide_charts: '隱藏圖表分析',
@@ -405,14 +397,6 @@ const i18n = {
         not_found: 'Not Found',
         not_in_archive: 'IP not found in archive database',
         found: 'Found',
-        // Pagination translations
-        page_of: 'Page {current} of {total}',
-        showing_range: 'Showing {start}-{end} of {total} results',
-        prev_page: 'Previous',
-        next_page: 'Next',
-        first_page: 'First',
-        last_page: 'Last',
-        go_to_page: 'Go to',
         // Chart translations
         show_charts: 'Show Charts',
         hide_charts: 'Hide Charts',
@@ -2040,8 +2024,6 @@ let localBatchResultsData = null;
 let localBatchSortBy = 'ip';
 let localBatchSortDir = 'asc';
 let localBatchFilter = 'all';
-let localBatchPage = 1;
-const LOCAL_BATCH_PAGE_SIZE = 50;
 
 /**
  * Load archive statistics
@@ -2118,7 +2100,6 @@ function renderLocalBatchResult(data) {
     localBatchSortBy = 'ip';
     localBatchSortDir = 'asc';
     localBatchFilter = 'all';
-    localBatchPage = 1;
     return renderLocalBatchResultWithFilter(data, 'all', 'ip', 'asc');
 }
 
@@ -2184,15 +2165,6 @@ function renderLocalBatchResultWithFilter(data, filter, sortBy, sortDir) {
         return 0;
     });
 
-    // Pagination calculations
-    const totalFiltered = filtered.length;
-    const totalPages = Math.max(1, Math.ceil(totalFiltered / LOCAL_BATCH_PAGE_SIZE));
-    if (localBatchPage > totalPages) localBatchPage = totalPages;
-    if (localBatchPage < 1) localBatchPage = 1;
-    const startIdx = (localBatchPage - 1) * LOCAL_BATCH_PAGE_SIZE;
-    const endIdx = Math.min(startIdx + LOCAL_BATCH_PAGE_SIZE, totalFiltered);
-    const pageResults = filtered.slice(startIdx, endIdx);
-
     // Helper: VT detection badge
     const getVtDetectionBadge = (flagged, total) => {
         if (flagged === null || flagged === undefined || total === null || total === undefined) {
@@ -2225,57 +2197,7 @@ function renderLocalBatchResultWithFilter(data, filter, sortBy, sortDir) {
         return links.length > 0 ? links.join(' ') : '-';
     };
 
-    // Helper: Pagination controls HTML
-    const getPaginationHtml = () => {
-        if (totalPages <= 1) return '';
-
-        const showingText = t('showing_range')
-            .replace('{start}', startIdx + 1)
-            .replace('{end}', endIdx)
-            .replace('{total}', totalFiltered);
-        const pageText = t('page_of')
-            .replace('{current}', localBatchPage)
-            .replace('{total}', totalPages);
-
-        // Generate page number buttons (show max 7 pages around current)
-        let pageButtons = '';
-        let startPage = Math.max(1, localBatchPage - 3);
-        let endPage = Math.min(totalPages, localBatchPage + 3);
-        if (endPage - startPage < 6) {
-            if (startPage === 1) endPage = Math.min(totalPages, startPage + 6);
-            else startPage = Math.max(1, endPage - 6);
-        }
-
-        if (startPage > 1) {
-            pageButtons += `<button class="page-btn" onclick="goToLocalBatchPage(1)" title="${t('first_page')}">1</button>`;
-            if (startPage > 2) pageButtons += '<span class="page-ellipsis">…</span>';
-        }
-        for (let i = startPage; i <= endPage; i++) {
-            pageButtons += `<button class="page-btn ${i === localBatchPage ? 'active' : ''}" onclick="goToLocalBatchPage(${i})">${i}</button>`;
-        }
-        if (endPage < totalPages) {
-            if (endPage < totalPages - 1) pageButtons += '<span class="page-ellipsis">…</span>';
-            pageButtons += `<button class="page-btn" onclick="goToLocalBatchPage(${totalPages})" title="${t('last_page')}">${totalPages}</button>`;
-        }
-
-        return `
-        <div class="pagination-controls">
-            <div class="pagination-info">
-                <span class="showing-range">${showingText}</span>
-                <span class="page-indicator">${pageText}</span>
-            </div>
-            <div class="pagination-nav">
-                <button class="page-btn nav-btn" onclick="goToLocalBatchPage(${localBatchPage - 1})" ${localBatchPage <= 1 ? 'disabled' : ''}>◀ ${t('prev_page')}</button>
-                ${pageButtons}
-                <button class="page-btn nav-btn" onclick="goToLocalBatchPage(${localBatchPage + 1})" ${localBatchPage >= totalPages ? 'disabled' : ''}>${t('next_page')} ▶</button>
-                <span class="page-jump">
-                    ${t('go_to')} <input type="number" class="page-jump-input" min="1" max="${totalPages}" value="${localBatchPage}" onkeydown="if(event.key==='Enter')goToLocalBatchPage(parseInt(this.value))"> / ${totalPages}
-                </span>
-            </div>
-        </div>`;
-    };
-
-    const tableRows = pageResults.map(r => {
+    const tableRows = filtered.map(r => {
         if (r.error) {
             return `<tr class="error-row" data-status="error" data-risk="">
                 <td class="ip-cell">${r.ip} <span class="archived-badge-mini">📁</span></td>
@@ -2397,7 +2319,6 @@ function renderLocalBatchResultWithFilter(data, filter, sortBy, sortDir) {
                 <tbody>${tableRows}</tbody>
             </table>
         </div>
-        ${getPaginationHtml()}
         <div class="batch-timestamp">
             <small>${t('archive_query')} | Query Time: ${data.timestamp}</small>
         </div>
@@ -2494,7 +2415,6 @@ function exportLocalBatchResults(format) {
  * Sort local batch results by column
  */
 function sortLocalBatchResults(column) {
-    localBatchPage = 1;
     if (localBatchSortBy === column) {
         localBatchSortDir = localBatchSortDir === 'asc' ? 'desc' : 'asc';
     } else {
@@ -2512,7 +2432,6 @@ function sortLocalBatchResults(column) {
  */
 function filterLocalBatchResults(filter) {
     localBatchFilter = filter;
-    localBatchPage = 1;
     if (localBatchResultsData) {
         document.getElementById('localdbResult').innerHTML =
             renderLocalBatchResultWithFilter(localBatchResultsData, localBatchFilter, localBatchSortBy, localBatchSortDir);
@@ -2525,19 +2444,6 @@ function filterLocalBatchResults(filter) {
 function applyLocalBatchFilter() {
     const filter = document.getElementById('localBatchFilter').value;
     filterLocalBatchResults(filter);
-}
-
-/**
- * Navigate to a specific page in local batch results
- */
-function goToLocalBatchPage(page) {
-    page = parseInt(page);
-    if (isNaN(page) || page < 1) page = 1;
-    localBatchPage = page;
-    if (localBatchResultsData) {
-        document.getElementById('localdbResult').innerHTML =
-            renderLocalBatchResultWithFilter(localBatchResultsData, localBatchFilter, localBatchSortBy, localBatchSortDir);
-    }
 }
 
 // ============================================

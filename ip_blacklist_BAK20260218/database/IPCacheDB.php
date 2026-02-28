@@ -79,11 +79,7 @@ class IPCacheDB {
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 expires_at TEXT, hit_count INTEGER DEFAULT 0,
-                custom_note TEXT, note_created_at TEXT, note_updated_at TEXT,
-                vt_malicious INTEGER DEFAULT NULL, vt_suspicious INTEGER DEFAULT NULL,
-                vt_harmless INTEGER DEFAULT NULL, vt_undetected INTEGER DEFAULT NULL,
-                vt_detection_flagged INTEGER DEFAULT NULL, vt_detection_total INTEGER DEFAULT NULL,
-                vt_link TEXT DEFAULT NULL, vt_queried_at TEXT DEFAULT NULL
+                custom_note TEXT, note_created_at TEXT, note_updated_at TEXT
             );
             CREATE INDEX IF NOT EXISTS idx_expires ON ip_cache(expires_at);
             CREATE INDEX IF NOT EXISTS idx_status ON ip_cache(status);
@@ -110,11 +106,7 @@ class IPCacheDB {
                 original_expires_at TEXT,
                 archived_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 total_hit_count INTEGER DEFAULT 0,
-                custom_note TEXT, note_created_at TEXT, note_updated_at TEXT,
-                vt_malicious INTEGER DEFAULT NULL, vt_suspicious INTEGER DEFAULT NULL,
-                vt_harmless INTEGER DEFAULT NULL, vt_undetected INTEGER DEFAULT NULL,
-                vt_detection_flagged INTEGER DEFAULT NULL, vt_detection_total INTEGER DEFAULT NULL,
-                vt_link TEXT DEFAULT NULL, vt_queried_at TEXT DEFAULT NULL
+                custom_note TEXT, note_created_at TEXT, note_updated_at TEXT
             );
             CREATE INDEX IF NOT EXISTS idx_archive_status ON ip_database(status);
             CREATE INDEX IF NOT EXISTS idx_archive_risk ON ip_database(risk_level);
@@ -139,10 +131,6 @@ class IPCacheDB {
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 expires_at DATETIME, hit_count INTEGER DEFAULT 0,
                 custom_note TEXT, note_created_at DATETIME, note_updated_at DATETIME,
-                vt_malicious INT DEFAULT NULL, vt_suspicious INT DEFAULT NULL,
-                vt_harmless INT DEFAULT NULL, vt_undetected INT DEFAULT NULL,
-                vt_detection_flagged INT DEFAULT NULL, vt_detection_total INT DEFAULT NULL,
-                vt_link VARCHAR(255) DEFAULT NULL, vt_queried_at DATETIME DEFAULT NULL,
                 INDEX idx_expires (expires_at), INDEX idx_status (status),
                 INDEX idx_risk_level (risk_level), INDEX idx_country (country_code)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -168,10 +156,6 @@ class IPCacheDB {
                 archived_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 total_hit_count INTEGER DEFAULT 0,
                 custom_note TEXT, note_created_at DATETIME, note_updated_at DATETIME,
-                vt_malicious INT DEFAULT NULL, vt_suspicious INT DEFAULT NULL,
-                vt_harmless INT DEFAULT NULL, vt_undetected INT DEFAULT NULL,
-                vt_detection_flagged INT DEFAULT NULL, vt_detection_total INT DEFAULT NULL,
-                vt_link VARCHAR(255) DEFAULT NULL, vt_queried_at DATETIME DEFAULT NULL,
                 INDEX idx_archive_status (status), INDEX idx_archive_risk (risk_level),
                 INDEX idx_archive_country (country_code), INDEX idx_archive_date (archived_at)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4

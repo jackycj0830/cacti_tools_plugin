@@ -10,8 +10,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IP Blacklist Query System / 黑名單IP查詢系統</title>
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="assets/dashboard.css">
+    <link rel="stylesheet" href="assets/style.css?v=<?php echo time(); ?>">
 </head>
 <body>
     <div class="container">
@@ -42,7 +41,6 @@
             <button class="tab active" onclick="switchTab('single')" data-i18n="single_query">單一查詢</button>
             <button class="tab" onclick="switchTab('batch')" data-i18n="batch_query">批量查詢</button>
             <button class="tab" onclick="switchTab('localdb')" data-i18n="local_database">本地數據查詢</button>
-            <button class="tab" onclick="switchTab('dashboard')" data-i18n="sec_dashboard">安全儀表板</button>
             <!--<button class="tab" onclick="switchTab('history')" data-i18n="history">查詢歷史</button>-->
             <button class="tab" onclick="switchTab('fortigate')" data-i18n="fortigate_cli">防火牆指令</button>
             <button class="tab" onclick="switchTab('riskinfo')" data-i18n="risk_methodology">風險評估說明</button>
@@ -338,90 +336,6 @@
             <div id="localdbResult" class="result-container"></div>
         </div>
 
-        <!-- Security Dashboard Panel -->
-        <div class="panel hidden" id="dashboardPanel">
-            <div class="dashboard-container">
-                <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <div class="section-title">
-                        <h3><span class="icon">⚡</span> <span data-i18n="analysis_workflow">Automated Analysis Workflow / 自動分析流程</span></h3>
-                    </div>
-                    <div style="display: flex; gap: 1rem; align-items: center;">
-                        <div class="last-update" id="dashboardLastUpdate" style="font-size: 0.85rem; color: #8b8fa3;">Loading...</div>
-                        <div style="display: flex; gap: 0.5rem; align-items: center;">
-                            <select id="analysisDays" class="btn-secondary" onchange="refreshDashboard()">
-                                <option value="1">Last 1 Day</option>
-                                <option value="2">Last 2 Days</option>
-                                <option value="7" selected>Last 1 Week</option>
-                                <option value="14">Last 2 Weeks</option>
-                                <option value="28">Last 4 Weeks</option>
-                            </select>
-                            <button id="btnCollectFaz" class="btn-primary" onclick="triggerFazCollection()">
-                                <span class="icon">⚡</span> <span data-i18n="collect_faz_now">Run FAZ Collection</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="workflow-steps" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; background: var(--panel-bg, #f8f9fa); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color, #e9ecef); overflow-x: auto;">
-                    <div class="wf-step" style="text-align: center;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📉</div>
-                        <div id="wfTotalFails" style="font-size: 1.8rem; font-weight: bold; color: #dc3545;">—</div>
-                        <div style="font-size: 0.8rem; color: #6c757d; text-transform: uppercase;">Total Events</div>
-                    </div>
-                    <div class="wf-arrow" style="font-size: 1.5rem; color: #ced4da;">→</div>
-                    <div class="wf-step" style="text-align: center;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌐</div>
-                        <div id="wfTotalIps" style="font-size: 1.8rem; font-weight: bold; color: #0d6efd;">—</div>
-                        <div style="font-size: 0.8rem; color: #6c757d; text-transform: uppercase;">Unique IPs</div>
-                    </div>
-                    <div class="wf-arrow" style="font-size: 1.5rem; color: #ced4da;">→</div>
-                    <div class="wf-step" style="text-align: center;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎯</div>
-                        <div id="wfFilterCount" style="font-size: 1.8rem; font-weight: bold; color: #fd7e14;">—</div>
-                        <div style="font-size: 0.8rem; color: #6c757d; text-transform: uppercase;">Targets</div>
-                        <div style="font-size: 0.7rem; color: #adb5bd;">(≥ 50 / Period)</div>
-                    </div>
-                    <div class="wf-arrow" style="font-size: 1.5rem; color: #ced4da;">→</div>
-                    <div class="wf-step" style="text-align: center;">
-                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🚫</div>
-                        <div id="wfBlCount" style="font-size: 1.8rem; font-weight: bold; color: #dc3545;">—</div>
-                        <div style="font-size: 0.8rem; color: #6c757d; text-transform: uppercase;">Blacklist</div>
-                        <div style="font-size: 0.7rem; color: #adb5bd;">(≥ 3 Vendors)</div>
-                    </div>
-                </div>
-
-                <div class="dashboard-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                    <div class="dashboard-card" style="background: var(--card-bg, #fff); border: 1px solid var(--border-color, #dee2e6); border-radius: 8px; padding: 1rem;">
-                        <h4 id="dashRealtimeTitle" style="margin-top: 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color, #dee2e6);">📡 Realtime FAZ Results</h4>
-                        <div id="dashFazTableWrap" style="max-height: 300px; overflow-y: auto; margin-top: 0.5rem;">
-                            <div class="loading-spinner"></div> Loading...
-                        </div>
-                    </div>
-
-                    <div class="dashboard-card" style="background: var(--card-bg, #fff); border: 1px solid var(--border-color, #dee2e6); border-radius: 8px; padding: 1rem;">
-                        <h4 id="dashMaliciousTitle" style="margin-top: 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color, #dee2e6);">🚫 Confirmed Malicious IPs</h4>
-                        <div id="dashBlacklistTableWrap" style="max-height: 300px; overflow-y: auto; margin-top: 0.5rem;">
-                            <div class="loading-spinner"></div> Loading...
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="dashboard-card" style="background: var(--card-bg, #fff); border: 1px solid var(--border-color, #dee2e6); border-radius: 8px; padding: 1rem; margin-top: 1.5rem;">
-                     <h4 style="margin-top: 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color, #dee2e6);">🌍 Failed Attempts by Country / 依國家統計失敗次數</h4>
-                     <div style="height: 300px; display: flex; justify-content: center; align-items: center; margin-top: 1rem;">
-                          <canvas id="dashCountryChart"></canvas>
-                     </div>
-                </div>
-                
-                <div class="dashboard-card" style="background: var(--card-bg, #fff); border: 1px solid var(--border-color, #dee2e6); border-radius: 8px; padding: 1rem; margin-top: 1.5rem;">
-                     <h4 id="dashCountryTimelineTitle" style="margin-top: 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color, #dee2e6);">📉 Top 10 Attack Countries Timeline / 前 10 名攻擊來源國家時間軸</h4>
-                     <div style="height: 400px; display: flex; justify-content: center; align-items: center; margin-top: 1rem; position: relative;">
-                          <canvas id="dashCountryTimelineChart" style="max-height: 400px; width: 100%;"></canvas>
-                     </div>
-                </div>
-            </div>
-        </div>
-
         <!-- History Panel -->
         <div class="panel hidden" id="historyPanel">
             <div class="history-actions">
@@ -575,6 +489,63 @@
                                 <span class="factor-number">2</span>
                                 <h5>Provider Data Availability / 提供者數據可用性</h5>
                             </div>
+                            <div class="factor-body">
+                                <div class="factor-score">+10 points / 分</div>
+                                <p><strong>Condition:</strong> Less than 50% of GeoIP providers respond successfully</p>
+                                <p class="zh"><strong>條件：</strong> 少於 50% 的 GeoIP 提供者成功回應</p>
+                                <div class="factor-impact medium">Medium Impact / 中影響</div>
+                            </div>
+                        </div>
+
+                        <div class="risk-factor-card factor-3">
+                            <div class="factor-header">
+                                <span class="factor-number">3</span>
+                                <h5>Country Consensus / 國家共識</h5>
+                            </div>
+                            <div class="factor-body">
+                                <div class="factor-score">+5 points / 分</div>
+                                <p><strong>Condition:</strong> GeoIP providers disagree on the IP's country of origin</p>
+                                <p class="zh"><strong>條件：</strong> GeoIP 提供者對 IP 來源國家的判定不一致</p>
+                                <div class="factor-impact low">Low Impact / 低影響</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="riskinfo-section">
+                    <h4>🚦 Risk Level Thresholds / 風險等級閾值</h4>
+                    <div class="threshold-table">
+                        <div class="threshold-row high">
+                            <div class="threshold-level">🔴 High Risk / 高風險</div>
+                            <div class="threshold-range">Score ≥ 50</div>
+                            <div class="threshold-action">Recommend blocking / 建議封鎖</div>
+                        </div>
+                        <div class="threshold-row medium">
+                            <div class="threshold-level">🟡 Medium Risk / 中等風險</div>
+                            <div class="threshold-range">Score ≥ 20 and < 50</div>
+                            <div class="threshold-action">Recommend monitoring / 建議監控</div>
+                        </div>
+                        <div class="threshold-row low">
+                            <div class="threshold-level">🟢 Low Risk / 低風險</div>
+                            <div class="threshold-range">Score < 20</div>
+                            <div class="threshold-action">Generally safe / 通常安全</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="riskinfo-section">
+                    <h4>💡 Interpretation Guide / 解讀指南</h4>
+                    <ul class="interpretation-list">
+                        <li>
+                            <strong>Blacklisted IPs (Score 50+):</strong> These IPs are confirmed threats from the blacklist database.
+                            Immediate action recommended.
+                        </li>
+                        <li class="zh">
+                            <strong>黑名單 IP（分數 50+）：</strong> 這些 IP 是黑名單數據庫中確認的威脅。建議立即採取行動。
+                        </li>
+                        <li>
+                            <strong>Limited Provider Data:</strong> When fewer providers respond, the geolocation data may be less reliable,
+                            warranting additional caution.
                         </li>
                         <li class="zh">
                             <strong>有限的提供者數據：</strong> 當較少提供者回應時，地理位置數據可能較不可靠，需要額外謹慎。
@@ -1039,19 +1010,6 @@ define('GEOIP_QUERY_MODE', 'aggregate');
             </div>
         </div>
 
-        <!-- Log Modal for FAZ Collection -->
-        <div id="logModal" class="modal-overlay" style="display: none;">
-            <div class="modal-window">
-                <div class="modal-header">
-                    <h3>🚀 Executing Analysis...</h3>
-                    <button class="modal-close" onclick="closeLogModal()">×</button>
-                </div>
-                <div class="modal-body">
-                    <pre id="logOutput"></pre>
-                </div>
-            </div>
-        </div>
-
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-content">
@@ -1074,7 +1032,6 @@ define('GEOIP_QUERY_MODE', 'aggregate');
     <script src="https://www.gstatic.com/charts/loader.js"></script>
 
     <script src="assets/app.js?v=<?php echo time(); ?>"></script>
-    <script src="assets/dashboard.js?v=<?php echo time(); ?>"></script>
     <script>
         // Initialize / 初始化
         document.addEventListener('DOMContentLoaded', function() {
