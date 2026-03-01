@@ -1,0 +1,135 @@
+[
+    {
+        "ip": "192.227.217.239",
+        "blacklisted": false,
+        "status": "safe",
+        "message": "✅ 此IP不在黑名單中 \/ This IP is not blacklisted",
+        "geo": {
+            "country": "United States",
+            "countryCode": "US",
+            "region": "New York",
+            "city": "Buffalo",
+            "isp": "HostPapa",
+            "org": "AS36352 HostPapa",
+            "as": "AS36352 HostPapa",
+            "timezone": "America\/New_York",
+            "lat": 42.8864,
+            "lon": -78.8784,
+            "zip": "14205",
+            "_providerId": "ip-api",
+            "_providerName": "IP-API.com",
+            "_providers": [
+                "IP-API.com",
+                "IPinfo.io"
+            ],
+            "_providerCount": 2,
+            "_allProviderResults": {
+                "ip-api": {
+                    "country": "United States",
+                    "countryCode": "US",
+                    "region": "New York",
+                    "city": "Buffalo",
+                    "isp": "HostPapa",
+                    "org": "",
+                    "as": "AS36352 HostPapa",
+                    "timezone": "America\/New_York",
+                    "lat": 42.8864,
+                    "lon": -78.8784,
+                    "zip": "14205",
+                    "_providerId": "ip-api",
+                    "_providerName": "IP-API.com"
+                },
+                "ipinfo": {
+                    "country": "US",
+                    "countryCode": "US",
+                    "region": "New York",
+                    "city": "Buffalo",
+                    "isp": "AS36352 HostPapa",
+                    "org": "AS36352 HostPapa",
+                    "as": "",
+                    "timezone": "America\/New_York",
+                    "lat": 42.8865,
+                    "lon": -78.8784,
+                    "zip": "14202",
+                    "_providerId": "ipinfo",
+                    "_providerName": "IPinfo.io"
+                }
+            },
+            "_totalProviders": 4,
+            "_successfulProviders": 2
+        },
+        "providerResults": {
+            "ip-api": {
+                "country": "United States",
+                "countryCode": "US",
+                "region": "New York",
+                "city": "Buffalo",
+                "isp": "HostPapa",
+                "org": "",
+                "as": "AS36352 HostPapa",
+                "timezone": "America\/New_York",
+                "lat": 42.8864,
+                "lon": -78.8784,
+                "zip": "14205",
+                "_providerId": "ip-api",
+                "_providerName": "IP-API.com"
+            },
+            "ipinfo": {
+                "country": "US",
+                "countryCode": "US",
+                "region": "New York",
+                "city": "Buffalo",
+                "isp": "AS36352 HostPapa",
+                "org": "AS36352 HostPapa",
+                "as": "",
+                "timezone": "America\/New_York",
+                "lat": 42.8865,
+                "lon": -78.8784,
+                "zip": "14202",
+                "_providerId": "ipinfo",
+                "_providerName": "IPinfo.io"
+            }
+        },
+        "providerStats": {
+            "total": 4,
+            "successful": 2
+        },
+        "riskAnalysis": {
+            "riskScore": 5,
+            "riskLevel": "low",
+            "riskLevelText": "低風險 \/ Low Risk",
+            "recommendation": "此IP目前看起來是安全的。\/ This IP appears to be safe.",
+            "riskFactors": [
+                "Inconsistent country data across providers \/ 各提供者的國家數據不一致(需要進行國家名稱比對)"
+            ],
+            "providersQueried": 4,
+            "providersResponded": 2,
+            "dataRatio": "2\/4",
+            "countryConsensus": {
+                "United States": 1,
+                "US": 1
+            },
+            "blacklistStatus": "0\/1"
+        },
+        "threatInfo": null,
+        "timestamp": "2026-03-01 05:35:47",
+        "fromCache": false,
+        "cacheInfo": {
+            "isCached": true,
+            "createdAt": "2026-03-01 05:35:47",
+            "updatedAt": "2026-03-01 05:35:47",
+            "expiresAt": "2026-03-03 05:35:47",
+            "hitCount": 0,
+            "isExpired": false,
+            "remainingSeconds": 172800,
+            "remainingHuman": "2天 0小時",
+            "ageSeconds": 0,
+            "ageHuman": "0秒",
+            "justCached": true
+        },
+        "customNote": null,
+        "noteCreatedAt": null,
+        "noteUpdatedAt": null,
+        "cacheSaved": true
+    }
+]

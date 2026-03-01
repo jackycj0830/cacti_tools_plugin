@@ -52,10 +52,10 @@
 
         <!-- Query Tabs -->
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('single')" data-i18n="single_query">單一查詢</button>
+            <button class="tab active" onclick="switchTab('dashboard')" data-i18n="sec_dashboard">安全儀表板</button>
+            <button class="tab" onclick="switchTab('single')" data-i18n="single_query">單一查詢</button>
             <button class="tab" onclick="switchTab('batch')" data-i18n="batch_query">批量查詢</button>
             <button class="tab" onclick="switchTab('localdb')" data-i18n="local_database">本地數據查詢</button>
-            <button class="tab" onclick="switchTab('dashboard')" data-i18n="sec_dashboard">安全儀表板</button>
             <!--<button class="tab" onclick="switchTab('history')" data-i18n="history">查詢歷史</button>-->
             <button class="tab" onclick="switchTab('fortigate')" data-i18n="fortigate_cli">防火牆指令</button>
             <button class="tab" onclick="switchTab('riskinfo')" data-i18n="risk_methodology">風險評估說明</button>
@@ -64,7 +64,7 @@
         </div>
 
         <!-- Single Query Panel -->
-        <div class="panel" id="singlePanel">
+        <div class="panel hidden" id="singlePanel">
             <div class="query-form">
                 <input type="text" id="ipInput" placeholder="輸入IP地址 (例: 192.168.1.1) 或 CIDR (例: 192.168.0.0/24)" class="ip-input">
                 <button onclick="querySingleIP()" class="btn-primary" data-i18n="query">查詢</button>
@@ -352,7 +352,7 @@
         </div>
 
         <!-- Security Dashboard Panel -->
-        <div class="panel hidden" id="dashboardPanel">
+        <div class="panel" id="dashboardPanel">
             <div class="dashboard-container">
                 <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <div class="section-title">
@@ -588,17 +588,36 @@
                                 <span class="factor-number">2</span>
                                 <h5>Provider Data Availability / 提供者數據可用性</h5>
                             </div>
-                        </li>
-                        <li class="zh">
-                            <strong>有限的提供者數據：</strong> 當較少提供者回應時，地理位置數據可能較不可靠，需要額外謹慎。
-                        </li>
-                        <li>
-                            <strong>Country Disagreement:</strong> Inconsistent country data may indicate proxy usage, VPN, or data center IPs
-                            that require further investigation.
-                        </li>
-                        <li class="zh">
-                            <strong>國家不一致：</strong> 不一致的國家數據可能表示使用代理、VPN 或數據中心 IP，需要進一步調查。
-                        </li>
+                            <div class="factor-body">
+                                <div class="factor-score">+10 points / 分</div>
+                                <p><strong>Condition:</strong> Less than 50% of providers responded successfully</p>
+                                <p class="zh"><strong>條件：</strong> 少於50%的提供者成功回應</p>
+                                <div class="factor-impact medium">Medium Impact / 中影響</div>
+                            </div>
+                        </div>
+
+                        <div class="risk-factor-card factor-3">
+                            <div class="factor-header">
+                                <span class="factor-number">3</span>
+                                <h5>Country Consensus / 國家一致性</h5>
+                            </div>
+                            <div class="factor-body">
+                                <div class="factor-score">+5 points / 分</div>
+                                <p><strong>Condition:</strong> Providers report different countries for the same IP</p>
+                                <p class="zh"><strong>條件：</strong> 不同提供者對同一 IP 報告不同國家</p>
+                                <div class="factor-impact low">Low Impact / 低影響</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="riskinfo-section">
+                    <h4>📝 Important Notes / 重要提示</h4>
+                    <ul class="riskinfo-notes">
+                        <li><strong>Limited Provider Data:</strong> When fewer providers respond, geolocation data may be less reliable and requires extra caution.</li>
+                        <li class="zh"><strong>有限的提供者數據：</strong> 當較少提供者回應時，地理位置數據可能較不可靠，需要額外謹慎。</li>
+                        <li><strong>Country Disagreement:</strong> Inconsistent country data may indicate proxy usage, VPN, or data center IPs that require further investigation.</li>
+                        <li class="zh"><strong>國家不一致：</strong> 不一致的國家數據可能表示使用代理、VPN 或數據中心 IP，需要進一步調查。</li>
                     </ul>
                 </div>
 
@@ -710,6 +729,47 @@ define('GEOIP_QUERY_MODE', 'aggregate');
                 </p>
 
                 <div class="version-timeline">
+                    <!-- Version 2.7.0 -->
+                    <div class="version-entry">
+                        <div class="version-header">
+                            <span class="version-number">v2.7.0</span>
+                            <span class="version-date">2026-03-01</span>
+                            <span class="version-tag feature">Architecture Refactor</span>
+                        </div>
+                        <div class="version-body">
+                            <h5>🏗️ Architecture Refactoring / 架構重構</h5>
+                            <ul>
+                                <li>Complete Python to PHP backend migration - all analysis scripts rewritten in PHP / 完整的 Python 到 PHP 後端遷移 - 所有分析腳本改寫為 PHP</li>
+                                <li>VT Cache migrated from SQLite <code>vt_cache.db</code> to MySQL <code>ip_cache</code> table / VT 快取從 SQLite <code>vt_cache.db</code> 遷移至 MySQL <code>ip_cache</code> 資料表</li>
+                                <li>FAZ raw events and logs tables moved from SQLite to MySQL / FAZ 原始事件和日誌資料表從 SQLite 遷移至 MySQL</li>
+                                <li>Unified database layer via <code>IPCacheDB.php</code> - supports both SQLite (dev) and MySQL (prod) / 透過 <code>IPCacheDB.php</code> 統一資料庫層 - 支援 SQLite（開發）和 MySQL（生產）</li>
+                                <li>New <code>faz_analyzer.php</code> replaces <code>analyze_faz_ips.py</code> for FAZ + VirusTotal analysis / 新 <code>faz_analyzer.php</code> 取代 <code>analyze_faz_ips.py</code> 進行 FAZ + VirusTotal 分析</li>
+                            </ul>
+                            <h5>🆕 New Features / 新功能</h5>
+                            <ul>
+                                <li>Security Dashboard set as default landing tab / 安全儀表板設為預設首頁</li>
+                                <li>Graceful database connection handling - shows clear error messages when DB unavailable / 優雅的資料庫連接處理 - 當資料庫不可用時顯示清楚的錯誤訊息</li>
+                                <li>Auto-creation of all required MySQL tables on first connection / 首次連接時自動建立所有必要的 MySQL 資料表</li>
+                                <li>Complete MySQL schema file <code>faz_mysql_schema.sql</code> with 5 tables / 完整的 MySQL schema 檔案包含 5 張資料表</li>
+                                <li>FAZ Collection log modal for real-time analysis monitoring / FAZ 收集日誌視窗用於即時分析監控</li>
+                            </ul>
+                            <h5>🐛 Bug Fixes / 問題修復</h5>
+                            <ul>
+                                <li>Fixed corrupted HTML structure in Risk Assessment panel causing GeoIP APIs and Version History tabs to be invisible / 修復風險評估面板中損壞的 HTML 結構，導致 GeoIP APIs 和版本歷史頁籤無法顯示</li>
+                                <li>Fixed <code>web/api.php</code> still using SQLite3 instead of MySQL PDO / 修復 <code>web/api.php</code> 仍使用 SQLite3 而非 MySQL PDO</li>
+                                <li>Fixed <code>web/run_analysis.php</code> still calling Python script instead of PHP / 修復 <code>web/run_analysis.php</code> 仍呼叫 Python 腳本而非 PHP</li>
+                                <li>Fixed missing <code>logModal</code> HTML element required by dashboard FAZ Collection feature / 修復安全儀表板 FAZ 收集功能所需的 <code>logModal</code> HTML 元素缺失</li>
+                            </ul>
+                            <h5>🔧 Improvements / 改進</h5>
+                            <ul>
+                                <li>Eliminated all SQLite dependencies for production deployment / 消除生產部署的所有 SQLite 依賴</li>
+                                <li>API dashboard functions return JSON error instead of crashing when DB unavailable / API 儀表板函式在資料庫不可用時回傳 JSON 錯誤而非崩潰</li>
+                                <li>Added <code>isConnected()</code> and <code>getConnectionError()</code> methods to IPCacheDB / 新增 <code>isConnected()</code> 和 <code>getConnectionError()</code> 方法至 IPCacheDB</li>
+                                <li>PHP executable auto-detection with multiple fallback paths / PHP 執行檔自動偵測與多重備援路徑</li>
+                            </ul>
+                        </div>
+                    </div>
+
                     <!-- Version 2.6.0 -->
                     <div class="version-entry">
                         <div class="version-header">
@@ -1073,8 +1133,8 @@ define('GEOIP_QUERY_MODE', 'aggregate');
                     <p class="footer-powered">Powered by TPV IT Global Infrastructure Team</p>
                 </div>
                 <div class="footer-version">
-                    <span class="version-badge">v2.6.0</span>
-                    <span class="version-date">Last Updated:  2026-01-23</span>
+                    <span class="version-badge">v2.7.0</span>
+                    <span class="version-date">Last Updated: 2026-03-01</span>
                 </div>
             </div>
         </footer>
@@ -1092,6 +1152,8 @@ define('GEOIP_QUERY_MODE', 'aggregate');
         // Initialize / 初始化
         document.addEventListener('DOMContentLoaded', function() {
             loadStats();
+            // Auto-load dashboard as default tab
+            refreshDashboard();
             document.getElementById('ipInput').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') querySingleIP();
             });

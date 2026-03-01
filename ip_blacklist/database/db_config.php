@@ -11,7 +11,7 @@
 // DATABASE TYPE SELECTION
 // ============================================================================
 // Options: 'sqlite' (recommended for simple setups) or 'mysql'
-define('DB_TYPE', 'mysql');
+define('DB_TYPE', 'sqlite');
 
 // ============================================================================
 // SQLITE CONFIGURATION (Default - No setup required)
