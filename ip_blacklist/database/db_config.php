@@ -10,8 +10,14 @@
 // ============================================================================
 // DATABASE TYPE SELECTION
 // ============================================================================
-// Options: 'sqlite' (recommended for simple setups) or 'mysql'
-define('DB_TYPE', 'sqlite');
+// Options: 'sqlite' (for local dev) or 'mysql' (for production)
+// To override locally, create db_config_local.php with: define('DB_TYPE', 'sqlite');
+if (file_exists(__DIR__ . '/db_config_local.php')) {
+    require_once __DIR__ . '/db_config_local.php';
+}
+if (!defined('DB_TYPE')) {
+    define('DB_TYPE', 'mysql');
+}
 
 // ============================================================================
 // SQLITE CONFIGURATION (Default - No setup required)
