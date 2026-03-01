@@ -2074,6 +2074,22 @@ async function loadArchiveStats() {
 }
 
 /**
+ * Load archive countries list for reference
+ * Called when Local Database tab is first accessed
+ */
+async function loadArchiveCountries() {
+    try {
+        const response = await fetch(`${API_URL}?action=archive_countries`);
+        const data = await response.json();
+        if (data.success && data.countries) {
+            console.log(`Archive countries loaded: ${data.countries.length} countries`);
+        }
+    } catch (error) {
+        console.error('Failed to load archive countries:', error);
+    }
+}
+
+/**
  * Query multiple IPs from local archive database (batch mode)
  * Similar to queryBatchIP() but queries from ip_database table
  */

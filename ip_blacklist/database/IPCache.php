@@ -1154,7 +1154,14 @@ class IPCache {
                     END as score_range,
                     COUNT(*) as count
                 FROM ip_database
-                GROUP BY score_range
+                GROUP BY
+                    CASE
+                        WHEN risk_score >= 80 THEN '80-100'
+                        WHEN risk_score >= 60 THEN '60-79'
+                        WHEN risk_score >= 40 THEN '40-59'
+                        WHEN risk_score >= 20 THEN '20-39'
+                        ELSE '0-19'
+                    END
                 ORDER BY score_range DESC
             ");
             $stats['riskScoreDistribution'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
