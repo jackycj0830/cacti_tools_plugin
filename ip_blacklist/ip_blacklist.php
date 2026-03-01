@@ -14,6 +14,19 @@
     <link rel="stylesheet" href="assets/dashboard.css">
 </head>
 <body>
+<!-- Log Modal for FAZ Collection -->
+<div id="logModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center;">
+    <div style="background: var(--bg-card, #1a1d28); border: 1px solid var(--border-color, #2a2e3e); border-radius: 12px; width: 90%; max-width: 800px; height: 80vh; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+        <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color, #2a2e3e); display: flex; align-items: center; justify-content: space-between;">
+            <h3 style="margin: 0; font-size: 1rem;">🚀 Executing Analysis...</h3>
+            <button onclick="closeLogModal()" style="background: none; border: none; color: #8b8fa3; font-size: 1.5rem; cursor: pointer; padding: 0 0.5rem;">×</button>
+        </div>
+        <div style="flex: 1; padding: 0; overflow: hidden; background: #0d0f14; display: flex;">
+            <pre id="logOutput" style="width: 100%; height: 100%; padding: 1rem; overflow: auto; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.8rem; color: #c9d1d9; white-space: pre-wrap; word-wrap: break-word; margin: 0;"></pre>
+        </div>
+    </div>
+</div>
+
     <div class="container">
         <!-- Header -->
         <header class="header">

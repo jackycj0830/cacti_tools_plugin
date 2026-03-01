@@ -2,47 +2,93 @@
 /**
  * Security Dashboard API functions for ip_blacklist
  * Integrates MySQL (Blacklist/Cache/FAZ state)
+ *
+ * Called from api.php via:
+ *   dash_stats, dash_blacklist, dash_faz, dash_country, dash_country_timeline
  */
 
-require_once __DIR__ . '/database/IPCacheDB.php'; // For MySQL
+require_once __DIR__ . '/database/IPCacheDB.php';
+
+/**
+ * Helper: Check if FAZ tables exist in MySQL; if not, create them.
+ */
+function ensureFazTables() {
+    static $checked = false;
+    if ($checked) return;
+    try {
+        $db = IPCacheDB::getInstance()->getPDO();
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS faz_raw_events (
+                ip VARCHAR(45) NOT NULL,
+                timestamp DATETIME NOT NULL,
+                UNIQUE KEY unique_ip_ts (ip, timestamp),
+                INDEX idx_ts (timestamp)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ");
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS faz_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                run_id VARCHAR(50) NOT NULL,
+                ip VARCHAR(45) NOT NULL,
+                count INT NOT NULL,
+                first_seen DATETIME NOT NULL,
+                last_seen DATETIME NOT NULL,
+                imported_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_run_id (run_id),
+                INDEX idx_ip (ip)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ");
+        $checked = true;
+    } catch (Exception $e) {
+        // Silently ignore — tables may already exist
+        $checked = true;
+    }
+}
 
 function getDashStats($params)
 {
     try {
+        ensureFazTables();
         $days = isset($params['days']) ? intval($params['days']) : 7;
-        $db = IPCacheDB::getInstance()->getPDO(); // MySQL
+        $db = IPCacheDB::getInstance()->getPDO();
 
         $stats = [];
-        $stats['total_cached'] = $db->query("SELECT COUNT(*) FROM ip_database")->fetchColumn();
-        $stats['total_blacklisted'] = $db->query("SELECT COUNT(*) FROM ip_cache WHERE is_blacklisted = 1 AND vt_malicious >= 3")->fetchColumn();
+        $stats['total_cached'] = (int) $db->query("SELECT COUNT(*) FROM ip_database")->fetchColumn();
 
-        $stmt = $db->query("SELECT DATE_SUB(NOW(), INTERVAL $days DAY) as cutoff, NOW() as now_local");
-        $times = $stmt->fetch();
+        // Count blacklisted entries
+        try {
+            $stats['total_blacklisted'] = (int) $db->query("SELECT COUNT(*) FROM ip_cache WHERE is_blacklisted = 1 AND vt_malicious >= 3")->fetchColumn();
+        } catch (Exception $e) {
+            $stats['total_blacklisted'] = 0;
+        }
+
+        // Dynamic window from faz_raw_events
+        $stmtCutoff = $db->query("SELECT DATE_SUB(NOW(), INTERVAL $days DAY) as cutoff, NOW() as now_local");
+        $times = $stmtCutoff->fetch(PDO::FETCH_ASSOC);
         $cutoff_dt = $times['cutoff'];
         $now_local = $times['now_local'];
 
         $stmtMin = $db->query("SELECT MIN(timestamp) as min_ts FROM faz_raw_events");
-        $minRow = $stmtMin->fetch();
+        $minRow = $stmtMin->fetch(PDO::FETCH_ASSOC);
         $min_ts = $minRow['min_ts'] ?? $now_local;
 
         $actual_start = $cutoff_dt;
         $stats['is_partial'] = false;
-        if ($min_ts > $cutoff_dt) {
+        if ($min_ts && $min_ts > $cutoff_dt) {
             $actual_start = $min_ts;
             $stats['is_partial'] = true;
         }
 
-        $stmtCounts = $db->prepare("SELECT COUNT(*) as exact_count, COUNT(DISTINCT ip) as distinct_ips FROM faz_raw_events WHERE timestamp >= :cutoff");
-        $stmtCounts->execute(['cutoff' => $cutoff_dt]);
-        $row = $stmtCounts->fetch();
+        $stmtCounts = $db->prepare("SELECT COUNT(*) as cnt, COUNT(DISTINCT ip) as ips FROM faz_raw_events WHERE timestamp >= ?");
+        $stmtCounts->execute([$cutoff_dt]);
+        $row = $stmtCounts->fetch(PDO::FETCH_ASSOC);
 
-        if ($row && $row['exact_count'] > 0) {
-            $stats['faz_total_logins'] = $row['exact_count'];
-            $stats['faz_unique_ips'] = $row['distinct_ips'];
+        if ($row && $row['cnt'] > 0) {
+            $stats['faz_total_logins'] = (int) $row['cnt'];
+            $stats['faz_unique_ips'] = (int) $row['ips'];
 
-            // Get targeted IPs (>= 50 attempts) array
-            $stmtTarget = $db->prepare("SELECT ip FROM faz_raw_events WHERE timestamp >= :cutoff GROUP BY ip HAVING COUNT(*) >= 50");
-            $stmtTarget->execute(['cutoff' => $cutoff_dt]);
+            $stmtTarget = $db->prepare("SELECT ip FROM faz_raw_events WHERE timestamp >= ? GROUP BY ip HAVING COUNT(*) >= 50");
+            $stmtTarget->execute([$cutoff_dt]);
             $targetIps = $stmtTarget->fetchAll(PDO::FETCH_COLUMN);
 
             $stats['faz_ip_count'] = count($targetIps);
@@ -55,7 +101,7 @@ function getDashStats($params)
                 $inClause = rtrim(str_repeat('?,', count($targetIps)), ',');
                 $stmtBl = $db->prepare("SELECT COUNT(DISTINCT ip_address) FROM ip_cache WHERE is_blacklisted = 1 AND vt_malicious >= 3 AND ip_address IN ($inClause)");
                 $stmtBl->execute($targetIps);
-                $stats['run_blacklisted'] = $stmtBl->fetchColumn();
+                $stats['run_blacklisted'] = (int) $stmtBl->fetchColumn();
             }
         } else {
             $stats['faz_total_logins'] = 0;
@@ -75,6 +121,7 @@ function getDashStats($params)
 function getDashBlacklist($params)
 {
     try {
+        ensureFazTables();
         $days = isset($params['days']) ? intval($params['days']) : 7;
         $minMal = intval($params['min_mal'] ?? 3);
         $db = IPCacheDB::getInstance()->getPDO();
@@ -82,23 +129,22 @@ function getDashBlacklist($params)
         $stmtCutoff = $db->query("SELECT DATE_SUB(NOW(), INTERVAL $days DAY) as cutoff");
         $cutoff_dt = $stmtCutoff->fetchColumn();
 
-        $stmtTarget = $db->prepare("SELECT ip FROM faz_raw_events WHERE timestamp >= :cutoff GROUP BY ip HAVING COUNT(*) >= 50");
-        $stmtTarget->execute(['cutoff' => $cutoff_dt]);
+        $stmtTarget = $db->prepare("SELECT ip FROM faz_raw_events WHERE timestamp >= ? GROUP BY ip HAVING COUNT(*) >= 50");
+        $stmtTarget->execute([$cutoff_dt]);
         $targetIps = $stmtTarget->fetchAll(PDO::FETCH_COLUMN);
 
         if (empty($targetIps)) return [];
 
-        // Modify query to retrieve from ip_cache instead of vt_blacklist matching the old format
         $inClause = rtrim(str_repeat('?,', count($targetIps)), ',');
         $stmt = $db->prepare("
             SELECT ip_address as ip, 
                    IF(risk_level='high', 'MALICIOUS', IF(is_blacklisted=1, 'SUSPICIOUS', 'CLEAN')) as verdict,
-                   vt_malicious as malicious, 
-                   vt_suspicious as suspicious, 
-                   org as as_owner, 
-                   country_code as country, 
+                   COALESCE(vt_malicious, 0) as malicious, 
+                   COALESCE(vt_suspicious, 0) as suspicious, 
+                   COALESCE(org, isp, '') as as_owner, 
+                   COALESCE(country_code, '') as country, 
                    '' as network, 
-                   threat_info as flagged_vendors, 
+                   COALESCE(threat_info, '') as flagged_vendors_raw, 
                    created_at as first_seen, 
                    updated_at as last_seen, 
                    hit_count as times_seen
@@ -106,23 +152,23 @@ function getDashBlacklist($params)
             WHERE is_blacklisted = 1 AND vt_malicious >= ? AND ip_address IN ($inClause)
             ORDER BY vt_malicious DESC, vt_suspicious DESC
         ");
-
         $sqlParams = array_merge([$minMal], $targetIps);
         $stmt->execute($sqlParams);
-        
-        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($results as &$r) {
-            $ti = json_decode($r['flagged_vendors'], true);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($rows as &$r) {
+            $ti = json_decode($r['flagged_vendors_raw'], true);
             $fv = [];
             if ($ti && isset($ti['flagged_vendors'])) {
                 foreach ($ti['flagged_vendors'] as $vendor) {
-                    $fv[] = $vendor['vendor'] . '(' . $vendor['category'] . ')';
+                    $fv[] = ($vendor['vendor'] ?? '') . '(' . ($vendor['category'] ?? '') . ')';
                 }
             }
             $r['flagged_vendors'] = implode('; ', $fv);
+            unset($r['flagged_vendors_raw']);
         }
 
-        return $results;
+        return $rows;
     } catch (Exception $e) {
         return ['error' => $e->getMessage()];
     }
@@ -131,6 +177,7 @@ function getDashBlacklist($params)
 function getDashFaz($params)
 {
     try {
+        ensureFazTables();
         $days = isset($params['days']) ? intval($params['days']) : 7;
         $db = IPCacheDB::getInstance()->getPDO();
 
@@ -140,12 +187,11 @@ function getDashFaz($params)
         $stmt = $db->prepare("
             SELECT ip, COUNT(*) as count, MAX(timestamp) as last_seen 
             FROM faz_raw_events 
-            WHERE timestamp >= :cutoff 
+            WHERE timestamp >= ? 
             GROUP BY ip HAVING count >= 50
             ORDER BY count DESC
         ");
-        $stmt->execute(['cutoff' => $cutoff_dt]);
-
+        $stmt->execute([$cutoff_dt]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
         return ['error' => $e->getMessage()];
@@ -155,24 +201,20 @@ function getDashFaz($params)
 function getDashCountry($params)
 {
     try {
+        ensureFazTables();
         $days = isset($params['days']) ? intval($params['days']) : 7;
         $db = IPCacheDB::getInstance()->getPDO();
 
         $stmtCutoff = $db->query("SELECT DATE_SUB(NOW(), INTERVAL $days DAY) as cutoff");
         $cutoff_dt = $stmtCutoff->fetchColumn();
 
-        $stmt = $db->prepare("
-            SELECT ip, COUNT(*) as fail_count 
-            FROM faz_raw_events 
-            WHERE timestamp >= :cutoff 
-            GROUP BY ip
-        ");
-        $stmt->execute(['cutoff' => $cutoff_dt]);
+        $stmt = $db->prepare("SELECT ip, COUNT(*) as fail_count FROM faz_raw_events WHERE timestamp >= ? GROUP BY ip");
+        $stmt->execute([$cutoff_dt]);
 
         $ipFails = [];
         $ipList = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $ipFails[$row['ip']] = $row['fail_count'];
+            $ipFails[$row['ip']] = (int) $row['fail_count'];
             $ipList[] = $row['ip'];
         }
 
@@ -183,28 +225,33 @@ function getDashCountry($params)
 
         foreach ($chunkedIps as $chunk) {
             $inClause = rtrim(str_repeat('?,', count($chunk)), ',');
-            $stmtMap = $db->prepare("SELECT ip_address, country_code AS country FROM ip_database WHERE ip_address IN ($inClause)");
+            // Check ip_database first, then fall back to ip_cache
+            $stmtMap = $db->prepare("SELECT ip_address, country_code FROM ip_database WHERE ip_address IN ($inClause)");
             $stmtMap->execute($chunk);
             while ($row = $stmtMap->fetch(PDO::FETCH_ASSOC)) {
-                $countryMap[$row['ip_address']] = $row['country'] ? $row['country'] : 'Unknown';
+                $countryMap[$row['ip_address']] = $row['country_code'] ?: 'Unknown';
+            }
+            // Fill in from ip_cache for any missing
+            $missing = array_diff($chunk, array_keys($countryMap));
+            if (!empty($missing)) {
+                $inClause2 = rtrim(str_repeat('?,', count($missing)), ',');
+                $stmtMap2 = $db->prepare("SELECT ip_address, country_code FROM ip_cache WHERE ip_address IN ($inClause2)");
+                $stmtMap2->execute(array_values($missing));
+                while ($row = $stmtMap2->fetch(PDO::FETCH_ASSOC)) {
+                    $countryMap[$row['ip_address']] = $row['country_code'] ?: 'Unknown';
+                }
             }
         }
 
         $countryFails = [];
         foreach ($ipFails as $ip => $fails) {
-            $country = isset($countryMap[$ip]) ? $countryMap[$ip] : 'Unknown';
-            if (!isset($countryFails[$country])) {
-                $countryFails[$country] = 0;
-            }
-            $countryFails[$country] += $fails;
+            $country = $countryMap[$ip] ?? 'Unknown';
+            $countryFails[$country] = ($countryFails[$country] ?? 0) + $fails;
         }
 
         $results = [];
         foreach ($countryFails as $c => $f) {
-            $results[] = [
-                'country' => $c,
-                'total_fails' => $f
-            ];
+            $results[] = ['country' => $c, 'total_fails' => $f];
         }
 
         return $results;
@@ -216,24 +263,21 @@ function getDashCountry($params)
 function getDashCountryTimeline($params)
 {
     try {
+        ensureFazTables();
         $days = isset($params['days']) ? intval($params['days']) : 7;
         $db = IPCacheDB::getInstance()->getPDO();
 
         $stmtCutoff = $db->query("SELECT DATE_SUB(NOW(), INTERVAL $days DAY) as cutoff");
         $cutoff_dt = $stmtCutoff->fetchColumn();
 
-        $stmt = $db->prepare("
-            SELECT ip, COUNT(*) as fail_count 
-            FROM faz_raw_events 
-            WHERE timestamp >= :cutoff 
-            GROUP BY ip
-        ");
-        $stmt->execute(['cutoff' => $cutoff_dt]);
+        // Get IP->country map
+        $stmt = $db->prepare("SELECT ip, COUNT(*) as fail_count FROM faz_raw_events WHERE timestamp >= ? GROUP BY ip");
+        $stmt->execute([$cutoff_dt]);
 
         $ipFails = [];
         $ipList = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $ipFails[$row['ip']] = $row['fail_count'];
+            $ipFails[$row['ip']] = (int) $row['fail_count'];
             $ipList[] = $row['ip'];
         }
 
@@ -243,23 +287,29 @@ function getDashCountryTimeline($params)
 
         $chunkedIps = array_chunk($ipList, 1000);
         $countryMap = [];
-
         foreach ($chunkedIps as $chunk) {
             $inClause = rtrim(str_repeat('?,', count($chunk)), ',');
-            $stmtMap = $db->prepare("SELECT ip_address, country_code AS country FROM ip_database WHERE ip_address IN ($inClause)");
+            $stmtMap = $db->prepare("SELECT ip_address, country_code FROM ip_database WHERE ip_address IN ($inClause)");
             $stmtMap->execute($chunk);
             while ($row = $stmtMap->fetch(PDO::FETCH_ASSOC)) {
-                $countryMap[$row['ip_address']] = $row['country'] ? $row['country'] : 'Unknown';
+                $countryMap[$row['ip_address']] = $row['country_code'] ?: 'Unknown';
+            }
+            $missing = array_diff($chunk, array_keys($countryMap));
+            if (!empty($missing)) {
+                $inClause2 = rtrim(str_repeat('?,', count($missing)), ',');
+                $stmtMap2 = $db->prepare("SELECT ip_address, country_code FROM ip_cache WHERE ip_address IN ($inClause2)");
+                $stmtMap2->execute(array_values($missing));
+                while ($row = $stmtMap2->fetch(PDO::FETCH_ASSOC)) {
+                    $countryMap[$row['ip_address']] = $row['country_code'] ?: 'Unknown';
+                }
             }
         }
 
+        // Get top 10 countries
         $countryFails = [];
         foreach ($ipFails as $ip => $fails) {
-            $country = isset($countryMap[$ip]) ? $countryMap[$ip] : 'Unknown';
-            if (!isset($countryFails[$country])) {
-                $countryFails[$country] = 0;
-            }
-            $countryFails[$country] += $fails;
+            $country = $countryMap[$ip] ?? 'Unknown';
+            $countryFails[$country] = ($countryFails[$country] ?? 0) + $fails;
         }
 
         arsort($countryFails);
@@ -269,29 +319,26 @@ function getDashCountryTimeline($params)
             return ['labels' => [], 'datasets' => []];
         }
 
+        // Get timeline data
         $bucket_expr = $days <= 2 ? "DATE_FORMAT(timestamp, '%Y-%m-%d %H:00')" : "DATE(timestamp)";
 
         $stmt3 = $db->prepare("
             SELECT ip, $bucket_expr as bucket, COUNT(*) as count 
             FROM faz_raw_events 
-            WHERE timestamp >= :cutoff 
+            WHERE timestamp >= ? 
             GROUP BY ip, bucket
             ORDER BY bucket ASC
         ");
-        $stmt3->execute(['cutoff' => $cutoff_dt]);
+        $stmt3->execute([$cutoff_dt]);
 
         $timeline = [];
         $buckets_set = [];
         while ($row = $stmt3->fetch(PDO::FETCH_ASSOC)) {
-            $ip = $row['ip'];
+            $c = $countryMap[$row['ip']] ?? 'Unknown';
             $b = $row['bucket'];
-            $c = isset($countryMap[$ip]) ? $countryMap[$ip] : 'Unknown';
 
             if (in_array($c, $topCountries)) {
-                if (!isset($timeline[$c][$b])) {
-                    $timeline[$c][$b] = 0;
-                }
-                $timeline[$c][$b] += $row['count'];
+                $timeline[$c][$b] = ($timeline[$c][$b] ?? 0) + $row['count'];
                 $buckets_set[$b] = true;
             }
         }
@@ -303,18 +350,12 @@ function getDashCountryTimeline($params)
         foreach ($topCountries as $c) {
             $data = [];
             foreach ($all_buckets as $b) {
-                $data[] = isset($timeline[$c][$b]) ? $timeline[$c][$b] : 0;
+                $data[] = $timeline[$c][$b] ?? 0;
             }
-            $datasets[] = [
-                'label' => $c,
-                'data' => $data
-            ];
+            $datasets[] = ['label' => $c, 'data' => $data];
         }
 
-        return [
-            'labels' => $all_buckets,
-            'datasets' => $datasets
-        ];
+        return ['labels' => $all_buckets, 'datasets' => $datasets];
     } catch (Exception $e) {
         return ['error' => $e->getMessage()];
     }
