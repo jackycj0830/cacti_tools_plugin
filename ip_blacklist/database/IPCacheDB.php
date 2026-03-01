@@ -1,9 +1,11 @@
 <?php
 /**
  * IP Blacklist Query System - Database Cache Manager
- * @version 1.0.0
+ * @version 2.0.0
  * 
  * Handles all database operations for IP caching.
+ * Now exclusively uses MySQL (no SQLite fallback for production).
+ * All VT cache data is stored in MySQL ip_cache table.
  */
 
 require_once __DIR__ . '/db_config.php';
@@ -12,6 +14,7 @@ class IPCacheDB {
     private static $instance = null;
     private $pdo = null;
     private $initialized = false;
+    private $connectionError = null;
 
     private function __construct() {
         $this->connect();
@@ -22,6 +25,20 @@ class IPCacheDB {
             self::$instance = new self();
         }
         return self::$instance;
+    }
+
+    /**
+     * Check if database is connected and available
+     */
+    public function isConnected() {
+        return $this->pdo !== null;
+    }
+
+    /**
+     * Get the connection error message (if any)
+     */
+    public function getConnectionError() {
+        return $this->connectionError;
     }
 
     private function connect() {
@@ -36,18 +53,21 @@ class IPCacheDB {
                     MYSQL_HOST, MYSQL_PORT, MYSQL_DATABASE, MYSQL_CHARSET);
                 $this->pdo = new PDO($dsn, MYSQL_USERNAME, MYSQL_PASSWORD, [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_TIMEOUT => 5
                 ]);
             }
             $this->initializeDatabase();
         } catch (PDOException $e) {
+            $this->connectionError = $e->getMessage();
             $this->logError('Connection failed: ' . $e->getMessage());
-            throw $e;
+            // Don't throw — allow graceful degradation
+            $this->pdo = null;
         }
     }
 
     private function initializeDatabase() {
-        if ($this->initialized) return;
+        if ($this->initialized || !$this->pdo) return;
         
         $sql = DB_TYPE === 'sqlite' ? $this->getSQLiteSchema() : $this->getMySQLSchema();
         
@@ -119,7 +139,21 @@ class IPCacheDB {
             CREATE INDEX IF NOT EXISTS idx_archive_status ON ip_database(status);
             CREATE INDEX IF NOT EXISTS idx_archive_risk ON ip_database(risk_level);
             CREATE INDEX IF NOT EXISTS idx_archive_country ON ip_database(country_code);
-            CREATE INDEX IF NOT EXISTS idx_archive_date ON ip_database(archived_at)
+            CREATE INDEX IF NOT EXISTS idx_archive_date ON ip_database(archived_at);
+            CREATE TABLE IF NOT EXISTS faz_raw_events (
+                ip TEXT,
+                timestamp DATETIME,
+                UNIQUE(ip, timestamp)
+            );
+            CREATE TABLE IF NOT EXISTS faz_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                run_id TEXT,
+                ip TEXT,
+                count INTEGER,
+                first_seen TEXT,
+                last_seen TEXT,
+                imported_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
         ";
     }
 
@@ -144,7 +178,8 @@ class IPCacheDB {
                 vt_detection_flagged INT DEFAULT NULL, vt_detection_total INT DEFAULT NULL,
                 vt_link VARCHAR(255) DEFAULT NULL, vt_queried_at DATETIME DEFAULT NULL,
                 INDEX idx_expires (expires_at), INDEX idx_status (status),
-                INDEX idx_risk_level (risk_level), INDEX idx_country (country_code)
+                INDEX idx_risk_level (risk_level), INDEX idx_country (country_code),
+                INDEX idx_blacklisted (is_blacklisted)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             CREATE TABLE IF NOT EXISTS cache_stats (
                 id INTEGER PRIMARY KEY AUTO_INCREMENT,
@@ -174,14 +209,37 @@ class IPCacheDB {
                 vt_link VARCHAR(255) DEFAULT NULL, vt_queried_at DATETIME DEFAULT NULL,
                 INDEX idx_archive_status (status), INDEX idx_archive_risk (risk_level),
                 INDEX idx_archive_country (country_code), INDEX idx_archive_date (archived_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            CREATE TABLE IF NOT EXISTS faz_raw_events (
+                ip VARCHAR(45) NOT NULL,
+                timestamp DATETIME NOT NULL,
+                UNIQUE KEY unique_ip_ts (ip, timestamp),
+                INDEX idx_ts (timestamp),
+                INDEX idx_ip (ip)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            CREATE TABLE IF NOT EXISTS faz_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                run_id VARCHAR(50) NOT NULL,
+                ip VARCHAR(45) NOT NULL,
+                count INT NOT NULL,
+                first_seen DATETIME NOT NULL,
+                last_seen DATETIME NOT NULL,
+                imported_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_run_id (run_id),
+                INDEX idx_ip (ip)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ";
     }
 
-    public function getPDO() { return $this->pdo; }
+    public function getPDO() {
+        if (!$this->pdo) {
+            throw new Exception('Database connection not available: ' . ($this->connectionError ?: 'Unknown error'));
+        }
+        return $this->pdo;
+    }
 
     private function logError($msg) {
-        if (CACHE_LOG_ENABLED) {
+        if (defined('CACHE_LOG_ENABLED') && CACHE_LOG_ENABLED) {
             $log = sprintf("[%s] ERROR: %s\n", date('Y-m-d H:i:s'), $msg);
             @file_put_contents(CACHE_LOG_FILE, $log, FILE_APPEND);
         }
@@ -191,4 +249,3 @@ class IPCacheDB {
     private function __clone() {}
     public function __wakeup() { throw new Exception("Cannot unserialize"); }
 }
-

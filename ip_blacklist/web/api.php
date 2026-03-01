@@ -12,13 +12,13 @@ header('Access-Control-Allow-Origin: *');
 // Load the database connection from the parent directory's config
 require_once __DIR__ . '/../database/IPCacheDB.php';
 
-try {
-    $db = IPCacheDB::getInstance()->getPDO();
-} catch (Exception $e) {
+$dbInstance = IPCacheDB::getInstance();
+if (!$dbInstance->isConnected()) {
     http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed: ' . $e->getMessage()]);
+    echo json_encode(['error' => 'Database connection failed: ' . ($dbInstance->getConnectionError() ?: 'MySQL server not available. Check that MySQL is running and db_config.php settings are correct.')]);
     exit;
 }
+$db = $dbInstance->getPDO();
 
 $action = $_GET['action'] ?? 'stats';
 

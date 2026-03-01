@@ -10,13 +10,29 @@
 require_once __DIR__ . '/database/IPCacheDB.php';
 
 /**
+ * Helper: Get DB PDO or null if not connected.
+ */
+function getDashDB() {
+    $instance = IPCacheDB::getInstance();
+    if (!$instance->isConnected()) {
+        return null;
+    }
+    try {
+        return $instance->getPDO();
+    } catch (Exception $e) {
+        return null;
+    }
+}
+
+/**
  * Helper: Check if FAZ tables exist in MySQL; if not, create them.
  */
 function ensureFazTables() {
     static $checked = false;
     if ($checked) return;
+    $db = getDashDB();
+    if (!$db) { $checked = true; return; }
     try {
-        $db = IPCacheDB::getInstance()->getPDO();
         $db->exec("
             CREATE TABLE IF NOT EXISTS faz_raw_events (
                 ip VARCHAR(45) NOT NULL,
@@ -27,6 +43,7 @@ function ensureFazTables() {
         ");
         $db->exec("
             CREATE TABLE IF NOT EXISTS faz_logs (
+
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 run_id VARCHAR(50) NOT NULL,
                 ip VARCHAR(45) NOT NULL,
@@ -50,7 +67,8 @@ function getDashStats($params)
     try {
         ensureFazTables();
         $days = isset($params['days']) ? intval($params['days']) : 7;
-        $db = IPCacheDB::getInstance()->getPDO();
+        $db = getDashDB();
+        if (!$db) return ['error' => 'Database not available: ' . (IPCacheDB::getInstance()->getConnectionError() ?: 'MySQL connection failed')];
 
         $stats = [];
         $stats['total_cached'] = (int) $db->query("SELECT COUNT(*) FROM ip_database")->fetchColumn();
@@ -124,7 +142,8 @@ function getDashBlacklist($params)
         ensureFazTables();
         $days = isset($params['days']) ? intval($params['days']) : 7;
         $minMal = intval($params['min_mal'] ?? 3);
-        $db = IPCacheDB::getInstance()->getPDO();
+        $db = getDashDB();
+        if (!$db) return ['error' => 'Database not available'];
 
         $stmtCutoff = $db->query("SELECT DATE_SUB(NOW(), INTERVAL $days DAY) as cutoff");
         $cutoff_dt = $stmtCutoff->fetchColumn();

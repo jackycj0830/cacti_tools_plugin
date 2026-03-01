@@ -1,7 +1,7 @@
 <?php
 /**
  * Block_IP Dashboard — Run Analysis Endpoint
- * Executes the python script and streams output to the client.
+ * Executes the PHP analysis script and streams output to the client.
  */
 
 header('Content-Type: text/event-stream');

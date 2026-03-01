@@ -62,14 +62,16 @@ if (isset($argv)) {
 // ============================================================================
 logOutput("[*] Initializing PHP analysis script...");
 
-try {
-    $db = IPCacheDB::getInstance()->getPDO();
-    logOutput("[DB] Connected to MySQL successfully.");
-} catch (Exception $e) {
-    logOutput("[Error] Failed to connect to database: " . $e->getMessage());
+$dbInstance = IPCacheDB::getInstance();
+if (!$dbInstance->isConnected()) {
+    logOutput("[Error] Failed to connect to database: " . ($dbInstance->getConnectionError() ?: 'Unknown error'));
+    logOutput("[Error] Check MySQL is running and settings in database/db_config.php are correct.");
+    logOutput("[Error] Current config: host=" . MYSQL_HOST . " port=" . MYSQL_PORT . " db=" . MYSQL_DATABASE);
     logOutput("Finished");
     exit(1);
 }
+$db = $dbInstance->getPDO();
+logOutput("[DB] Connected to MySQL successfully.");
 
 // Ensure FAZ tables exist in MySQL
 try {
