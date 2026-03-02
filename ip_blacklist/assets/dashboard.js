@@ -387,3 +387,45 @@ function closeLogModal() {
     const logModal = document.getElementById('logModal');
     if (logModal) logModal.style.display = 'none';
 }
+
+async function loadTestData() {
+    const btn = document.getElementById('btnLoadTestData');
+    if (btn) btn.disabled = true;
+
+    try {
+        const resp = await fetch(`${API_URL}?action=dash_load_test`);
+        const data = await resp.json();
+        if (data.success) {
+            alert(`✅ Test data loaded: ${data.total_events} events inserted.`);
+            refreshDashboard();
+        } else {
+            alert(`❌ Error: ${data.error || 'Unknown error'}`);
+        }
+    } catch (e) {
+        alert(`❌ Network Error: ${e.message}`);
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}
+
+async function clearTestData() {
+    if (!confirm('Are you sure you want to clear test data?')) return;
+
+    const btn = document.getElementById('btnClearTestData');
+    if (btn) btn.disabled = true;
+
+    try {
+        const resp = await fetch(`${API_URL}?action=dash_clear_test`);
+        const data = await resp.json();
+        if (data.success) {
+            alert('✅ Test data cleared.');
+            refreshDashboard();
+        } else {
+            alert(`❌ Error: ${data.error || 'Unknown error'}`);
+        }
+    } catch (e) {
+        alert(`❌ Network Error: ${e.message}`);
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+}

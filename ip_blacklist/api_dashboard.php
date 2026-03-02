@@ -407,3 +407,115 @@ function getDashCountryTimeline($params)
         return ['error' => $e->getMessage()];
     }
 }
+
+function getTestIPs() {
+    return [
+        ['ip' => '103.152.220.10', 'country' => 'CN', 'attempts' => 200], // China - high
+        ['ip' => '45.148.10.25',   'country' => 'RU', 'attempts' => 150], // Russia - high
+        ['ip' => '185.220.101.5',  'country' => 'DE', 'attempts' => 80],  // Germany - medium
+        ['ip' => '193.142.146.30', 'country' => 'NL', 'attempts' => 120], // Netherlands - high
+        ['ip' => '91.241.19.50',   'country' => 'UA', 'attempts' => 60],  // Ukraine - medium
+        ['ip' => '103.75.201.15',  'country' => 'VN', 'attempts' => 90],  // Vietnam - medium
+        ['ip' => '156.146.56.20',  'country' => 'US', 'attempts' => 30],  // USA - below threshold
+        ['ip' => '41.77.209.100',  'country' => 'NG', 'attempts' => 10],  // Nigeria - below threshold
+        ['ip' => '5.188.206.14',   'country' => 'RU', 'attempts' => 180], // Russia - high
+        ['ip' => '176.111.174.8',  'country' => 'RU', 'attempts' => 100], // Russia - medium
+    ];
+}
+
+function loadDashTestData()
+{
+    try {
+        ensureFazTables();
+        $db = getDashDB();
+        if (!$db) return ['error' => 'Database not available'];
+
+        $testIPs = getTestIPs();
+        $totalEvents = 0;
+        
+        $insertSQL = DB_TYPE === 'sqlite'
+            ? "INSERT OR IGNORE INTO faz_raw_events (ip, timestamp) VALUES (?, ?)"
+            : "INSERT IGNORE INTO faz_raw_events (ip, timestamp) VALUES (?, ?)";
+        $stmt = $db->prepare($insertSQL);
+        
+        $db->beginTransaction();
+        foreach ($testIPs as $ipData) {
+            $ip = $ipData['ip'];
+            $attempts = $ipData['attempts'];
+            for ($i = 0; $i < $attempts; $i++) {
+                $randomSec = rand(0, 7 * 24 * 3600);
+                $ts = date('Y-m-d H:i:s', time() - $randomSec);
+                $stmt->execute([$ip, $ts]);
+                $totalEvents++;
+            }
+        }
+        
+        // Also ensure archive data is there for country mapping
+        $archiveSQL = DB_TYPE === 'sqlite'
+            ? "INSERT OR IGNORE INTO ip_database (ip_address, is_blacklisted, status, country_code, country_name, risk_score, risk_level, archived_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            : "INSERT IGNORE INTO ip_database (ip_address, is_blacklisted, status, country_code, country_name, risk_score, risk_level, archived_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmtArchive = $db->prepare($archiveSQL);
+        
+        $countries = ['CN' => 'China', 'RU' => 'Russia', 'DE' => 'Germany', 'NL' => 'Netherlands', 'UA' => 'Ukraine', 'VN' => 'Vietnam', 'US' => 'United States', 'NG' => 'Nigeria'];
+        foreach ($testIPs as $ipData) {
+            $isBlacklisted = $ipData['attempts'] >= 50 ? 1 : 0;
+            $riskLevel = $ipData['attempts'] >= 100 ? 'high' : ($ipData['attempts'] >= 50 ? 'medium' : 'low');
+            $stmtArchive->execute([
+                $ipData['ip'], $isBlacklisted, $isBlacklisted ? 'blocked' : 'safe',
+                $ipData['country'], $countries[$ipData['country']] ?? 'Unknown',
+                min(100, $ipData['attempts']), $riskLevel, date('Y-m-d H:i:s')
+            ]);
+        }
+
+        // Also mock ip_cache
+        $cacheSQL = DB_TYPE === 'sqlite'
+            ? "INSERT OR REPLACE INTO ip_cache (ip_address, is_blacklisted, status, risk_level, country_code, vt_malicious, vt_suspicious, created_at, updated_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            : "INSERT INTO ip_cache (ip_address, is_blacklisted, status, risk_level, country_code, vt_malicious, vt_suspicious, created_at, updated_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE vt_malicious=VALUES(vt_malicious), is_blacklisted=VALUES(is_blacklisted), status=VALUES(status)";
+        $stmtCache = $db->prepare($cacheSQL);
+        
+        $now = date('Y-m-d H:i:s');
+        $expires = date('Y-m-d H:i:s', time() + 86400 * 30);
+        
+        foreach ($testIPs as $ipData) {
+            if ($ipData['attempts'] >= 50) {
+                // Mock some malicious results (>= 3 for "Blacklist")
+                $m = rand(0, 1) ? rand(3, 10) : rand(1, 2);
+                $stmtCache->execute([
+                    $ipData['ip'], ($m >= 3 ? 1 : 0), ($m >= 3 ? 'blocked' : 'safe'),
+                    ($m >= 3 ? 'high' : 'low'), $ipData['country'], $m, rand(1, 5),
+                    $now, $now, $expires
+                ]);
+            }
+        }
+
+        $db->commit();
+        return ['success' => true, 'total_events' => $totalEvents];
+    } catch (Exception $e) {
+        if (isset($db) && $db->inTransaction()) $db->rollBack();
+        return ['success' => false, 'error' => $e->getMessage()];
+    }
+}
+
+function clearDashTestData()
+{
+    try {
+        $db = getDashDB();
+        if (!$db) return ['error' => 'Database not available'];
+        
+        $testIPs = getTestIPs();
+        $testIpList = array_column($testIPs, 'ip');
+        $inClause = rtrim(str_repeat('?,', count($testIpList)), ',');
+        
+        $db->beginTransaction();
+        $db->prepare("DELETE FROM faz_raw_events WHERE ip IN ($inClause)")->execute($testIpList);
+        $db->prepare("DELETE FROM faz_logs WHERE ip IN ($inClause)")->execute($testIpList);
+        $db->prepare("DELETE FROM ip_cache WHERE ip_address IN ($inClause)")->execute($testIpList);
+        $db->prepare("DELETE FROM ip_database WHERE ip_address IN ($inClause)")->execute($testIpList);
+        $db->commit();
+        
+        return ['success' => true];
+    } catch (Exception $e) {
+        if (isset($db) && $db->inTransaction()) $db->rollBack();
+        return ['success' => false, 'error' => $e->getMessage()];
+    }
+}

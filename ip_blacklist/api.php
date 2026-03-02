@@ -240,6 +240,12 @@ switch ($action) {
     case 'dash_country_timeline':
         echo json_encode(getDashCountryTimeline($_GET));
         break;
+    case 'dash_load_test':
+        echo json_encode(loadDashTestData());
+        break;
+    case 'dash_clear_test':
+        echo json_encode(clearDashTestData());
+        break;
 
     default:
         echo json_encode(['error' => 'Unknown action. Use: query, batch, stats, history, providers, export, cache_stats, cache_cleanup, cache_clear, cache_save, cache_save_batch, cache_info, save_note, get_note, delete_note, local_query, local_search, local_batch, archive_stats, archive_stats_detailed, archive_countries, country_ip_ranges']);
