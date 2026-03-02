@@ -16,8 +16,8 @@ set_time_limit(0);
 @ini_set('zlib.output_compression', 0);
 @ini_set('implicit_flush', 1);
 
-$phpExec = 'C:/xampp/php/php.exe';
-if (!file_exists($phpExec)) {
+$phpExec = PHP_BINARY; // Use the same PHP that's running this script
+if (!$phpExec || !file_exists($phpExec)) {
     $phpExec = 'php'; // Fallback to PATH
 }
 // Point to the new PHP script we created

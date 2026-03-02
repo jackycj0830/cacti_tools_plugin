@@ -61,41 +61,65 @@ if (isset($argv)) {
 // DATABASE INIT
 // ============================================================================
 logOutput("[*] Initializing PHP analysis script...");
+logOutput("[*] DB_TYPE = " . DB_TYPE);
 
 $dbInstance = IPCacheDB::getInstance();
 if (!$dbInstance->isConnected()) {
     logOutput("[Error] Failed to connect to database: " . ($dbInstance->getConnectionError() ?: 'Unknown error'));
-    logOutput("[Error] Check MySQL is running and settings in database/db_config.php are correct.");
-    logOutput("[Error] Current config: host=" . MYSQL_HOST . " port=" . MYSQL_PORT . " db=" . MYSQL_DATABASE);
+    logOutput("[Error] Check database settings in database/db_config.php are correct.");
+    if (DB_TYPE === 'mysql') {
+        logOutput("[Error] MySQL config: host=" . MYSQL_HOST . " port=" . MYSQL_PORT . " db=" . MYSQL_DATABASE);
+    }
     logOutput("Finished");
     exit(1);
 }
 $db = $dbInstance->getPDO();
-logOutput("[DB] Connected to MySQL successfully.");
+logOutput("[DB] Connected to " . strtoupper(DB_TYPE) . " successfully.");
 
-// Ensure FAZ tables exist in MySQL
+// Ensure FAZ tables exist (DB-agnostic)
 try {
-    $db->exec("
-        CREATE TABLE IF NOT EXISTS faz_raw_events (
-            ip VARCHAR(45) NOT NULL,
-            timestamp DATETIME NOT NULL,
-            UNIQUE KEY unique_ip_ts (ip, timestamp),
-            INDEX idx_ts (timestamp)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-    ");
-    $db->exec("
-        CREATE TABLE IF NOT EXISTS faz_logs (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            run_id VARCHAR(50) NOT NULL,
-            ip VARCHAR(45) NOT NULL,
-            count INT NOT NULL,
-            first_seen DATETIME NOT NULL,
-            last_seen DATETIME NOT NULL,
-            imported_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            INDEX idx_run_id (run_id),
-            INDEX idx_ip (ip)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-    ");
+    if (DB_TYPE === 'sqlite') {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS faz_raw_events (
+                ip TEXT NOT NULL,
+                timestamp DATETIME NOT NULL,
+                UNIQUE(ip, timestamp)
+            );
+        ");
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS faz_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                run_id TEXT NOT NULL,
+                ip TEXT NOT NULL,
+                count INTEGER NOT NULL,
+                first_seen TEXT NOT NULL,
+                last_seen TEXT NOT NULL,
+                imported_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+        ");
+    } else {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS faz_raw_events (
+                ip VARCHAR(45) NOT NULL,
+                timestamp DATETIME NOT NULL,
+                UNIQUE KEY unique_ip_ts (ip, timestamp),
+                INDEX idx_ts (timestamp)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ");
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS faz_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                run_id VARCHAR(50) NOT NULL,
+                ip VARCHAR(45) NOT NULL,
+                count INT NOT NULL,
+                first_seen DATETIME NOT NULL,
+                last_seen DATETIME NOT NULL,
+                imported_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_run_id (run_id),
+                INDEX idx_ip (ip)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ");
+    }
     logOutput("[DB] FAZ tables verified.");
 } catch (Exception $e) {
     logOutput("[DB Warning] Table creation check: " . $e->getMessage());
@@ -301,7 +325,11 @@ function fetch_from_faz($days_back = 7) {
     try {
         $inserted = 0;
         $db->beginTransaction();
-        $stmt = $db->prepare("INSERT IGNORE INTO faz_raw_events (ip, timestamp) VALUES (?, ?)");
+        // DB-agnostic upsert: SQLite uses INSERT OR IGNORE, MySQL uses INSERT IGNORE
+        $insertSQL = DB_TYPE === 'sqlite'
+            ? "INSERT OR IGNORE INTO faz_raw_events (ip, timestamp) VALUES (?, ?)"
+            : "INSERT IGNORE INTO faz_raw_events (ip, timestamp) VALUES (?, ?)";
+        $stmt = $db->prepare($insertSQL);
         foreach ($raw_db_args as $arg) {
             $stmt->execute([$arg[0], $arg[1]]);
             if ($stmt->rowCount() > 0) $inserted++;
@@ -530,28 +558,41 @@ foreach ($ips as $ix => $ip) {
     $country = substr($result['country'] ?? '', 0, 10);
 
     try {
-        $sql = "INSERT INTO ip_cache (
-            ip_address, is_blacklisted, status, risk_level, country_code,
-            threat_info, vt_malicious, vt_suspicious, vt_harmless, vt_undetected,
-            vt_detection_flagged, vt_detection_total, vt_queried_at,
-            created_at, updated_at, expires_at, hit_count, custom_note
-        ) VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?
-        ) ON DUPLICATE KEY UPDATE 
-            is_blacklisted=VALUES(is_blacklisted),
-            status=VALUES(status),
-            risk_level=VALUES(risk_level),
-            threat_info=VALUES(threat_info),
-            vt_malicious=VALUES(vt_malicious),
-            vt_suspicious=VALUES(vt_suspicious),
-            vt_harmless=VALUES(vt_harmless),
-            vt_undetected=VALUES(vt_undetected),
-            vt_detection_flagged=VALUES(vt_detection_flagged),
-            vt_detection_total=VALUES(vt_detection_total),
-            vt_queried_at=NOW(),
-            updated_at=NOW(),
-            expires_at=VALUES(expires_at),
-            custom_note=IF(custom_note IS NULL OR custom_note='', VALUES(custom_note), custom_note)";
+        if (DB_TYPE === 'sqlite') {
+            // SQLite: Use INSERT OR REPLACE (REPLACE INTO)
+            $sql = "INSERT OR REPLACE INTO ip_cache (
+                ip_address, is_blacklisted, status, risk_level, country_code,
+                threat_info, vt_malicious, vt_suspicious, vt_harmless, vt_undetected,
+                vt_detection_flagged, vt_detection_total, vt_queried_at,
+                created_at, updated_at, expires_at, hit_count, custom_note
+            ) VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?
+            )";
+        } else {
+            // MySQL: Use INSERT ... ON DUPLICATE KEY UPDATE
+            $sql = "INSERT INTO ip_cache (
+                ip_address, is_blacklisted, status, risk_level, country_code,
+                threat_info, vt_malicious, vt_suspicious, vt_harmless, vt_undetected,
+                vt_detection_flagged, vt_detection_total, vt_queried_at,
+                created_at, updated_at, expires_at, hit_count, custom_note
+            ) VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?
+            ) ON DUPLICATE KEY UPDATE 
+                is_blacklisted=VALUES(is_blacklisted),
+                status=VALUES(status),
+                risk_level=VALUES(risk_level),
+                threat_info=VALUES(threat_info),
+                vt_malicious=VALUES(vt_malicious),
+                vt_suspicious=VALUES(vt_suspicious),
+                vt_harmless=VALUES(vt_harmless),
+                vt_undetected=VALUES(vt_undetected),
+                vt_detection_flagged=VALUES(vt_detection_flagged),
+                vt_detection_total=VALUES(vt_detection_total),
+                vt_queried_at=VALUES(vt_queried_at),
+                updated_at=VALUES(updated_at),
+                expires_at=VALUES(expires_at),
+                custom_note=IF(custom_note IS NULL OR custom_note='', VALUES(custom_note), custom_note)";
+        }
 
         $stmtSave = $db->prepare($sql);
         $stmtSave->execute([
