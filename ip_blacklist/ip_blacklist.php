@@ -371,6 +371,12 @@
                             <button id="btnCollectFaz" class="btn-primary" onclick="triggerFazCollection()">
                                 <span class="icon">⚡</span> <span data-i18n="collect_faz_now">Run FAZ Collection</span>
                             </button>
+                            <button id="btnLoadTestData" class="btn-secondary" onclick="loadTestData()" title="Insert simulated FAZ attack data for testing" style="background: #198754; color: #fff; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">
+                                🧪 Load Test Data
+                            </button>
+                            <button id="btnClearTestData" class="btn-secondary" onclick="clearTestData()" title="Remove test data" style="background: #6c757d; color: #fff; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">
+                                🗑️ Clear Test
+                            </button>
                         </div>
                     </div>
                 </div>
