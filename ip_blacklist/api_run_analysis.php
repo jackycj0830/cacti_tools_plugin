@@ -1,17 +1,17 @@
 <?php
 /**
- * Block_IP Dashboard — Run Analysis Endpoint (with Diagnostics)
- * Executes the PHP analysis script and streams output to the client via SSE.
- * Includes comprehensive diagnostic logging for troubleshooting.
+ * Block_IP Dashboard — Run Analysis Endpoint
+ * Executes faz_analyzer.php and streams output to the client via SSE.
+ * Supports both Linux and Windows.
  */
 
 // === SSE Headers ===
 header('Content-Type: text/event-stream');
 header('Cache-Control: no-cache');
 header('Connection: keep-alive');
-header('X-Accel-Buffering: no'); // Nginx
+header('X-Accel-Buffering: no');
 
-// === Disable ALL output buffering (critical for SSE) ===
+// === Disable ALL output buffering ===
 if (function_exists('apache_setenv')) {
     apache_setenv('no-gzip', 1);
 }
@@ -23,7 +23,7 @@ while (ob_get_level()) {
 }
 ob_implicit_flush(true);
 
-// === Helper: Send SSE message ===
+// === Helper ===
 function send_msg($type, $msg)
 {
     echo "data: " . json_encode(['type' => $type, 'msg' => $msg], JSON_UNESCAPED_UNICODE) . "\n\n";
@@ -32,138 +32,193 @@ function send_msg($type, $msg)
 }
 
 // ============================================================
-// PHASE 1: DIAGNOSTICS — Send environment info immediately
+// DETECT OS
 // ============================================================
+$isWindows = (PHP_OS_FAMILY === 'Windows' || strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
 send_msg('log', "=== DIAGNOSTICS ===");
 send_msg('log', "[DIAG] PHP Version: " . PHP_VERSION);
-send_msg('log', "[DIAG] OS: " . PHP_OS . " (" . php_uname('s') . " " . php_uname('r') . ")");
+send_msg('log', "[DIAG] OS: " . PHP_OS . ($isWindows ? " (Windows)" : " (Linux/Unix)"));
 send_msg('log', "[DIAG] __DIR__: " . __DIR__);
-send_msg('log', "[DIAG] Server Software: " . ($_SERVER['SERVER_SOFTWARE'] ?? 'N/A'));
-send_msg('log', "[DIAG] Request URI: " . ($_SERVER['REQUEST_URI'] ?? 'N/A'));
 
-// Check PHP binary
-$phpExec = PHP_BINARY;
-send_msg('log', "[DIAG] PHP_BINARY: " . ($phpExec ?: '(empty)'));
-if (!$phpExec || !file_exists($phpExec)) {
-    $phpExec = 'php';
-    send_msg('log', "[DIAG] PHP_BINARY not found, fallback to: php");
+// ============================================================
+// FIND PHP CLI BINARY
+// ============================================================
+$phpCli = '';
+
+if ($isWindows) {
+    // On Windows, PHP_BINARY is usually the CLI binary
+    $phpCli = PHP_BINARY;
+    if (!$phpCli || !file_exists($phpCli)) {
+        $phpCli = 'php';
+    }
+} else {
+    // On Linux, PHP_BINARY might be php-fpm — we need php CLI
+    $candidates = [
+        '/usr/bin/php',
+        '/usr/local/bin/php',
+        '/usr/bin/php8.0',
+        '/usr/bin/php8.1',
+        '/usr/bin/php8.2',
+        '/usr/bin/php8.3',
+    ];
+
+    // Check if PHP_BINARY is already CLI (not fpm)
+    $phpBin = PHP_BINARY;
+    if ($phpBin && !str_contains($phpBin, 'fpm') && file_exists($phpBin)) {
+        $phpCli = $phpBin;
+    }
+
+    if (!$phpCli) {
+        foreach ($candidates as $c) {
+            if (file_exists($c) && is_executable($c)) {
+                $phpCli = $c;
+                break;
+            }
+        }
+    }
+
+    // Fallback: use 'which php' to find it
+    if (!$phpCli) {
+        $which = trim(shell_exec('which php 2>/dev/null') ?? '');
+        if ($which && file_exists($which)) {
+            $phpCli = $which;
+        }
+    }
+
+    // Last resort
+    if (!$phpCli) {
+        $phpCli = 'php';
+    }
 }
 
-// Check script path
+send_msg('log', "[DIAG] PHP_BINARY (raw): " . PHP_BINARY);
+send_msg('log', "[DIAG] PHP CLI resolved: " . $phpCli);
+
+// Quick test: verify it's CLI not FPM
+if (!$isWindows) {
+    $verCheck = trim(shell_exec("\"$phpCli\" -v 2>&1 | head -1") ?? '');
+    send_msg('log', "[DIAG] PHP CLI version check: " . ($verCheck ?: '(empty)'));
+    if (str_contains(strtolower($verCheck), 'fpm')) {
+        send_msg('error', "WARNING: $phpCli appears to be php-fpm, not php CLI!");
+    }
+}
+
+// ============================================================
+// CHECK SCRIPT
+// ============================================================
 $scriptPath = __DIR__ . '/faz_analyzer.php';
 $script = realpath($scriptPath);
-send_msg('log', "[DIAG] Script target: " . $scriptPath);
-send_msg('log', "[DIAG] Script realpath: " . ($script ?: 'FALSE (file not found!)'));
+send_msg('log', "[DIAG] Script: " . ($script ?: 'NOT FOUND at ' . $scriptPath));
 
 if (!$script) {
-    send_msg('error', "FATAL: faz_analyzer.php not found at: " . $scriptPath);
-    // List files in directory to help debug
-    $files = @scandir(__DIR__);
-    if ($files) {
-        $phpFiles = array_filter($files, fn($f) => str_ends_with($f, '.php'));
-        send_msg('log', "[DIAG] PHP files in __DIR__: " . implode(', ', $phpFiles));
-    }
-    send_msg('done', "Analysis aborted — script not found.");
+    send_msg('error', "FATAL: faz_analyzer.php not found.");
+    send_msg('done', "Analysis aborted.");
     exit;
 }
 
-// Check log file directory
+// ============================================================
+// DETERMINE LOG FILE (use /tmp if web/ not writable)
+// ============================================================
 $logDir = __DIR__ . '/web';
 $logFile = $logDir . '/analysis_progress.log';
-send_msg('log', "[DIAG] Log directory: " . $logDir);
-send_msg('log', "[DIAG] Log dir exists: " . (is_dir($logDir) ? 'YES' : 'NO'));
-send_msg('log', "[DIAG] Log dir writable: " . (is_writable($logDir) ? 'YES' : 'NO'));
 
-if (!is_dir($logDir)) {
-    send_msg('log', "[DIAG] Creating web/ directory...");
-    @mkdir($logDir, 0755, true);
-    if (!is_dir($logDir)) {
-        send_msg('error', "FATAL: Cannot create web/ directory at: " . $logDir);
-        send_msg('done', "Analysis aborted — log directory not available.");
-        exit;
-    }
+// Check if web/ dir is writable
+if (!is_dir($logDir) || !is_writable($logDir)) {
+    // Fallback to /tmp (always writable on Linux)
+    $logFile = $isWindows
+        ? sys_get_temp_dir() . '\\faz_analysis_progress.log'
+        : '/tmp/faz_analysis_progress.log';
+    send_msg('log', "[DIAG] web/ dir not writable, using fallback: " . $logFile);
+} else {
+    send_msg('log', "[DIAG] Log file: " . $logFile);
 }
 
 // Clear previous log
-$clearOk = @file_put_contents($logFile, "");
-send_msg('log', "[DIAG] Log file cleared: " . ($clearOk !== false ? 'OK' : 'FAILED'));
-send_msg('log', "[DIAG] Log file path: " . $logFile);
-send_msg('log', "[DIAG] Log file writable: " . (is_writable($logFile) ? 'YES' : 'NO'));
+@file_put_contents($logFile, "");
+$clearOk = is_writable($logFile) || is_writable(dirname($logFile));
+send_msg('log', "[DIAG] Log file writable: " . ($clearOk ? 'YES' : 'NO'));
+
+if (!$clearOk) {
+    send_msg('error', "FATAL: Cannot write to log file: " . $logFile);
+    send_msg('done', "Analysis aborted — no writable log location.");
+    exit;
+}
 
 // ============================================================
-// PHASE 2: BUILD AND EXECUTE COMMAND
+// BUILD AND EXECUTE COMMAND
 // ============================================================
 $days = isset($_GET['days']) ? intval($_GET['days']) : 7;
 $scriptDir = realpath(__DIR__);
 
-// Build command — Windows specific
-// Empty title "" after start /B is required when path is quoted
-// Redirect stderr to log file so errors are visible
-$cmd = "cd /D \"$scriptDir\" && start /B \"\" \"$phpExec\" -f \"$script\" --days $days > NUL 2>> \"$logFile\"";
+if ($isWindows) {
+    // Windows: start /B with quoted paths
+    $cmd = "cd /D \"$scriptDir\" && start /B \"\" \"$phpCli\" -f \"$script\" --days $days > NUL 2>> \"$logFile\"";
+} else {
+    // Linux: nohup with output to log file, run in background
+    $cmd = "cd \"$scriptDir\" && nohup \"$phpCli\" \"$script\" --days $days > \"$logFile\" 2>&1 &";
+}
 
 send_msg('log', "=== EXECUTION ===");
 send_msg('log', "[CMD] Days: " . $days);
-send_msg('log', "[CMD] Working dir: " . $scriptDir);
-send_msg('log', "[CMD] Full command: " . $cmd);
+send_msg('log', "[CMD] Command: " . $cmd);
 send_msg('log', "[CMD] Launching background process...");
 
 // Execute
-$proc = popen($cmd, "r");
-if ($proc === false) {
-    send_msg('error', "FATAL: popen() failed. Cannot launch background process.");
-    send_msg('done', "Analysis aborted — command execution failed.");
-    exit;
+if ($isWindows) {
+    $proc = popen($cmd, "r");
+    if ($proc === false) {
+        send_msg('error', "FATAL: popen() failed.");
+        send_msg('done', "Analysis aborted.");
+        exit;
+    }
+    pclose($proc);
+} else {
+    // On Linux, exec with & at end runs in background
+    exec($cmd);
 }
-pclose($proc);
 
 send_msg('log', "[CMD] Background process launched. Tailing log file...");
 
-// Give the process time to start and write first output
+// Wait for process to start
 usleep(800000); // 800ms
 
-// Quick check if anything was written
+// Quick check
 clearstatcache(true, $logFile);
 $initialSize = @filesize($logFile);
 send_msg('log', "[TAIL] Initial log file size: " . $initialSize . " bytes");
 
-if ($initialSize === 0) {
-    // Wait a bit more and check again
+if ($initialSize === 0 || $initialSize === false) {
     sleep(2);
     clearstatcache(true, $logFile);
     $initialSize = @filesize($logFile);
     send_msg('log', "[TAIL] After 2s wait, log file size: " . $initialSize . " bytes");
-    
-    if ($initialSize === 0) {
-        send_msg('log', "[WARN] Log file still empty after 2.8s. The background process may have failed to start.");
-        send_msg('log', "[WARN] Trying direct execution for diagnostics...");
-        
-        // Try running PHP directly and capture output
-        $testCmd = "\"$phpExec\" -f \"$script\" --days $days 2>&1";
+
+    if ($initialSize === 0 || $initialSize === false) {
+        send_msg('log', "[WARN] Log file still empty. Trying direct execution...");
+
+        // Direct execution for diagnostics
+        $testCmd = "\"$phpCli\" \"$script\" --days $days 2>&1";
         send_msg('log', "[TEST] Direct command: " . $testCmd);
-        
+
         $output = [];
         $returnCode = null;
         exec($testCmd, $output, $returnCode);
-        
+
         send_msg('log', "[TEST] Return code: " . $returnCode);
-        if (!empty($output)) {
-            foreach (array_slice($output, 0, 50) as $line) { // First 50 lines
-                send_msg('log', "[TEST] " . $line);
-            }
-            if (count($output) > 50) {
-                send_msg('log', "[TEST] ... (truncated, " . count($output) . " total lines)");
-            }
-        } else {
-            send_msg('log', "[TEST] No output captured from direct execution.");
+        foreach (array_slice($output, 0, 80) as $line) {
+            send_msg('log', $line);
         }
-        
-        send_msg('done', "Analysis diagnostics complete. Check output above for errors.");
+        if (count($output) > 80) {
+            send_msg('log', "[TEST] ... (truncated, " . count($output) . " total lines)");
+        }
+
+        send_msg('done', "Analysis complete (direct execution mode).");
         exit;
     }
 }
 
 // ============================================================
-// PHASE 3: TAIL LOG FILE AND STREAM VIA SSE
+// TAIL LOG FILE AND STREAM VIA SSE
 // ============================================================
 send_msg('log', "=== TAILING LOG ===");
 
@@ -173,7 +228,6 @@ $idleTime = 0;
 $foundFinished = false;
 
 while (true) {
-    // Safety timeout (15 mins)
     if (time() - $startTime > 900) {
         send_msg('error', "Timeout reached (15 minutes).");
         break;
@@ -209,13 +263,13 @@ while (true) {
         }
     } else {
         $idleTime++;
-        if ($idleTime > 150) { // 15s idle = done
-            send_msg('log', "[TAIL] No new output for 15 seconds. Assuming process ended.");
+        if ($idleTime > 150) {
+            send_msg('log', "[TAIL] No output for 15 seconds. Process may have ended.");
             break;
         }
     }
 
-    usleep(100000); // 100ms
+    usleep(100000);
 }
 
 send_msg('done', "Analysis finished.");

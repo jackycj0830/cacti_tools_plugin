@@ -31,9 +31,18 @@ define('VT_REQUEST_DELAY', 15);
 define('VT_CACHE_TTL', 30); // days
 
 // ============================================================================
-// LOGGING
+// LOGGING (fallback to /tmp if web/ not writable)
 // ============================================================================
-$logFile = __DIR__ . '/web/analysis_progress.log';
+$logDir = __DIR__ . '/web';
+$logFile = $logDir . '/analysis_progress.log';
+
+// Check if web/ dir is writable, fallback to /tmp
+if (!is_dir($logDir) || !is_writable($logDir)) {
+    $isWin = (PHP_OS_FAMILY === 'Windows' || strtoupper(substr(PHP_OS, 0, 3)) === 'WIN');
+    $logFile = $isWin
+        ? sys_get_temp_dir() . '\\faz_analysis_progress.log'
+        : '/tmp/faz_analysis_progress.log';
+}
 // Note: Log file is cleared by api_run_analysis.php before launching this script.
 // Do NOT clear it here to avoid race conditions with the SSE tail loop.
 
@@ -44,6 +53,7 @@ function logOutput($msg) {
     @file_put_contents($logFile, $line, FILE_APPEND);
     flush();
 }
+
 
 // ============================================================================
 // PARSE CLI ARGUMENTS
