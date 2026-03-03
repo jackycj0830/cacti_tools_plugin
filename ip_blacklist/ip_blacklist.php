@@ -15,7 +15,7 @@
 </head>
 <body>
 <!-- Log Modal for FAZ Collection -->
-<div id="logModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center;">
+<div id="logModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: var(--bg-card, #1a1d28); border: 1px solid var(--border-color, #2a2e3e); border-radius: 12px; width: 90%; max-width: 800px; height: 80vh; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
         <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color, #2a2e3e); display: flex; align-items: center; justify-content: space-between;">
             <h3 style="margin: 0; font-size: 1rem;">🚀 Executing Analysis...</h3>
@@ -1118,18 +1118,6 @@ define('GEOIP_QUERY_MODE', 'aggregate');
             </div>
         </div>
 
-        <!-- Log Modal for FAZ Collection -->
-        <div id="logModal" class="modal-overlay" style="display: none;">
-            <div class="modal-window">
-                <div class="modal-header">
-                    <h3>🚀 Executing Analysis...</h3>
-                    <button class="modal-close" onclick="closeLogModal()">×</button>
-                </div>
-                <div class="modal-body">
-                    <pre id="logOutput"></pre>
-                </div>
-            </div>
-        </div>
 
         <!-- Footer -->
         <footer class="footer">

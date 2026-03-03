@@ -34,7 +34,8 @@ define('VT_CACHE_TTL', 30); // days
 // LOGGING
 // ============================================================================
 $logFile = __DIR__ . '/web/analysis_progress.log';
-@file_put_contents($logFile, ""); // Clear
+// Note: Log file is cleared by api_run_analysis.php before launching this script.
+// Do NOT clear it here to avoid race conditions with the SSE tail loop.
 
 function logOutput($msg) {
     global $logFile;
