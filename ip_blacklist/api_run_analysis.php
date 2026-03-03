@@ -154,28 +154,27 @@ if ($isWindows) {
     // Windows: start /B with quoted paths
     $cmd = "cd /D \"$scriptDir\" && start /B \"\" \"$phpCli\" -f \"$script\" --days $days > NUL 2>> \"$logFile\"";
 } else {
-    // Linux: nohup with output to log file, run in background
-    $cmd = "cd \"$scriptDir\" && nohup \"$phpCli\" \"$script\" --days $days > \"$logFile\" 2>&1 &";
+    // Linux: nohup in background
+    // stdout → /dev/null (logOutput() already writes to log file via file_put_contents)
+    // stderr → append to log file (captures PHP warnings/errors)
+    $cmd = "cd \"$scriptDir\" && nohup \"$phpCli\" \"$script\" --days $days > /dev/null 2>> \"$logFile\" &";
 }
+
 
 send_msg('log', "=== EXECUTION ===");
 send_msg('log', "[CMD] Days: " . $days);
 send_msg('log', "[CMD] Command: " . $cmd);
 send_msg('log', "[CMD] Launching background process...");
 
-// Execute
-if ($isWindows) {
-    $proc = popen($cmd, "r");
-    if ($proc === false) {
-        send_msg('error', "FATAL: popen() failed.");
-        send_msg('done', "Analysis aborted.");
-        exit;
-    }
-    pclose($proc);
-} else {
-    // On Linux, exec with & at end runs in background
-    exec($cmd);
+// Execute using pclose(popen()) — non-blocking on both platforms
+$proc = popen($cmd, "r");
+if ($proc === false) {
+    send_msg('error', "FATAL: popen() failed. Check if shell_exec/popen is allowed.");
+    send_msg('done', "Analysis aborted.");
+    exit;
 }
+pclose($proc);
+
 
 send_msg('log', "[CMD] Background process launched. Tailing log file...");
 
