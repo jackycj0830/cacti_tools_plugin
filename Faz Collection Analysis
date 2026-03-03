@@ -1,0 +1,188 @@
+# ⚡ Run FAZ Collection — 問題分析報告
+
+## 執行流程概覽
+
+```mermaid
+sequenceDiagram
+    participant User as 使用者
+    participant JS as dashboard.js
+    participant SSE as api_run_analysis.php
+    participant PHP as faz_analyzer.php
+    participant Log as web/analysis_progress.log
+    participant DB as MySQL
+
+    User->>JS: 點擊 "Run FAZ Collection"
+    JS->>JS: triggerFazCollection()
+    JS->>JS: 顯示 logModal
+    JS->>SSE: EventSource('api_run_analysis.php?days=7')
+    SSE->>Log: 清空 log 檔
+    SSE->>PHP: start /B php faz_analyzer.php --days 7
+    PHP->>Log: 寫入執行進度
+    loop 每 100ms
+        SSE->>Log: 讀取新內容
+        SSE->>JS: SSE data: {type:'log', msg:'...'}
+    end
+    PHP->>DB: 寫入結果
+    PHP->>Log: "Finished"
+    SSE->>JS: SSE data: {type:'done', msg:'Analysis finished.'}
+    JS->>JS: refreshDashboard()
+```
+
+---
+
+## 🔴 已識別問題 (按嚴重程度排列)
+
+### 問題 1：重複的 `logModal` HTML 元素（嚴重）
+
+**現象**：按下按鈕後「沒有任何反應」— Modal 不顯示。
+
+**原因**：[ip_blacklist.php](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/ip_blacklist.php) 中存在 **兩個** `id="logModal"` 的 `<div>`：
+
+| 位置 | 行號 | 說明 |
+|------|------|------|
+| `<body>` 開頭 | L17-28 | 第一個 logModal（inline style，在 `<body>` 外層） |
+| 頁面底部 | L1121-1132 | 第二個 logModal（使用 CSS class） |
+
+> [!CAUTION]
+> HTML 規範要求 `id` 必須是唯一的。當存在兩個相同 `id` 的元素時，`document.getElementById('logModal')` 只會返回 **第一個**。
+
+**第一個 logModal（L18）存在 CSS 衝突**：
+```html
+style="display: none; ... display: none; align-items: center; justify-content: center;"
+```
+- `display` 被設定了兩次：`display: none` 和 `display: none`
+- 但關鍵問題是：`triggerFazCollection()` 執行 `logModal.style.display = 'flex'` 時，它修改的是第一個 modal
+- 第一個 modal 的 `logOutput` 沒有問題，**但模態框可能因為缺少正確的 CSS class 而無法正確顯示**
+
+**解決方案**：
+1. 移除其中一個 `logModal`（建議保留 L17-28 的版本，因為它在 DOM 較前面）
+2. 確保留下的 `logModal` 的 `display` 屬性正確
+
+---
+
+### 問題 2：EventSource URL 使用**相對路徑**（嚴重）
+
+**現象**：EventSource 連接失敗，瀏覽器 Console 可能出現 404 錯誤。
+
+**原因**：[dashboard.js L344](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/assets/dashboard.js#L344)：
+```javascript
+eventSource = new EventSource(`api_run_analysis.php?days=${days}`);
+```
+
+這裡使用的是**相對路徑** `api_run_analysis.php`。
+
+- 如果頁面是從 `http://server/ip_blacklist/ip_blacklist.php` 載入的
+- 那 `api_run_analysis.php` 會解析為 `http://server/ip_blacklist/api_run_analysis.php` ✅
+- **但**如果使用了 URL rewrite 或子目錄結構，則路徑可能不正確 ❌
+
+**對比原始 Python 版本**：原始版本 ([web/run_analysis.php](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/Block_IP_20260223/web/run_analysis.php)) 位於 `web/` 子目錄中，而前端也在 `web/` 中，所以相對路徑正確。但新版本的結構不同。
+
+**解決方案**：根據實際部署的 URL 結構調整路徑，或使用絕對路徑。
+
+---
+
+### 問題 3：SSE 輸出緩衝問題（中等）
+
+**現象**：按鈕按下後 modal 可能顯示但內容不更新，或直到完成才突然顯示所有內容。
+
+**原因**：[api_run_analysis.php](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/api_run_analysis.php) 雖然設了 `@ini_set('implicit_flush', 1)`，但**缺少關鍵的 output buffer 清除操作**：
+
+```php
+// 缺少以下程式碼：
+while (ob_get_level()) ob_end_flush();
+ob_implicit_flush(true);
+```
+
+Web server（Apache/Nginx）或 PHP-FPM 可能有多層 output buffering，僅設 `implicit_flush` 不夠。
+
+**對比**：原始 Python 版本使用 `python -u`（unbuffered mode），Python 的 `OutputLogger` 類使用 `buffering=1`（line buffered），確保每行都即時寫入。
+
+**解決方案**：
+在 `api_run_analysis.php` 中添加：
+```php
+while (ob_get_level()) ob_end_flush();
+ob_implicit_flush(true);
+```
+
+---
+
+### 問題 4：Windows 命令執行路徑問題（中等）
+
+**現象**：`faz_analyzer.php` 未實際啟動，log 檔始終為空。
+
+**原因**：[api_run_analysis.php L34](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/api_run_analysis.php#L34)：
+```php
+$cmd = "cd /D \"$scriptDir\" && start /B $phpExec -f \"$script\" --days $days > NUL 2>&1";
+```
+
+潛在問題：
+- `$phpExec = PHP_BINARY` 可能包含空格的路徑（如 `C:\Program Files\PHP\php.exe`），需要加引號
+- `start /B` 是 `cmd.exe` 內建命令，如果 Web server 使用的不是 `cmd.exe` 作為 shell，可能無法執行
+- `> NUL 2>&1` 把所有輸出都丟棄了，如果 PHP 執行失敗，錯誤訊息也會被吞掉
+- `realpath()` 在 L24 如果 `faz_analyzer.php` 不存在（路徑錯誤）會返回 `false`
+
+**解決方案**：
+1. 給 `$phpExec` 加上引號：`"\"$phpExec\""`
+2. 將 stderr 重定向到 log 檔而不是 NUL：`> NUL 2>> "$logFile"`
+3. 驗證 `$script` 不為 `false`
+
+---
+
+### 問題 5：`faz_analyzer.php` 資料庫連接可能失敗（中等）
+
+**現象**：Log 只顯示初始化訊息，然後停止。
+
+**原因**：`faz_analyzer.php` 通過 `require_once __DIR__ . '/database/IPCacheDB.php'` 載入 DB 配置。作為 CLI 腳本由 `start /B` 啟動時：
+- `__DIR__` 的值可能與 Web 環境不同
+- `IPCacheDB.php` 中的 `db_config.php` 可能使用了 Web 伺服器才有的環境變量
+- MySQL 連線失敗時腳本會 `exit(1)`，但由於 `> NUL 2>&1`，錯誤訊息被丟棄
+
+**解決方案**：
+1. 將 stderr 輸出到 log 檔
+2. 測試直接在命令列執行 `php faz_analyzer.php` 是否成功
+
+---
+
+### 問題 6：Log 檔案路徑衝突（低）
+
+**現象**：SSE 讀到的是舊資料或空白。
+
+**原因**：
+- `api_run_analysis.php` L26：`$logFile = __DIR__ . '/web/analysis_progress.log'`
+- `faz_analyzer.php` L36：`$logFile = __DIR__ . '/web/analysis_progress.log'`
+- 兩者都用 `__DIR__`，所以路徑應該一致 ✅
+- **但** `api_run_analysis.php` L29 和 `faz_analyzer.php` L37 **都會清空** log 檔
+- 如果 `faz_analyzer.php` 啟動較慢，可能存在競爭條件：SSE 先清空 → 腳本也清空 → 沒問題
+- 但如果 SSE 清空後立即開始讀，而腳本還沒開始寫，SSE 會看到空檔並超時退出
+
+**解決方案**：在 `faz_analyzer.php` 中移除重複的 log 清空操作（讓 `api_run_analysis.php` 負責清空即可）。
+
+---
+
+## 原始 Python 版 vs PHP 版 差異比較
+
+| 項目 | Python 版 (analyze_faz_ips.py) | PHP 版 (faz_analyzer.php) |
+|------|------|------|
+| 觸發方式 | `web/run_analysis.php` 呼叫 `python -u` | `api_run_analysis.php` 呼叫 `php -f` |
+| 輸出機制 | `OutputLogger` 類同時寫 stdout + log 檔 | `logOutput()` 函式同時 echo + file_put_contents |
+| Flag `-u` | Python `-u` 確保 unbuffered | PHP 無對應參數（依賴 `flush()`） |
+| DB 連接 | 使用 `pymysql` 直連 MySQL | 使用 `IPCacheDB.php` + PDO |
+| 前端路徑 | 前端在 `web/index.html`，SSE 在 `web/run_analysis.php` | 前端在 `ip_blacklist.php`，SSE 在 `api_run_analysis.php` |
+| EventSource URL | `run_analysis.php?days=...`（在 web/ 內相對正確） | `api_run_analysis.php?days=...`（需要在 ip_blacklist/ 根目錄） |
+
+---
+
+## 📋 建議修復優先順序
+
+1. **🔴 移除重複的 `logModal`**（問題 1）— 最可能是「沒有反應」的原因
+2. **🔴 修正 EventSource URL 路徑**（問題 2）
+3. **🟡 添加 output buffer flush**（問題 3）
+4. **🟡 修正 Windows 命令引號**（問題 4）
+5. **🟡 調試 DB 連線**（問題 5）— 在 CLI 先手動測試
+6. **⚪ 移除重複 log 清空**（問題 6）
+
+> [!TIP]
+> **快速調試建議**：先在伺服器上打開瀏覽器的開發者工具 (F12)，查看：
+> 1. **Console** — 是否有 JS 錯誤
+> 2. **Network** — 點擊按鈕後是否有 `api_run_analysis.php` 的請求，以及其回應狀態碼
+> 3. 手動在命令列執行 `php faz_analyzer.php --days 7`，確認腳本能獨立運作
