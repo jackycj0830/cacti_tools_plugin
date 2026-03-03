@@ -327,23 +327,75 @@ function parseANSIColor(text) {
 }
 
 function triggerFazCollection() {
-    if (eventSource) return;
+    console.log('[FAZ] triggerFazCollection() called');
+    if (eventSource) {
+        console.log('[FAZ] Aborted: eventSource already active');
+        return;
+    }
 
     const logModal = document.getElementById('logModal');
     const logOutput = document.getElementById('logOutput');
     const btnCollect = document.getElementById('btnCollectFaz');
 
+    // Debug: check elements exist
+    console.log('[FAZ] logModal:', logModal);
+    console.log('[FAZ] logOutput:', logOutput);
+    console.log('[FAZ] btnCollect:', btnCollect);
+
+    if (!logModal) {
+        console.error('[FAZ] FATAL: logModal element not found!');
+        alert('Error: logModal element not found in HTML. Check browser console.');
+        return;
+    }
+    if (!logOutput) {
+        console.error('[FAZ] FATAL: logOutput element not found!');
+        alert('Error: logOutput element not found in HTML. Check browser console.');
+        return;
+    }
+
+    // Show modal
     logModal.style.display = 'flex';
-    logOutput.textContent = 'Starting analysis...\n';
+    console.log('[FAZ] Modal display set to flex');
+
+    // Build debug header
+    let days = getAnalysisDays();
+    const sseUrl = `api_run_analysis.php?days=${days}`;
+    const fullUrl = new URL(sseUrl, window.location.href).href;
+
+    logOutput.innerHTML = '';
+    logOutput.innerHTML += '<span style="color:#4fc3f7;">[DEBUG] ======================================</span>\n';
+    logOutput.innerHTML += '<span style="color:#4fc3f7;">[DEBUG] FAZ Collection Started</span>\n';
+    logOutput.innerHTML += '<span style="color:#4fc3f7;">[DEBUG] Time: ' + new Date().toLocaleString() + '</span>\n';
+    logOutput.innerHTML += '<span style="color:#4fc3f7;">[DEBUG] Days: ' + days + '</span>\n';
+    logOutput.innerHTML += '<span style="color:#4fc3f7;">[DEBUG] SSE URL (relative): ' + sseUrl + '</span>\n';
+    logOutput.innerHTML += '<span style="color:#4fc3f7;">[DEBUG] SSE URL (resolved): ' + fullUrl + '</span>\n';
+    logOutput.innerHTML += '<span style="color:#4fc3f7;">[DEBUG] Page URL: ' + window.location.href + '</span>\n';
+    logOutput.innerHTML += '<span style="color:#4fc3f7;">[DEBUG] ======================================</span>\n';
+    logOutput.innerHTML += '<span style="color:#f7a84f;">[INFO] Connecting to SSE endpoint...</span>\n';
+
     if (btnCollect) btnCollect.disabled = true;
 
-    // Defaulting to 7 days for the dashboard if not explicitly provided
-    let days = getAnalysisDays();
-
     ansiOpenSpans = 0;
-    eventSource = new EventSource(`api_run_analysis.php?days=${days}`);
+
+    try {
+        eventSource = new EventSource(sseUrl);
+        console.log('[FAZ] EventSource created:', sseUrl);
+        logOutput.innerHTML += '<span style="color:#2dd4a8;">[OK] EventSource created successfully</span>\n';
+    } catch (err) {
+        console.error('[FAZ] EventSource creation FAILED:', err);
+        logOutput.innerHTML += '<span style="color:#f74f6f;">[ERROR] EventSource creation failed: ' + err.message + '</span>\n';
+        if (btnCollect) btnCollect.disabled = false;
+        return;
+    }
+
+    eventSource.onopen = function () {
+        console.log('[FAZ] SSE connection opened');
+        logOutput.innerHTML += '<span style="color:#2dd4a8;">[OK] SSE connection established</span>\n';
+        logOutput.innerHTML += '<span style="color:#f7a84f;">[INFO] Waiting for server output...</span>\n\n';
+    };
 
     eventSource.onmessage = function (e) {
+        console.log('[FAZ] SSE message received:', e.data);
         try {
             const data = JSON.parse(e.data);
             if (data.type === 'log') {
@@ -352,21 +404,32 @@ function triggerFazCollection() {
             } else if (data.type === 'error') {
                 logOutput.innerHTML += '<span style="color:#f74f6f;">ERROR: ' + parseANSIColor(data.msg) + '</span>\n';
             } else if (data.type === 'done') {
-                logOutput.innerHTML += '\n' + parseANSIColor(data.msg) + '\n';
+                logOutput.innerHTML += '\n<span style="color:#2dd4a8;font-weight:bold;">' + parseANSIColor(data.msg) + '</span>\n';
+                logOutput.innerHTML += '<span style="color:#4fc3f7;">[DEBUG] Collection completed at ' + new Date().toLocaleString() + '</span>\n';
                 stopCollection();
                 refreshDashboard();
+            } else {
+                logOutput.innerHTML += '<span style="color:#7c5cfc;">[UNKNOWN TYPE] ' + JSON.stringify(data) + '</span>\n';
             }
         } catch (err) {
-            console.error('Parse error', err);
+            console.error('[FAZ] Parse error:', err, 'Raw data:', e.data);
+            logOutput.innerHTML += '<span style="color:#f74f6f;">[PARSE ERROR] ' + err.message + '</span>\n';
+            logOutput.innerHTML += '<span style="color:#8b8fa3;">[RAW DATA] ' + e.data.replace(/</g, '&lt;') + '</span>\n';
         }
     };
 
     eventSource.onerror = function (e) {
-        console.error('SSE Error', e);
-        logOutput.textContent += '\nConnection closed or error occurred.\n';
+        console.error('[FAZ] SSE Error:', e);
+        const readyState = eventSource ? eventSource.readyState : 'N/A';
+        const stateNames = { 0: 'CONNECTING', 1: 'OPEN', 2: 'CLOSED' };
+        logOutput.innerHTML += '\n<span style="color:#f74f6f;">[SSE ERROR] Connection error or closed</span>\n';
+        logOutput.innerHTML += '<span style="color:#f74f6f;">[SSE ERROR] ReadyState: ' + readyState + ' (' + (stateNames[readyState] || 'UNKNOWN') + ')</span>\n';
+        logOutput.innerHTML += '<span style="color:#f7a84f;">[TIP] Check browser Network tab (F12) for HTTP status of api_run_analysis.php</span>\n';
+        logOutput.innerHTML += '<span style="color:#f7a84f;">[TIP] Check browser Console tab for more details</span>\n';
         stopCollection();
     };
 }
+
 
 function stopCollection() {
     if (eventSource) {
