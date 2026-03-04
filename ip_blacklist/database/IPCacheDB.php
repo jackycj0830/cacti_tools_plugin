@@ -153,6 +153,17 @@ class IPCacheDB {
                 first_seen TEXT,
                 last_seen TEXT,
                 imported_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE TABLE IF NOT EXISTS faz_run_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                run_id TEXT NOT NULL,
+                run_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+                days_back INTEGER NOT NULL,
+                status TEXT DEFAULT 'RUNNING',
+                total_events INTEGER DEFAULT 0,
+                unique_ips INTEGER DEFAULT 0,
+                targets INTEGER DEFAULT 0,
+                raw_log TEXT
             )
         ";
     }
@@ -227,8 +238,21 @@ class IPCacheDB {
                 imported_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 INDEX idx_run_id (run_id),
                 INDEX idx_ip (ip)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            CREATE TABLE IF NOT EXISTS faz_run_history (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                run_id VARCHAR(50) NOT NULL,
+                run_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+                days_back INT NOT NULL,
+                status VARCHAR(20) DEFAULT 'RUNNING',
+                total_events INT DEFAULT 0,
+                unique_ips INT DEFAULT 0,
+                targets INT DEFAULT 0,
+                raw_log MEDIUMTEXT,
+                INDEX idx_run_history_date (run_date)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ";
+
     }
 
     public function getPDO() {

@@ -46,14 +46,49 @@ if (!is_dir($logDir) || !is_writable($logDir)) {
 // Note: Log file is cleared by api_run_analysis.php before launching this script.
 // Do NOT clear it here to avoid race conditions with the SSE tail loop.
 
-function logOutput($msg) {
-    global $logFile;
-    $line = $msg . "\n";
+$runLogRaw = "";
+
+function logOutput($msg, $color = null) {
+    global $logFile, $runLogRaw;
+    
+    $colors = [
+        'RED'     => "\x1b[91m",
+        'GREEN'   => "\x1b[92m",
+        'YELLOW'  => "\x1b[93m",
+        'BLUE'    => "\x1b[94m",
+        'CYAN'    => "\x1b[96m",
+        'MAGENTA' => "\x1b[95m",
+        'RESET'   => "\x1b[0m"
+    ];
+
+    // Auto color based on common tags
+    if (!$color) {
+        if (str_contains($msg, '[Error]') || str_contains($msg, 'FATAL') || str_contains($msg, 'MALICIOUS')) {
+            $color = 'RED';
+        } elseif (str_contains($msg, '[OK]') || str_contains($msg, 'CLEAN') || str_contains($msg, 'successfully')) {
+            $color = 'GREEN';
+        } elseif (str_contains($msg, '[WARN]') || str_contains($msg, 'SUSPICIOUS')) {
+            $color = 'YELLOW';
+        } elseif (str_contains($msg, '[DB]')) {
+            $color = 'CYAN';
+        } elseif (str_contains($msg, '[FAZ]')) {
+            $color = 'BLUE';
+        } elseif (str_contains($msg, 'Checking') || str_contains($msg, 'Verdict')) {
+            $color = 'MAGENTA';
+        }
+    }
+
+    $outMsg = $msg;
+    if ($color && isset($colors[$color])) {
+        $outMsg = $colors[$color] . $msg . $colors['RESET'];
+    }
+
+    $line = $outMsg . "\n";
     echo $line;
+    $runLogRaw .= $line;
     @file_put_contents($logFile, $line, FILE_APPEND);
     flush();
 }
-
 
 // ============================================================================
 // PARSE CLI ARGUMENTS
@@ -483,7 +518,11 @@ function classify($result) {
 // ============================================================================
 
 // Phase 1: Fetch from FAZ
-fetch_from_faz($days_back);
+$run_id = fetch_from_faz($days_back);
+if (!$run_id) {
+    $run_id = 'NO-DATA-' . time();
+}
+
 
 // Phase 2: VirusTotal analysis on high-frequency IPs
 $cutoff_dt = (new DateTime())->modify("-{$days_back} days")->format("Y-m-d H:i:s");
@@ -633,4 +672,24 @@ logOutput("  Total IPs   : " . count($ips));
 $saved_secs = $cache_hits * VT_REQUEST_DELAY;
 logOutput("  Time saved  : ~{$saved_secs}s");
 logOutput("============================================================");
+
+// --- SAVE TO DATABASE ---
+try {
+    $statsData = @file_get_contents(__DIR__ . "/web/latest_stats.json");
+    $stats = $statsData ? json_decode($statsData, true) : [];
+    $total_events = $stats['total_logins'] ?? 0;
+    $unique_ips = $stats['unique_ips'] ?? 0;
+    $targets = count($ips);
+    
+    if (DB_TYPE === 'sqlite') {
+        $stmtHist = $db->prepare("INSERT INTO faz_run_history (run_id, days_back, status, total_events, unique_ips, targets, raw_log) VALUES (?, ?, 'SUCCESS', ?, ?, ?, ?)");
+    } else {
+        $stmtHist = $db->prepare("INSERT INTO faz_run_history (run_id, days_back, status, total_events, unique_ips, targets, raw_log) VALUES (?, ?, 'SUCCESS', ?, ?, ?, ?)");
+    }
+    $stmtHist->execute([$run_id, $days_back, $total_events, $unique_ips, $targets, $runLogRaw]);
+    logOutput("[DB] Run history saved successfully.");
+} catch (Exception $e) {
+    logOutput("[Error] Failed to save run history: " . $e->getMessage());
+}
+
 logOutput("Finished");
