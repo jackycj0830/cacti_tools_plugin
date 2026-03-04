@@ -399,7 +399,7 @@ function triggerFazCollection() {
         try {
             const data = JSON.parse(e.data);
             if (data.type === 'log') {
-                logOutput.innerHTML += parseANSIColor(data.msg);
+                logOutput.innerHTML += parseANSIColor(data.msg) + '\n';
                 logOutput.scrollTop = logOutput.scrollHeight;
             } else if (data.type === 'error') {
                 logOutput.innerHTML += '<span style="color:#f74f6f;">ERROR: ' + parseANSIColor(data.msg) + '</span>\n';
