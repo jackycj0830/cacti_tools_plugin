@@ -1,0 +1,133 @@
+# Block_IP_20260305 → ip_blacklist 功能整合完成報告
+
+## 執行摘要
+
+已將 `Block_IP_20260305` 的所有新功能整合至 `ip_blacklist`，涵蓋 5 個階段。
+
+---
+
+## Phase 1 — Device Management (設備管理)
+
+### 新增檔案
+
+| 檔案 | 說明 |
+|------|------|
+| [faz_devices.php](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/faz_devices.php) | FAZ 設備管理頁，完整 CRUD：新增/編輯/刪除 FAZ 設備與 FGT Mapping。Token 遮蔽處理，符合現有 ip_blacklist 主題。 |
+| [faz_devices_api.php](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/faz_devices_api.php) | 設備管理 API，DB-agnostic（PDO），支援 MySQL + SQLite。包含 `list_devices`、`add`、`update`、`delete`、`sync_fgt_mappings` 等 actions。 |
+
+### 修改檔案
+
+| 檔案 | 修改內容 |
+|------|----------|
+| [faz_mysql_schema.sql](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/database/faz_mysql_schema.sql) | 新增 `devices`（FAZ 設備登錄）和 `fgt_mapping`（FortiGate 設備名稱映射）兩張表，含 sort_order 索引和 UNIQUE KEY。 |
+
+---
+
+## Phase 2 — Dashboard API Actions (儀表板 API)
+
+### 修改檔案
+
+#### [api_dashboard.php](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/api_dashboard.php)
+
+新增 8 個 DB-agnostic 函式：
+
+| 函式 | 說明 |
+|------|------|
+| `getDashDeviceFilter()` | 解析 devname → fgt_mapping IN 子句，供其他 query 使用 |
+| `getDashAllMappings()` | 載入 fgt_mapping 完整對照表 |
+| `dashFormatTargetDevices()` | 將 devname comma string 轉為 display_name 並依 sort_order 排序 |
+| `dashFormatDuration()` | 計算時間差格式化（支援 HTML `<br>` 換行） |
+| `getDashDevices()` | 回傳 device filter dropdown 選項（display_name 列表） |
+| `getDashDeviceStats()` | 各設備失敗次數（Bar chart 資料） |
+| `getDashDeviceTimeline()` | 設備 × 日期 Pivot 資料表 |
+| `getDashUserTimeline()` | Top 10 Users × 設備堆疊圖資料 |
+| `getDashAdStatus()` | Top 5 AD 帳號攻擊統計（JOIN ad_users_cache） |
+| `getDashNonAdStatus()` | Top 10 非 AD 帳號攻擊統計（LEFT JOIN 排除） |
+| `saveDashCsv()` | 將 CSV 內容存為暫存檔，回傳一次性 ID |
+| `downloadDashCsv()` | 根據 ID 串流下載 CSV 後刪除暫存 |
+
+#### [api.php](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/api.php)
+
+新增 8 個 switch case：
+`dash_devices`, `dash_device_stats`, `dash_device_timeline`, `dash_user_timeline`, `dash_ad_status`, `dash_non_ad_status`, `dash_save_csv`, `dash_download_csv`
+
+---
+
+## Phase 3 — Dashboard UI (ip_blacklist.php)
+
+### 修改檔案
+
+[ip_blacklist.php](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/ip_blacklist.php)
+
+**Header 區新增：**
+- ⚙️ Devices 連結（前往 faz_devices.php）
+- `deviceFilter` 下拉選單（All Devices + 動態載入）
+
+**Dashboard 新增 5 個 Section（位於 Country Timeline Card 之後）：**
+
+| Section | 元素 ID | 說明 |
+|---------|---------|------|
+| Device Events by Day | `dashDeviceTimelineWrap` | 設備 × 日期 Pivot Table + CSV Export |
+| Top AD Users | `dashAdStatusWrap` | Username / Fails / Duration / Locked / Dept + CSV Export |
+| Top Non-AD Users | `dashNonAdStatusWrap` | Username / Fails / Duration + CSV Export |
+| Events by Device | `dashDeviceChart` | Bar Chart (Chart.js) |
+| Top 10 Users by Device | `dashUserChart` | Stacked Bar Chart (Chart.js) |
+
+---
+
+## Phase 4 — dashboard.js
+
+### 修改檔案
+
+[dashboard.js](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/assets/dashboard.js)
+
+**更新：**
+- `getDeviceFilter()` — 讀取 deviceFilter 選單值
+- `fetchDashJson(action, extraParams)` — 自動帶入 `days` 和 `devname` 參數
+- `refreshDashboard()` — 新增呼叫 5 個新 loader
+
+**新增：**
+- `loadDashDevices()` — 非同步載入設備選單
+- `loadDashDeviceTimeline()` — 渲染設備時間軸資料表
+- `loadDashAdStatus()` — 渲染 AD 帳號攻擊資料表
+- `loadDashNonAdStatus()` — 渲染非 AD 帳號攻擊資料表
+- `loadDashDeviceChart()` — 渲染設備 Bar Chart
+- `loadDashUserChart()` — 渲染用戶堆疊 Bar Chart
+- `arrayToCsv()` / `downloadCsv()` — CSV 工具函式（帶 UTF-8 BOM）
+- `exportDeviceTimelineToCSV()` / `exportAdStatusToCSV()` / `exportNonAdStatusToCSV()` — CSV 匯出
+
+---
+
+## 資料庫注意事項
+
+### 新增欄位需求（faz_raw_events）
+
+> [!NOTE]
+> `getDashDeviceTimeline`、`getDashDeviceStats`、`getDashUserTimeline`、`getDashAdStatus`、`getDashNonAdStatus` 需要 `faz_raw_events` 中有 `devname` 和 `user` 欄位。若這些欄位不存在，相關 API 會回傳空資料或錯誤訊息，**不會崩潰**。
+
+### MySQL Table 建議 Schema（如 faz_raw_events 需要更新）
+
+```sql
+ALTER TABLE faz_raw_events
+  ADD COLUMN IF NOT EXISTS devname VARCHAR(255) DEFAULT 'Unknown',
+  ADD COLUMN IF NOT EXISTS user VARCHAR(255) DEFAULT 'Unknown',
+  ADD COLUMN IF NOT EXISTS faz_name VARCHAR(255) DEFAULT '';
+```
+
+---
+
+## 未整合功能
+
+| 功能 | 原因 |
+|------|------|
+| Python 分析腳本 (`run_analysis.php`) | `ip_blacklist` 已有更完善的 PHP 版本 (`api_run_analysis.php`)，不需要遷移 |
+
+---
+
+## 測試建議
+
+1. 開啟 `faz_devices.php` → 確認可以新增 FAZ 設備和 FGT Mapping
+2. 開啟 `ip_blacklist.php` → 確認 Device Filter 下拉可載入設備列表
+3. 點擊 Load Test Data → 確認 Dashboard 所有卡片顯示資料
+4. 點擊各 Export CSV 按鈕 → 確認下載正確的 CSV 檔案
+5. 在資料庫執行 `faz_mysql_schema.sql` 中的 `devices` 和 `fgt_mapping` 建表語句

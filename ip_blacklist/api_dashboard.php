@@ -519,3 +519,457 @@ function clearDashTestData()
         return ['success' => false, 'error' => $e->getMessage()];
     }
 }
+
+// ============================================================================
+// NEW DASHBOARD FUNCTIONS (Phase 2 - ported from Block_IP_20260305)
+// DB-agnostic: uses PDO, no SQLite3-specific API
+// ============================================================================
+
+/**
+ * Helper: Build device name filter clause using fgt_mapping.
+ * Returns [string $whereClause, array $bindParams] for existing PDO stmt.
+ * If devname is null → no filter. If mapped → devname IN (...) clause.
+ */
+function getDashDeviceFilter($db, $devname) {
+    if (!$devname || $devname === 'all' || $devname === '') {
+        return ['', []];
+    }
+
+    // Look up fgt_mapping for display_name
+    try {
+        $stmt = $db->prepare("SELECT fgt_name FROM fgt_mapping WHERE display_name = ?");
+        $stmt->execute([$devname]);
+        $fgtNames = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    } catch (Exception $e) {
+        $fgtNames = [];
+    }
+
+    if (!empty($fgtNames)) {
+        $inClause = rtrim(str_repeat('?,', count($fgtNames)), ',');
+        return [" AND devname IN ($inClause)", $fgtNames];
+    } else {
+        // Fallback: direct match on either faz_name or devname
+        return [" AND (faz_name = ? OR devname = ?)", [$devname, $devname]];
+    }
+}
+
+/**
+ * Helper: Build fgt_mapping lookup array [fgt_name => ['display' => ..., 'sort' => ...]]
+ */
+function getDashAllMappings($db) {
+    $mappings = [];
+    try {
+        $res = $db->query("SELECT fgt_name, display_name, sort_order FROM fgt_mapping");
+        while ($rm = $res->fetch(PDO::FETCH_ASSOC)) {
+            $mappings[$rm['fgt_name']] = [
+                'display' => $rm['display_name'],
+                'sort'    => (int) $rm['sort_order']
+            ];
+        }
+    } catch (Exception $e) {}
+    return $mappings;
+}
+
+/**
+ * Helper: Format a comma-separated devname string using fgt_mapping display names.
+ */
+function dashFormatTargetDevices($devicesStr, $allMappings) {
+    if (empty($devicesStr)) return 'Unknown';
+    $devs = explode(',', $devicesStr);
+    $mapped = [];
+    foreach ($devs as $d) {
+        $d = trim($d);
+        if (isset($allMappings[$d])) {
+            $mapped[] = ['name' => $allMappings[$d]['display'], 'sort' => $allMappings[$d]['sort']];
+        } else {
+            $mapped[] = ['name' => $d, 'sort' => 999999];
+        }
+    }
+    usort($mapped, function($a, $b) {
+        return $a['sort'] !== $b['sort'] ? $a['sort'] - $b['sort'] : strcasecmp($a['name'], $b['name']);
+    });
+    return implode(', ', array_unique(array_column($mapped, 'name')));
+}
+
+/**
+ * Helper: Format duration from two timestamp strings.
+ */
+function dashFormatDuration($minTs, $maxTs, $useHtml = false) {
+    if (empty($minTs) || empty($maxTs)) return '0m';
+    $t1 = strtotime($minTs);
+    $t2 = strtotime($maxTs);
+    $diff = max(0, $t2 - $t1);
+    $d = floor($diff / 86400);
+    $h = floor(($diff % 86400) / 3600);
+    $m = floor(($diff % 3600) / 60);
+    $parts = [];
+    if ($d > 0) $parts[] = "{$d}d";
+    if ($h > 0 || $d > 0) $parts[] = "{$h}h";
+    if (empty($parts)) $parts[] = "{$m}m";
+    $timeStr = implode(' ', $parts);
+    $d1 = date('m-d', $t1);
+    $d2 = date('m-d', $t2);
+    $sep = $useHtml ? '<br>' : ' ';
+    return "{$timeStr}{$sep}({$d1} ~ {$d2})";
+}
+
+// ----------------------------------------------------------------
+// getDashDevices — returns list of display names for device filter dropdown
+// ----------------------------------------------------------------
+function getDashDevices($params) {
+    try {
+        $db = getDashDB();
+        if (!$db) return [];
+        $rows = [];
+        // Try getting distinct display_name from fgt_mapping
+        try {
+            $res = $db->query("SELECT DISTINCT display_name FROM fgt_mapping ORDER BY sort_order ASC, display_name ASC");
+            while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
+                if (!empty($row['display_name'])) $rows[] = $row['display_name'];
+            }
+        } catch (Exception $e) {}
+        // Also grab unmapped devnames from logs
+        try {
+            $res = $db->query("SELECT DISTINCT devname FROM faz_raw_events WHERE devname NOT IN (SELECT fgt_name FROM fgt_mapping) AND devname != 'Unknown' ORDER BY devname ASC");
+            while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
+                $rows[] = $row['devname'];
+            }
+        } catch (Exception $e) {}
+        return array_values(array_unique($rows));
+    } catch (Exception $e) {
+        return ['error' => $e->getMessage()];
+    }
+}
+
+// ----------------------------------------------------------------
+// getDashDeviceStats — fail counts per device (for bar chart)
+// ----------------------------------------------------------------
+function getDashDeviceStats($params) {
+    try {
+        ensureFazTables();
+        $days    = isset($params['days']) ? intval($params['days']) : 7;
+        $devname = $params['devname'] ?? '';
+        $db = getDashDB();
+        if (!$db) return [];
+
+        $cutoff = getCutoffDatetime($db, $days);
+        [$devFilter, $devBinds] = getDashDeviceFilter($db, $devname);
+        $allMappings = getDashAllMappings($db);
+
+        $sql = "SELECT devname, COUNT(*) as fail_count FROM faz_raw_events WHERE timestamp >= ? $devFilter GROUP BY devname ORDER BY fail_count DESC";
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array_merge([$cutoff], $devBinds));
+
+        $rows = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $dn    = $row['devname'];
+            $label = isset($allMappings[$dn]) ? $allMappings[$dn]['display'] : $dn;
+            $rows[] = ['devname' => $label, 'fail_count' => (int)$row['fail_count']];
+        }
+        return $rows;
+    } catch (Exception $e) {
+        return ['error' => $e->getMessage()];
+    }
+}
+
+// ----------------------------------------------------------------
+// getDashDeviceTimeline — device × day pivot table
+// ----------------------------------------------------------------
+function getDashDeviceTimeline($params) {
+    try {
+        ensureFazTables();
+        $days    = isset($params['days']) ? intval($params['days']) : 7;
+        $devname = $params['devname'] ?? '';
+        $db = getDashDB();
+        if (!$db) return ['days' => [], 'devices' => []];
+
+        $cutoff = getCutoffDatetime($db, $days);
+        [$devFilter, $devBinds] = getDashDeviceFilter($db, $devname);
+        $allMappings = getDashAllMappings($db);
+
+        // DB-agnostic date extraction via PHP (substring of timestamp)
+        $sql = "SELECT devname, timestamp, COUNT(*) as count FROM faz_raw_events WHERE timestamp >= ? $devFilter GROUP BY devname, timestamp ORDER BY timestamp ASC";
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array_merge([$cutoff], $devBinds));
+
+        $timeline = [];
+        $daysSet  = [];
+        $totals   = [];
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $dn    = $row['devname'];
+            $label = isset($allMappings[$dn]) ? $allMappings[$dn]['display'] : $dn;
+            $day   = substr($row['timestamp'], 0, 10); // YYYY-MM-DD
+            $c     = (int) $row['count'];
+            $timeline[$label][$day] = ($timeline[$label][$day] ?? 0) + $c;
+            $daysSet[$day] = true;
+            $totals[$label] = ($totals[$label] ?? 0) + $c;
+        }
+
+        $allDays = array_keys($daysSet);
+        sort($allDays);
+        arsort($totals);
+
+        $devicesData = [];
+        foreach ($totals as $label => $total) {
+            $rowData = [];
+            foreach ($allDays as $d) {
+                $rowData[$d] = $timeline[$label][$d] ?? 0;
+            }
+            $devicesData[] = ['name' => $label, 'data' => $rowData, 'total' => $total];
+        }
+
+        return ['days' => $allDays, 'devices' => $devicesData];
+    } catch (Exception $e) {
+        return ['error' => $e->getMessage()];
+    }
+}
+
+// ----------------------------------------------------------------
+// getDashUserTimeline — Top 10 users × device bar chart data
+// ----------------------------------------------------------------
+function getDashUserTimeline($params) {
+    try {
+        ensureFazTables();
+        $days    = isset($params['days']) ? intval($params['days']) : 7;
+        $devname = $params['devname'] ?? '';
+        $db = getDashDB();
+        if (!$db) return ['labels' => [], 'datasets' => []];
+
+        $cutoff = getCutoffDatetime($db, $days);
+        [$devFilter, $devBinds] = getDashDeviceFilter($db, $devname);
+
+        // Check if 'user' column exists in faz_raw_events
+        try {
+            $check = $db->query("SELECT user FROM faz_raw_events LIMIT 0");
+        } catch (Exception $e) {
+            return ['labels' => [], 'datasets' => [], 'note' => 'user column not in faz_raw_events'];
+        }
+
+        // Top 10 users
+        $sql = "SELECT user, COUNT(*) as total FROM faz_raw_events WHERE timestamp >= ? $devFilter AND user IS NOT NULL AND user != '' AND user != 'Unknown' GROUP BY user ORDER BY total DESC LIMIT 10";
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array_merge([$cutoff], $devBinds));
+        $topUsers = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if (empty($topUsers)) return ['labels' => [], 'datasets' => []];
+
+        // Breakdown by device
+        $inClause = rtrim(str_repeat('?,', count($topUsers)), ',');
+        $sql2 = "SELECT user, devname, COUNT(*) as count FROM faz_raw_events WHERE timestamp >= ? $devFilter AND user IN ($inClause) GROUP BY user, devname";
+        $stmt2 = $db->prepare($sql2);
+        $stmt2->execute(array_merge([$cutoff], $devBinds, $topUsers));
+
+        $breakdown  = [];
+        $devicesSet = [];
+        while ($row = $stmt2->fetch(PDO::FETCH_ASSOC)) {
+            $breakdown[$row['user']][$row['devname']] = (int)$row['count'];
+            $devicesSet[$row['devname']] = true;
+        }
+
+        $allDevices = array_keys($devicesSet);
+        sort($allDevices);
+
+        $datasets = [];
+        foreach ($allDevices as $d) {
+            $data = [];
+            foreach ($topUsers as $u) {
+                $data[] = $breakdown[$u][$d] ?? 0;
+            }
+            $datasets[] = ['label' => $d, 'data' => $data];
+        }
+
+        return ['labels' => $topUsers, 'datasets' => $datasets];
+    } catch (Exception $e) {
+        return ['error' => $e->getMessage()];
+    }
+}
+
+// ----------------------------------------------------------------
+// getDashAdStatus — Top 5 AD Users under attack (joined with ad_users_cache)
+// ----------------------------------------------------------------
+function getDashAdStatus($params) {
+    try {
+        ensureFazTables();
+        $days    = isset($params['days']) ? intval($params['days']) : 7;
+        $devname = $params['devname'] ?? '';
+        $db = getDashDB();
+        if (!$db) return [];
+
+        $cutoff = getCutoffDatetime($db, $days);
+        [$devFilter, $devBinds] = getDashDeviceFilter($db, $devname);
+        $allMappings = getDashAllMappings($db);
+
+        // Check if ad_users_cache table exists
+        try {
+            $db->query("SELECT 1 FROM ad_users_cache LIMIT 0");
+        } catch (Exception $e) {
+            return ['error' => 'ad_users_cache table not found - run AD sync first'];
+        }
+
+        $sql = "
+            SELECT f.user, COUNT(*) as fail_count, MIN(f.timestamp) as min_ts, MAX(f.timestamp) as last_seen,
+                   GROUP_CONCAT(DISTINCT f.devname) as target_devices,
+                   a.locked_out, a.lockout_time, a.password_expired, a.pwd_last_set, a.last_logon as ad_last_logon,
+                   a.department, a.ad_site, a.office_phone
+            FROM faz_raw_events f
+            JOIN ad_users_cache a ON LOWER(f.user) = LOWER(a.username)
+            WHERE f.timestamp >= ? $devFilter
+                AND f.user IS NOT NULL AND f.user != '' AND f.user != 'Unknown'
+                AND a.exists_in_ad = 1
+            GROUP BY f.user
+            ORDER BY fail_count DESC
+            LIMIT 5
+        ";
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array_merge([$cutoff], $devBinds));
+
+        $adUsers = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $parts = [];
+            if (!empty($row['ad_site']) && $row['ad_site'] !== 'N/A') $parts[] = $row['ad_site'];
+            if (!empty($row['department']) && $row['department'] !== 'N/A') $parts[] = $row['department'];
+            if (!empty($row['office_phone']) && $row['office_phone'] !== 'N/A') $parts[] = $row['office_phone'];
+
+            $adUsers[] = [
+                'Username'          => $row['user'],
+                'fail_count'        => (int) $row['fail_count'],
+                'target_devices'    => dashFormatTargetDevices($row['target_devices'], $allMappings),
+                'duration'          => dashFormatDuration($row['min_ts'], $row['last_seen'], true),
+                'ExistsInAD'        => 'Yes',
+                'OU_Dept'           => empty($parts) ? 'N/A' : implode(' / ', $parts),
+                'LockedOut'         => ($row['locked_out'] == 1) ? 'True' : 'False',
+                'PasswordExpired'   => ($row['password_expired'] == 1) ? 'True' : 'False',
+                'LastPasswordChange' => $row['pwd_last_set'] ?: 'N/A',
+                'LastLogon'         => $row['ad_last_logon'] ?: 'N/A',
+            ];
+        }
+        return $adUsers;
+    } catch (Exception $e) {
+        return ['error' => $e->getMessage()];
+    }
+}
+
+// ----------------------------------------------------------------
+// getDashNonAdStatus — Top 10 Non-AD Users under attack
+// ----------------------------------------------------------------
+function getDashNonAdStatus($params) {
+    try {
+        ensureFazTables();
+        $days    = isset($params['days']) ? intval($params['days']) : 7;
+        $devname = $params['devname'] ?? '';
+        $db = getDashDB();
+        if (!$db) return [];
+
+        $cutoff = getCutoffDatetime($db, $days);
+        [$devFilter, $devBinds] = getDashDeviceFilter($db, $devname);
+        $allMappings = getDashAllMappings($db);
+
+        // Check if ad_users_cache table exists
+        $hasAdCache = true;
+        try {
+            $db->query("SELECT 1 FROM ad_users_cache LIMIT 0");
+        } catch (Exception $e) {
+            $hasAdCache = false;
+        }
+
+        if ($hasAdCache) {
+            $sql = "
+                SELECT t.user, t.fail_count, t.min_ts, t.last_seen, t.target_devices
+                FROM (
+                    SELECT user, COUNT(*) as fail_count, MIN(timestamp) as min_ts, MAX(timestamp) as last_seen,
+                           GROUP_CONCAT(DISTINCT devname) as target_devices
+                    FROM faz_raw_events
+                    WHERE timestamp >= ? $devFilter
+                        AND user IS NOT NULL AND user != '' AND user != 'Unknown'
+                    GROUP BY user
+                    ORDER BY fail_count DESC
+                    LIMIT 50
+                ) t
+                LEFT JOIN ad_users_cache a ON LOWER(t.user) = LOWER(a.username)
+                WHERE (a.username IS NULL OR a.exists_in_ad = 0)
+                ORDER BY t.fail_count DESC
+                LIMIT 10
+            ";
+        } else {
+            // No AD cache — just return top users
+            $sql = "
+                SELECT user, COUNT(*) as fail_count, MIN(timestamp) as min_ts, MAX(timestamp) as last_seen,
+                       GROUP_CONCAT(DISTINCT devname) as target_devices
+                FROM faz_raw_events
+                WHERE timestamp >= ? $devFilter
+                    AND user IS NOT NULL AND user != '' AND user != 'Unknown'
+                GROUP BY user
+                ORDER BY fail_count DESC
+                LIMIT 10
+            ";
+        }
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute(array_merge([$cutoff], $devBinds));
+
+        $nonAdUsers = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $nonAdUsers[] = [
+                'Username'       => $row['user'],
+                'fail_count'     => (int) $row['fail_count'],
+                'target_devices' => dashFormatTargetDevices($row['target_devices'], $allMappings),
+                'duration'       => dashFormatDuration($row['min_ts'], $row['last_seen'], true),
+            ];
+        }
+        return $nonAdUsers;
+    } catch (Exception $e) {
+        return ['error' => $e->getMessage()];
+    }
+}
+
+// ----------------------------------------------------------------
+// saveDashCsv — saves CSV content to a temp file, returns a one-time ID
+// ----------------------------------------------------------------
+function saveDashCsv($params) {
+    $csv      = $_POST['csv_content'] ?? '';
+    $filename = preg_replace('/[^a-zA-Z0-9._-]/', '_', $_POST['filename'] ?? 'export.csv');
+    if (empty($csv)) {
+        return ['error' => 'No CSV content received.'];
+    }
+    $tmpDir = sys_get_temp_dir();
+    $id     = bin2hex(random_bytes(8));
+    $path   = $tmpDir . DIRECTORY_SEPARATOR . 'ibl_csv_' . $id . '.csv';
+    if (file_put_contents($path, $csv) === false) {
+        return ['error' => 'Failed to write temp file.'];
+    }
+    // Store filename mapping in a small JSON sidecar
+    file_put_contents($path . '.meta', json_encode(['filename' => $filename, 'ts' => time()]));
+    return ['id' => $id];
+}
+
+// ----------------------------------------------------------------
+// downloadDashCsv — streams a saved temp CSV file for download
+// ----------------------------------------------------------------
+function downloadDashCsv($params) {
+    $id   = preg_replace('/[^a-f0-9]/', '', $params['id'] ?? '');
+    if (empty($id)) {
+        http_response_code(400);
+        echo 'Missing id';
+        exit;
+    }
+    $path     = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'ibl_csv_' . $id . '.csv';
+    $metaPath = $path . '.meta';
+    if (!file_exists($path)) {
+        http_response_code(404);
+        echo 'File not found or expired.';
+        exit;
+    }
+    $filename = 'export.csv';
+    if (file_exists($metaPath)) {
+        $meta     = json_decode(file_get_contents($metaPath), true);
+        $filename = $meta['filename'] ?? 'export.csv';
+    }
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    header('Content-Length: ' . filesize($path));
+    readfile($path);
+    @unlink($path);
+    @unlink($metaPath);
+    exit;
+}

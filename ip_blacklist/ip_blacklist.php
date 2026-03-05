@@ -359,14 +359,18 @@
                         <h3><span class="icon">⚡</span> <span data-i18n="analysis_workflow">Automated Analysis Workflow / 自動分析流程</span></h3>
                     </div>
                     <div style="display: flex; gap: 1rem; align-items: center;">
+                        <a href="faz_devices.php" style="font-size: 0.85rem; color: #8b8fa3; text-decoration: none; display: flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.7rem; border-radius: 6px; border: 1px solid #2a2e3e; transition: background 0.2s;" onmouseover="this.style.background='#1a1d28'" onmouseout="this.style.background='transparent'">⚙️ Devices</a>
                         <div class="last-update" id="dashboardLastUpdate" style="font-size: 0.85rem; color: #8b8fa3;">Loading...</div>
-                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
                             <select id="analysisDays" class="btn-secondary" onchange="refreshDashboard()">
                                 <option value="1">Last 1 Day</option>
                                 <option value="2">Last 2 Days</option>
                                 <option value="7" selected>Last 1 Week</option>
                                 <option value="14">Last 2 Weeks</option>
                                 <option value="28">Last 4 Weeks</option>
+                            </select>
+                            <select id="deviceFilter" class="btn-secondary" onchange="refreshDashboard()" title="Filter by FortiGate Device">
+                                <option value="">All Devices</option>
                             </select>
                             <button id="btnCollectFaz" class="btn-primary" onclick="triggerFazCollection()">
                                 <span class="icon">⚡</span> <span data-i18n="collect_faz_now">Run FAZ Collection</span>
@@ -438,6 +442,56 @@
                           <canvas id="dashCountryTimelineChart" style="max-height: 400px; width: 100%;"></canvas>
                      </div>
                 </div>
+
+                <!-- NEW: Device Events by Day Timeline Table -->
+                <div class="dashboard-card" style="background: var(--card-bg, #fff); border: 1px solid var(--border-color, #dee2e6); border-radius: 8px; padding: 1rem; margin-top: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color, #dee2e6); margin-bottom: 0.75rem;">
+                        <h4 style="margin: 0;">📅 Device Events by Day / 各設備每日事件數</h4>
+                        <button class="btn-secondary" onclick="exportDeviceTimelineToCSV()" style="font-size: 0.8rem; padding: 0.3rem 0.7rem;">📥 Export CSV</button>
+                    </div>
+                    <div id="dashDeviceTimelineWrap" style="overflow-x: auto; max-height: 350px; overflow-y: auto;">
+                        <div class="loading-spinner"></div> Loading...
+                    </div>
+                </div>
+
+                <!-- NEW: AD and Non-AD User Status Tables -->
+                <div class="dashboard-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                    <div class="dashboard-card" style="background: var(--card-bg, #fff); border: 1px solid var(--border-color, #dee2e6); border-radius: 8px; padding: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color, #dee2e6); margin-bottom: 0.75rem;">
+                            <h4 style="margin: 0;">👤 Top AD Users Under Attack</h4>
+                            <button class="btn-secondary" onclick="exportAdStatusToCSV()" style="font-size: 0.8rem; padding: 0.3rem 0.7rem;">📥 Export CSV</button>
+                        </div>
+                        <div id="dashAdStatusWrap" style="max-height: 280px; overflow-y: auto;">
+                            <div class="loading-spinner"></div> Loading...
+                        </div>
+                    </div>
+                    <div class="dashboard-card" style="background: var(--card-bg, #fff); border: 1px solid var(--border-color, #dee2e6); border-radius: 8px; padding: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color, #dee2e6); margin-bottom: 0.75rem;">
+                            <h4 style="margin: 0;">🔓 Top Non-AD Users Under Attack</h4>
+                            <button class="btn-secondary" onclick="exportNonAdStatusToCSV()" style="font-size: 0.8rem; padding: 0.3rem 0.7rem;">📥 Export CSV</button>
+                        </div>
+                        <div id="dashNonAdStatusWrap" style="max-height: 280px; overflow-y: auto;">
+                            <div class="loading-spinner"></div> Loading...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NEW: Device Chart and User Chart -->
+                <div class="dashboard-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+                    <div class="dashboard-card" style="background: var(--card-bg, #fff); border: 1px solid var(--border-color, #dee2e6); border-radius: 8px; padding: 1rem;">
+                        <h4 style="margin-top: 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color, #dee2e6);">📊 Events by FortiGate Device</h4>
+                        <div style="height: 280px; position: relative; margin-top: 0.5rem;">
+                            <canvas id="dashDeviceChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="dashboard-card" style="background: var(--card-bg, #fff); border: 1px solid var(--border-color, #dee2e6); border-radius: 8px; padding: 1rem;">
+                        <h4 style="margin-top: 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color, #dee2e6);">👥 Top 10 Users by Device</h4>
+                        <div style="height: 280px; position: relative; margin-top: 0.5rem;">
+                            <canvas id="dashUserChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
 

@@ -1,8 +1,14 @@
 // Security Dashboard JS logic
-// Ported from Block_IP_20260223 Dashboard
+// Ported from Block_IP_20260223 Dashboard + Block_IP_20260305 new features
 
+/* ── Helpers ─────────────────────────────────────── */
 function getAnalysisDays() {
     return document.getElementById('analysisDays').value || 7;
+}
+
+function getDeviceFilter() {
+    const el = document.getElementById('deviceFilter');
+    return el ? el.value : '';
 }
 
 function refreshDashboard() {
@@ -11,14 +17,28 @@ function refreshDashboard() {
         loadDashBlacklist(),
         loadDashFaz(),
         loadDashCountryChart(),
-        loadDashCountryTimeline()
+        loadDashCountryTimeline(),
+        // NEW Phase 4 loaders
+        loadDashDeviceTimeline(),
+        loadDashAdStatus(),
+        loadDashNonAdStatus(),
+        loadDashDeviceChart(),
+        loadDashUserChart(),
     ]).catch(err => console.error('Dashboard refresh error:', err));
 }
 
-async function fetchDashJson(action) {
+async function fetchDashJson(action, extraParams) {
     try {
         const days = getAnalysisDays();
-        const response = await fetch(`${API_URL}?action=${action}&days=${days}`);
+        const devname = getDeviceFilter();
+        let url = `${API_URL}?action=${action}&days=${days}`;
+        if (devname) url += `&devname=${encodeURIComponent(devname)}`;
+        if (extraParams) {
+            for (const [k, v] of Object.entries(extraParams)) {
+                url += `&${k}=${encodeURIComponent(v)}`;
+            }
+        }
+        const response = await fetch(url);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return await response.json();
     } catch (e) {
@@ -492,3 +512,306 @@ async function clearTestData() {
         if (btn) btn.disabled = false;
     }
 }
+
+// ============================================================================
+// Phase 4: New dashboard functions (Block_IP_20260305 integration)
+// ============================================================================
+
+/* ── Device Filter Dropdown Population ─────────────────────────── */
+async function loadDashDevices() {
+    const sel = document.getElementById('deviceFilter');
+    if (!sel) return;
+    try {
+        const resp = await fetch(`${API_URL}?action=dash_devices`);
+        const data = await resp.json();
+        if (!Array.isArray(data)) return;
+        const cur = sel.value;
+        // Rebuild options keeping saved value
+        sel.innerHTML = '<option value="">All Devices</option>';
+        data.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            if (d === cur) opt.selected = true;
+            sel.appendChild(opt);
+        });
+    } catch (e) {
+        console.warn('loadDashDevices error:', e);
+    }
+}
+
+/* ── Device Timeline Table ─────────────────────────────────────── */
+let _lastDeviceTimeline = null; // for CSV export
+
+async function loadDashDeviceTimeline() {
+    const wrap = document.getElementById('dashDeviceTimelineWrap');
+    if (!wrap) return;
+    wrap.innerHTML = '<div class="loading-spinner"></div> Loading...';
+
+    const data = await fetchDashJson('dash_device_timeline');
+    _lastDeviceTimeline = data;
+
+    if (!data || data.error || !data.days || data.days.length === 0) {
+        wrap.innerHTML = '<p style="color:#8b8fa3;text-align:center;padding:1rem;">No device timeline data available.</p>';
+        return;
+    }
+
+    const { days, devices } = data;
+    let html = `<table style="width:100%;border-collapse:collapse;font-size:0.82rem;min-width:${100 + days.length * 80}px">
+        <thead>
+            <tr style="position:sticky;top:0;background:var(--bg-card,#1a1d28);z-index:1;">
+                <th style="padding:0.4rem 0.6rem;text-align:left;border-bottom:1px solid #2a2e3e;">Device</th>
+                ${days.map(d => `<th style="padding:0.4rem 0.5rem;text-align:right;border-bottom:1px solid #2a2e3e;">${d.slice(5)}</th>`).join('')}
+                <th style="padding:0.4rem 0.6rem;text-align:right;border-bottom:1px solid #2a2e3e;font-weight:bold;">Total</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    devices.forEach((dev, i) => {
+        const bg = i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.03);';
+        html += `<tr style="${bg}">
+            <td style="padding:0.35rem 0.6rem;font-weight:600;">${dev.name}</td>
+            ${days.map(d => {
+            const v = dev.data[d] || 0;
+            const color = v >= 1000 ? '#f74f6f' : v >= 100 ? '#f7a84f' : '';
+            return `<td style="padding:0.35rem 0.5rem;text-align:right;${color ? `color:${color};font-weight:bold;` : ''}">${v > 0 ? v.toLocaleString() : '—'}</td>`;
+        }).join('')}
+            <td style="padding:0.35rem 0.6rem;text-align:right;font-weight:bold;color:#2dd4a8;">${dev.total.toLocaleString()}</td>
+        </tr>`;
+    });
+
+    // Totals row
+    const totals = days.map(d => devices.reduce((s, dev) => s + (dev.data[d] || 0), 0));
+    html += `<tr style="border-top:2px solid #2a2e3e;font-weight:bold;background:rgba(124,92,252,0.1);">
+        <td style="padding:0.35rem 0.6rem;">Total</td>
+        ${totals.map(t => `<td style="padding:0.35rem 0.5rem;text-align:right;">${t > 0 ? t.toLocaleString() : '—'}</td>`).join('')}
+        <td style="padding:0.35rem 0.6rem;text-align:right;color:#7c5cfc;">${totals.reduce((a, b) => a + b, 0).toLocaleString()}</td>
+    </tr>`;
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+}
+
+/* ── AD User Status Table ─────────────────────────────────────── */
+let _lastAdStatus = null;
+
+async function loadDashAdStatus() {
+    const wrap = document.getElementById('dashAdStatusWrap');
+    if (!wrap) return;
+    wrap.innerHTML = '<div class="loading-spinner"></div> Loading...';
+
+    const data = await fetchDashJson('dash_ad_status');
+    _lastAdStatus = data;
+
+    if (!data || data.error || data.length === 0) {
+        const msg = (data && data.error) ? data.error : 'No AD user data available.';
+        wrap.innerHTML = `<p style="color:#8b8fa3;text-align:center;padding:1rem;">${msg}</p>`;
+        return;
+    }
+
+    let html = `<table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
+        <thead>
+            <tr style="background:var(--bg-card,#1a1d28);">
+                <th style="padding:0.35rem;text-align:left;">Username</th>
+                <th style="padding:0.35rem;text-align:right;"># Fails</th>
+                <th style="padding:0.35rem;text-align:left;">Devices</th>
+                <th style="padding:0.35rem;text-align:left;">Duration</th>
+                <th style="padding:0.35rem;text-align:left;">Locked</th>
+                <th style="padding:0.35rem;text-align:left;">Dept</th>
+            </tr>
+        </thead><tbody>`;
+
+    data.forEach((r, i) => {
+        const bg = i % 2 ? 'background:rgba(255,255,255,0.03);' : '';
+        const locked = r.LockedOut === 'True' ? '<span style="color:#f74f6f;font-weight:bold;">🔒 Yes</span>' : '—';
+        html += `<tr style="${bg}">
+            <td style="padding:0.3rem;font-weight:600;">${r.Username}</td>
+            <td style="padding:0.3rem;text-align:right;color:#f7a84f;font-weight:bold;">${(+r.fail_count).toLocaleString()}</td>
+            <td style="padding:0.3rem;font-size:0.72rem;color:#8b8fa3;">${r.target_devices || '—'}</td>
+            <td style="padding:0.3rem;font-size:0.72rem;">${r.duration || '—'}</td>
+            <td style="padding:0.3rem;">${locked}</td>
+            <td style="padding:0.3rem;font-size:0.72rem;">${r.OU_Dept || '—'}</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+}
+
+/* ── Non-AD User Status Table ─────────────────────────────────── */
+let _lastNonAdStatus = null;
+
+async function loadDashNonAdStatus() {
+    const wrap = document.getElementById('dashNonAdStatusWrap');
+    if (!wrap) return;
+    wrap.innerHTML = '<div class="loading-spinner"></div> Loading...';
+
+    const data = await fetchDashJson('dash_non_ad_status');
+    _lastNonAdStatus = data;
+
+    if (!data || data.error || data.length === 0) {
+        const msg = (data && data.error) ? data.error : 'No Non-AD user data available.';
+        wrap.innerHTML = `<p style="color:#8b8fa3;text-align:center;padding:1rem;">${msg}</p>`;
+        return;
+    }
+
+    let html = `<table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
+        <thead>
+            <tr style="background:var(--bg-card,#1a1d28);">
+                <th style="padding:0.35rem;text-align:left;">Username</th>
+                <th style="padding:0.35rem;text-align:right;"># Fails</th>
+                <th style="padding:0.35rem;text-align:left;">Devices</th>
+                <th style="padding:0.35rem;text-align:left;">Duration</th>
+            </tr>
+        </thead><tbody>`;
+
+    data.forEach((r, i) => {
+        const bg = i % 2 ? 'background:rgba(255,255,255,0.03);' : '';
+        html += `<tr style="${bg}">
+            <td style="padding:0.3rem;font-weight:600;">${r.Username}</td>
+            <td style="padding:0.3rem;text-align:right;color:#f7a84f;font-weight:bold;">${(+r.fail_count).toLocaleString()}</td>
+            <td style="padding:0.3rem;font-size:0.72rem;color:#8b8fa3;">${r.target_devices || '—'}</td>
+            <td style="padding:0.3rem;font-size:0.72rem;">${r.duration || '—'}</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+}
+
+/* ── Device Bar Chart ─────────────────────────────────────────── */
+let dashDeviceChartInst = null;
+const CHART_COLORS = [
+    '#7c5cfc', '#2dd4a8', '#f7a84f', '#f74f6f', '#4fc3f7',
+    '#ff9f40', '#9966ff', '#22c55e', '#ef4444', '#3b82f6'
+];
+
+async function loadDashDeviceChart() {
+    const canvas = document.getElementById('dashDeviceChart');
+    if (!canvas) return;
+
+    const data = await fetchDashJson('dash_device_stats');
+    if (!data || data.error || data.length === 0) {
+        canvas.parentElement.innerHTML = '<p style="color:#8b8fa3;text-align:center;padding:1rem;">No device data available.</p>';
+        return;
+    }
+
+    const labels = data.map(r => r.devname);
+    const values = data.map(r => r.fail_count);
+
+    if (dashDeviceChartInst) { dashDeviceChartInst.destroy(); dashDeviceChartInst = null; }
+    dashDeviceChartInst = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Failed Attempts',
+                data: values,
+                backgroundColor: labels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length] + 'cc'),
+                borderColor: labels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]),
+                borderWidth: 1,
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { maxRotation: 30, font: { size: 10 } } },
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+/* ── User × Device Stacked Bar Chart ─────────────────────────── */
+let dashUserChartInst = null;
+
+async function loadDashUserChart() {
+    const canvas = document.getElementById('dashUserChart');
+    if (!canvas) return;
+
+    const data = await fetchDashJson('dash_user_timeline');
+    if (!data || data.error || !data.labels || data.labels.length === 0) {
+        canvas.parentElement.innerHTML = '<p style="color:#8b8fa3;text-align:center;padding:1rem;">No user data available (user column may not exist in faz_raw_events).</p>';
+        return;
+    }
+
+    const datasets = data.datasets.map((ds, i) => ({
+        ...ds,
+        backgroundColor: CHART_COLORS[i % CHART_COLORS.length] + 'cc',
+        borderColor: CHART_COLORS[i % CHART_COLORS.length],
+        borderWidth: 1,
+    }));
+
+    if (dashUserChartInst) { dashUserChartInst.destroy(); dashUserChartInst = null; }
+    dashUserChartInst = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: { labels: data.labels, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } },
+            scales: {
+                x: { stacked: true, ticks: { maxRotation: 30, font: { size: 10 } } },
+                y: { stacked: true, beginAtZero: true }
+            }
+        }
+    });
+}
+
+/* ── CSV Helpers ──────────────────────────────────────────────── */
+function arrayToCsv(headers, rows) {
+    const escape = v => {
+        if (v == null) return '';
+        const s = String(v).replace(/<br\s*\/?>/gi, ' ');
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const lines = [headers.map(escape).join(',')];
+    rows.forEach(r => lines.push(r.map(escape).join(',')));
+    return lines.join('\r\n');
+}
+
+function downloadCsv(csvContent, filename) {
+    const bom = '\uFEFF'; // UTF-8 BOM for Excel compatibility
+    const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+}
+
+function exportDeviceTimelineToCSV() {
+    if (!_lastDeviceTimeline || !_lastDeviceTimeline.days || !_lastDeviceTimeline.devices) {
+        alert('No device timeline data loaded yet.'); return;
+    }
+    const { days, devices } = _lastDeviceTimeline;
+    const headers = ['Device', ...days, 'Total'];
+    const rows = devices.map(dev => [dev.name, ...days.map(d => dev.data[d] || 0), dev.total]);
+    downloadCsv(arrayToCsv(headers, rows), `device_timeline_${new Date().toISOString().slice(0, 10)}.csv`);
+}
+
+function exportAdStatusToCSV() {
+    if (!_lastAdStatus || !Array.isArray(_lastAdStatus) || _lastAdStatus.length === 0) {
+        alert('No AD user data loaded yet.'); return;
+    }
+    const headers = ['Username', 'FailCount', 'Devices', 'Duration', 'ExistsInAD', 'OU_Dept', 'LockedOut', 'PasswordExpired', 'LastPasswordChange', 'LastLogon'];
+    const rows = _lastAdStatus.map(r => [r.Username, r.fail_count, r.target_devices, r.duration, r.ExistsInAD, r.OU_Dept, r.LockedOut, r.PasswordExpired, r.LastPasswordChange, r.LastLogon]);
+    downloadCsv(arrayToCsv(headers, rows), `ad_users_${new Date().toISOString().slice(0, 10)}.csv`);
+}
+
+function exportNonAdStatusToCSV() {
+    if (!_lastNonAdStatus || !Array.isArray(_lastNonAdStatus) || _lastNonAdStatus.length === 0) {
+        alert('No Non-AD user data loaded yet.'); return;
+    }
+    const headers = ['Username', 'FailCount', 'Devices', 'Duration'];
+    const rows = _lastNonAdStatus.map(r => [r.Username, r.fail_count, r.target_devices, r.duration]);
+    downloadCsv(arrayToCsv(headers, rows), `non_ad_users_${new Date().toISOString().slice(0, 10)}.csv`);
+}
+
+/* ── DOMContentLoaded init ────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', function () {
+    // Populate device filter dropdown asynchronously on page load
+    loadDashDevices();
+});

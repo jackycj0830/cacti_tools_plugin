@@ -247,6 +247,32 @@ switch ($action) {
         echo json_encode(clearDashTestData());
         break;
 
+    // NEW: Device Management Dashboard Endpoints (Phase 2 - Block_IP_20260305 integration)
+    case 'dash_devices':
+        echo json_encode(getDashDevices($_GET));
+        break;
+    case 'dash_device_stats':
+        echo json_encode(getDashDeviceStats($_GET));
+        break;
+    case 'dash_device_timeline':
+        echo json_encode(getDashDeviceTimeline($_GET));
+        break;
+    case 'dash_user_timeline':
+        echo json_encode(getDashUserTimeline($_GET));
+        break;
+    case 'dash_ad_status':
+        echo json_encode(getDashAdStatus($_GET));
+        break;
+    case 'dash_non_ad_status':
+        echo json_encode(getDashNonAdStatus($_GET));
+        break;
+    case 'dash_save_csv':
+        echo json_encode(saveDashCsv($_GET));
+        break;
+    case 'dash_download_csv':
+        downloadDashCsv($_GET); // Streams file, exits internally
+        break;
+
     default:
         echo json_encode(['error' => 'Unknown action. Use: query, batch, stats, history, providers, export, cache_stats, cache_cleanup, cache_clear, cache_save, cache_save_batch, cache_info, save_note, get_note, delete_note, local_query, local_search, local_batch, archive_stats, archive_stats_detailed, archive_countries, country_ip_ranges']);
 }

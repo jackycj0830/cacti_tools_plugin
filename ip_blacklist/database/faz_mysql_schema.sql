@@ -130,3 +130,44 @@ CREATE TABLE IF NOT EXISTS faz_logs (
     INDEX idx_run_id (run_id),
     INDEX idx_ip (ip)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 6. FAZ Run History
+CREATE TABLE IF NOT EXISTS faz_run_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    run_id VARCHAR(50) NOT NULL,
+    run_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    days_back INT NOT NULL,
+    status VARCHAR(20) DEFAULT 'RUNNING',
+    total_events INT DEFAULT 0,
+    unique_ips INT DEFAULT 0,
+    targets INT DEFAULT 0,
+    raw_log MEDIUMTEXT,
+    INDEX idx_run_history_date (run_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 7. FAZ Devices (FortiAnalyzer device registry)
+--    Stores connection info for each managed FAZ device (used by faz_devices.php).
+CREATE TABLE IF NOT EXISTS devices (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ip VARCHAR(100) NOT NULL,
+    display_name VARCHAR(255) NOT NULL,
+    token VARCHAR(500) NOT NULL DEFAULT '',
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_devices_sort (sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 8. FortiGate Device Mapping (maps log device names to friendly display names)
+--    Maps faz_raw_events.faz_name + devname → display_name for dashboard filtering.
+CREATE TABLE IF NOT EXISTS fgt_mapping (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    faz_name VARCHAR(255) NOT NULL,
+    fgt_name VARCHAR(255) NOT NULL,
+    display_name VARCHAR(255) NOT NULL DEFAULT '',
+    region VARCHAR(100) NOT NULL DEFAULT '',
+    site VARCHAR(100) NOT NULL DEFAULT '',
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_faz_fgt (faz_name, fgt_name),
+    INDEX idx_fgt_sort (sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

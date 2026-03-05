@@ -1,0 +1,214 @@
+# Merge Proposal: Block_IP_20260305 → ip_blacklist
+
+將 `Block_IP_20260305/web/` 的新功能整合進 `ip_blacklist/` 的分析與操作計畫。
+
+---
+
+## 差異分析總覽
+
+### 兩側架構對比
+
+| 項目 | `Block_IP_20260305/web/` | `ip_blacklist/` |
+|------|--------------------------|-----------------|
+| 後端資料庫 | SQLite (`vt_cache.db`) | MySQL + SQLite 雙支援 |
+| 主要 PHP 腳本 | `index.php`, `api.php`, `devices.php`, `devices_api.php`, `run_analysis.php` | `ip_blacklist.php`, `api.php`, `api_dashboard.php`, `api_run_analysis.php`, `faz_analyzer.php` |
+| JS 邏輯 | 內嵌於 `index.php` (~1000 行) | 拆分為 `assets/dashboard.js` (495L) + `assets/app.js` |
+| 分析腳本 | Python `analyze_faz_ips.py` | PHP `faz_analyzer.php` (跨平台, MySQL/SQLite) |
+
+---
+
+## 新功能差異分析：Block_IP_20260305 有但 ip_blacklist 缺少的
+
+### 🆕 差異一：Device 管理頁面（devices.php + devices_api.php）
+
+**Block_IP_20260305** 新增了完整的 FAZ 設備管理介面：
+- 管理 FortiAnalyzer 設備 (IP、Display Name、Token)，CRUD + 排序
+- 管理 FortiGate 裝置對應 (faz_name → fgt_name → display_name)，CRUD + 排序 + 自動同步
+- 對應的後端 API：`devices_api.php`，actions: `list_devices`, `add`, `update`, `delete`, `list_mappings`, `sync_fgt_mappings`, `add_mapping`, `update_mapping`, `move_mapping`, `move_device`, `delete_mapping`
+- **ip_blacklist 缺少**：完全沒有此管理頁 / 對應 API
+
+---
+
+### 🆕 差異二：Dashboard 新增 API Actions（在 api.php 中）
+
+Block_IP_20260305/web/api.php 有以下 actions，ip_blacklist/api_dashboard.php 缺少：
+
+| Action | 說明 |
+|--------|------|
+| `device_timeline` | 每設備每日事件時間軸 (pivot table 結構) |
+| `user_timeline` | Top 10 被攻擊用戶 × 設備 的 bar chart 資料 |
+| `ad_status` | Top 5 AD 帳號攻擊狀態 (含密碼到期、AD 最後登入等) |
+| `non_ad_status` | Top 10 非 AD 用戶攻擊狀態 |
+| `device_stats` | 各設備失敗次數統計 |
+| `save_csv` / `download_csv` | 暫存 CSV 並下載 |
+| `country_timeline` (在 Block_IP) | 已在 ip_blacklist 存在(`dash_country_timeline`) |
+
+ip_blacklist 現有的 api_dashboard.php 只有：`getDashStats`, `getDashBlacklist`, `getDashFaz`, `getDashCountry`, `getDashCountryTimeline`。
+
+---
+
+### 🆕 差異三：Dashboard 新增 UI 元素（ip_blacklist.php）
+
+Block_IP_20260305/web/index.php 的 Dashboard 有以下 ip_blacklist.php 缺少的 UI：
+
+| UI 元素 | 說明 |
+|---------|------|
+| **設備篩選器 (Device Filter dropdown)** | `#deviceFilter` select，可依設備分析 |
+| **Custom Days 輸入框** | 除固定天數外，支援自訂天數 |
+| **Device Events by Day 時間軸表格** | `#deviceTimelineTableWrap`，pivot 表格 |
+| **AD Users Status 表格** | `#adStatusTableWrap`，Top 5 受攻擊 AD 帳號 |
+| **Non-AD Users Status 表格** | `#nonAdStatusTableWrap`，Top 10 非 AD 帳號 |
+| **FortiGate Device 統計圖** | `#deviceChart` (bar chart) |
+| **Top 10 Users by Device 圖** | `#userChart` (bar chart per device) |
+| **CSV Export 按鈕** | 每個表格都有 Export CSV 按鈕 |
+
+---
+
+### 🆕 差異四：dashboard.js 缺少的功能函數
+
+ip_blacklist/assets/dashboard.js 缺少以下函數：
+
+| 函數 | 說明 |
+|------|------|
+| `getSelectedDevice()` | 取得設備篩選值 |
+| `loadDeviceTimeline()` | 載入每設備每日 pivot 表格 |
+| `loadAdStatus()` | 載入 AD user 狀態表格 |
+| `loadNonAdStatus()` | 載入非 AD user 狀態表格 |
+| `loadDeviceChart()` | 載入設備統計 bar chart |
+| `loadUserChart()` | 載入 Top 10 Users bar chart |
+| `exportTimelineToCSV()` | 匯出時間軸 CSV |
+| `exportFazToCSV()` | 匯出 FAZ 結果 CSV |
+| `exportBlacklistToCSV()` | 匯出 Blacklist CSV |
+| `exportAdStatusToCSV()` | 匯出 AD user CSV |
+| `exportNonAdStatusToCSV()` | 匯出非 AD user CSV |
+| `downloadCSV()` | 呼叫 save_csv/download_csv API 下載 |
+| `toggleCustomDays()` | 切換顯示自訂天數輸入框 |
+| `startCollection()` / `closeModal()` | Block_IP 版的 FAZ 收集啟動（ip_blacklist 有 `triggerFazCollection` / `closeLogModal` 但邏輯不同） |
+
+---
+
+### 🆕 差異五：run_analysis.php vs api_run_analysis.php
+
+Block_IP_20260305/web/run_analysis.php 呼叫的是 Python analyze_faz_ips.py。  
+ip_blacklist/api_run_analysis.php 呼叫的是 PHP faz_analyzer.php，且邏輯更完善（跨平台偵測、診斷訊息）。
+
+**這一項 ip_blacklist 版本更優，不需要合併。**
+
+---
+
+## 建議整合計畫（分為 5 Phase）
+
+> [!IMPORTANT]
+> 所有新功能均需將 SQLite-only 的查詢改為 ip_blacklist 的 DB-agnostic 風格（透過 `IPCacheDB.php` 取得 PDO，同時支援 MySQL 和 SQLite）。
+
+---
+
+### Phase 1：新增 Device / FGT Mapping 管理頁面
+
+#### [NEW] [faz_devices.php](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/faz_devices.php)
+- 從 `Block_IP_20260305/web/devices.php` 移植
+- 調整 API 路徑：`devices_api.php` 改為 `faz_devices_api.php`
+- 調整 CSS 以符合 ip_blacklist 現有的 style.css 樣式
+
+#### [NEW] [faz_devices_api.php](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/faz_devices_api.php)
+- 從 `Block_IP_20260305/web/devices_api.php` 移植
+- 資料庫連線改為透過 `database/IPCacheDB.php` (DB-agnostic)
+- MySQL 需補充 `devices` 和 `fgt_mapping` 表的 DDL（SQLite pragma → MySQL ENGINE=InnoDB）
+
+#### [MODIFY] [database/schema.sql](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/database/schema.sql)
+- 新增 `devices` 表定義（存 FAZ 設備）
+- 新增 `fgt_mapping` 表定義（存 FortiGate 裝置對應）
+
+---
+
+### Phase 2：新增 Dashboard API Actions
+
+#### [MODIFY] [api_dashboard.php](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/api_dashboard.php)
+新增以下 functions（從 Block_IP_20260305/web/api.php 移植，DB-agnostic 化）：
+- `getDashDeviceTimeline($params)` → action: `dash_device_timeline`
+- `getDashUserTimeline($params)` → action: `dash_user_timeline`
+- `getDashAdStatus($params)` → action: `dash_ad_status`
+- `getDashNonAdStatus($params)` → action: `dash_non_ad_status`
+- `getDashDeviceStats($params)` → action: `dash_device_stats`
+- `getDashDevices($params)` → action: `dash_devices`（供 Device Filter 下拉選單）
+- `saveCsvTemp($params)` + `downloadCsvTemp($id)` → actions: `save_csv`, `download_csv`
+
+#### [MODIFY] [api.php](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/api.php)
+- 在 `switch ($action)` 中補充以上新 case 分支
+
+---
+
+### Phase 3：更新 ip_blacklist.php Dashboard UI
+
+#### [MODIFY] [ip_blacklist.php](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/ip_blacklist.php)
+在 Dashboard tab (`#dashboardTab`) 區段加入：
+1. **Header** 右側增加「⚙️ Devices」連結（指向 `faz_devices.php`）
+2. **Workflow 控制列**：增加 `#deviceFilter` 設備篩選 dropdown + Custom Days 輸入框
+3. **Device Events by Day** 時間軸表格（`#dashDeviceTimelineWrap`）
+4. **AD Users Status** 表格（`#dashAdStatusTableWrap`）
+5. **Non-AD Users Status** 表格（`#dashNonAdStatusTableWrap`）
+6. **FortiGate Device 統計圖**（`#dashDeviceChart` canvas）
+7. **Top 10 Users by Device 圖**（`#dashUserChart` canvas）
+8. 每個表格的 **Export CSV** 按鈕
+
+---
+
+### Phase 4：更新 dashboard.js
+
+#### [MODIFY] [assets/dashboard.js](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/assets/dashboard.js)
+新增以下函數（從 Block_IP_20260305/web/index.php JS 段移植，調整 action 前綴為 `dash_`）：
+- `getSelectedDevice()` + 在 `fetchDashJson()` 中加入 `devname` 參數
+- `toggleCustomDays()`
+- `loadDashDeviceTimeline()`
+- `loadDashAdStatus()`
+- `loadDashNonAdStatus()`
+- `loadDashDeviceChart()`
+- `loadDashUserChart()`
+- `exportTimelineToCSV()`, `exportFazToCSV()`, `exportBlacklistToCSV()`, `exportAdStatusToCSV()`, `exportNonAdStatusToCSV()`
+- `downloadCSV()` (透過 `save_csv` / `download_csv` API)
+- 更新 `refreshDashboard()` 加入新的 load 函數呼叫
+- 啟動時呼叫 `loadDashDevices()` 載入下拉選單
+
+---
+
+### Phase 5：資料庫 Schema 補充
+
+#### [MODIFY] [database/faz_mysql_schema.sql](file:///d:/Antigravity-Projects/cacti_tools_plugin/cacti_tools_plugin/ip_blacklist/database/faz_mysql_schema.sql)
+- 加入 `devices` 表（對應 Block_IP_20260305 的 SQLite `devices` 表）
+- 加入 `fgt_mapping` 表（對應 `fgt_mapping` 表）
+- 確認 `faz_ad_users` 表是否已存在（AD status 查詢需要）
+
+---
+
+## 不需要整合的部分
+
+| 項目 | 原因 |
+|------|------|
+| `run_analysis.php`（Python 版） | ip_blacklist 的 `api_run_analysis.php`（PHP 版）功能更完善 |
+| Block_IP CSS 樣式（內嵌） | ip_blacklist 已有 `style.css` + `dashboard.css`，統一維護 |
+| `analyze_faz_ips.py` | ip_blacklist 已用 PHP `faz_analyzer.php` 替代 |
+| Block_IP_20260305 的 SQLite-only 邏輯 | ip_blacklist 使用 MySQL 生產環境，需全部做 DB-agnostic 轉換 |
+
+---
+
+## Verification Plan
+
+### Phase 1 驗收
+- 開啟 `faz_devices.php`：確認設備清單正常顯示
+- 新增 / 編輯 / 刪除 FAZ 設備：API 回應 success
+- 新增 / 編輯 / 刪除 FGT Mapping：API 回應 success
+- 點擊「Sync」：從 faz_raw_events 自動新增 mapping
+
+### Phase 2 驗收
+- 瀏覽器 Network tab：`api.php?action=dash_device_timeline` 有正確 JSON
+- `api.php?action=dash_ad_status` / `dash_non_ad_status` / `dash_devices` / `dash_user_timeline` 有資料
+
+### Phase 3+4 驗收
+- Dashboard tab 顯示設備篩選 dropdown，切換後表格/圖表自動更新
+- Device Events by Day 表格顯示正確 pivot 資料
+- AD / Non-AD Users 表格顯示正確資料
+- Device Chart / User Chart 圖表正確渲染
+- 各 Export CSV 按鈕可下載 CSV 檔案
+
+### Phase 5 驗收
+- MySQL 執行 schema script 後，`SHOW TABLES` 能看到 `devices` 和 `fgt_mapping` 表
