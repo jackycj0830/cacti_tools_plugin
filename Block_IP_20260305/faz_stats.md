@@ -1,0 +1,11 @@
+| FAZ | FortiGate | Event Count |
+|---|---|---|
+| FAZ_GZ | AMSTERDAM | 105163 |
+| FAZ_GZ | GHENT | 95591 |
+| FAZ_GZ | GORZOW | 4903 |
+| FAZ_SPO | USCLTFW | 58303 |
+| FAZ_SPO | ARBAFW01 | 38815 |
+| FAZ_SPO | BRSPO-HA_FG101E | 4044 |
+| FAZ_TP | GI-301E | 38127 |
+| FAZ_TP | INBLR-101F | 23171 |
+| FAZ_TP | TP-Forti-301E | 13531 |

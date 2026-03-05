@@ -1,0 +1,6 @@
+PHP Fatal error:  Uncaught ValueError: Argument exceeds the allowed length of 8192 bytes in L:\Coding\Block_IP\web\api.php:228
+Stack trace:
+#0 L:\Coding\Block_IP\web\api.php(228): escapeshellarg('Roberto,Roc\xC3\xADo,...')
+#1 L:\Coding\Block_IP\web\test_api.php(5): require('L:\\Coding\\Block...')
+#2 {main}
+  thrown in L:\Coding\Block_IP\web\api.php on line 228
