@@ -775,11 +775,11 @@ function getDashUserTimeline($params) {
             return ['labels' => [], 'datasets' => [], 'note' => 'user column not in faz_raw_events'];
         }
 
-        // Top 10 users
-        $sql = "SELECT user, COUNT(*) as total FROM faz_raw_events WHERE timestamp >= ? $devFilter AND user IS NOT NULL AND user != '' AND user != 'Unknown' GROUP BY user ORDER BY total DESC LIMIT 10";
-        $stmt = $db->prepare($sql);
-        $stmt->execute(array_merge([$cutoff], $devBinds));
-        $topUsers = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        // Top 10 users by fail count (include Unknown users - pre-FAZ-collection rows)
+        $topSql = "SELECT user, COUNT(*) as total FROM faz_raw_events WHERE timestamp >= ? $devFilter AND user IS NOT NULL AND user != '' GROUP BY user ORDER BY total DESC LIMIT 10";
+        $topStmt = $db->prepare($topSql);
+        $topStmt->execute(array_merge([$cutoff], $devBinds));
+        $topUsers = $topStmt->fetchAll(PDO::FETCH_COLUMN);
 
         if (empty($topUsers)) return ['labels' => [], 'datasets' => []];
 
@@ -912,7 +912,7 @@ function getDashNonAdStatus($params) {
                            GROUP_CONCAT(DISTINCT devname) as target_devices
                     FROM faz_raw_events
                     WHERE timestamp >= ? $devFilter
-                        AND user IS NOT NULL AND user != '' AND user != 'Unknown'
+                        AND user IS NOT NULL AND user != ''
                     GROUP BY user
                     ORDER BY fail_count DESC
                     LIMIT 50
@@ -929,7 +929,7 @@ function getDashNonAdStatus($params) {
                        GROUP_CONCAT(DISTINCT devname) as target_devices
                 FROM faz_raw_events
                 WHERE timestamp >= ? $devFilter
-                    AND user IS NOT NULL AND user != '' AND user != 'Unknown'
+                    AND user IS NOT NULL AND user != ''
                 GROUP BY user
                 ORDER BY fail_count DESC
                 LIMIT 10

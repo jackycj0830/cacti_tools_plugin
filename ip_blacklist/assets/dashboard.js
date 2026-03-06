@@ -603,7 +603,7 @@ async function loadDashAdStatus() {
     _lastAdStatus = data;
 
     if (!data || data.error || data.length === 0) {
-        const msg = (data && data.error) ? data.error : 'No AD user data available.';
+        const msg = (data && data.error) ? data.error : 'No AD user data yet — AD sync required to show AD accounts under attack.';
         wrap.innerHTML = `<p style="color:#8b8fa3;text-align:center;padding:1rem;">${msg}</p>`;
         return;
     }
@@ -648,7 +648,7 @@ async function loadDashNonAdStatus() {
     _lastNonAdStatus = data;
 
     if (!data || data.error || data.length === 0) {
-        const msg = (data && data.error) ? data.error : 'No Non-AD user data available.';
+        const msg = (data && data.error) ? data.error : 'No Non-AD user data yet — run FAZ Collection to populate user data.';
         wrap.innerHTML = `<p style="color:#8b8fa3;text-align:center;padding:1rem;">${msg}</p>`;
         return;
     }
@@ -731,7 +731,7 @@ async function loadDashUserChart() {
 
     const data = await fetchDashJson('dash_user_timeline');
     if (!data || data.error || !data.labels || data.labels.length === 0) {
-        canvas.parentElement.innerHTML = '<p style="color:#8b8fa3;text-align:center;padding:1rem;">No user data available (user column may not exist in faz_raw_events).</p>';
+        canvas.parentElement.innerHTML = '<p style="color:#8b8fa3;text-align:center;padding:1rem;">No user data yet — run FAZ Collection to populate user/device data.</p>';
         return;
     }
 
