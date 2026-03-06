@@ -25,60 +25,86 @@ function getDashDB() {
 }
 
 /**
- * Helper: Check if FAZ tables exist; if not, create them (DB-agnostic).
+ * ensureFazTables() — Idempotent: auto-creates/migrates FAZ tables.
+ * Adds devname/faz_name/user columns and creates ad_users_cache if missing.
  */
 function ensureFazTables() {
-    static $checked = false;
-    if ($checked) return;
+    static $done = false;
+    if ($done) return;
+    $done = true;
+
     $db = getDashDB();
-    if (!$db) { $checked = true; return; }
+    if (!$db) return;
+
     try {
         if (DB_TYPE === 'sqlite') {
-            $db->exec("
-                CREATE TABLE IF NOT EXISTS faz_raw_events (
-                    ip TEXT NOT NULL,
-                    timestamp DATETIME NOT NULL,
-                    UNIQUE(ip, timestamp)
-                );
-            ");
-            $db->exec("
-                CREATE TABLE IF NOT EXISTS faz_logs (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    run_id TEXT NOT NULL,
-                    ip TEXT NOT NULL,
-                    count INTEGER NOT NULL,
-                    first_seen TEXT NOT NULL,
-                    last_seen TEXT NOT NULL,
-                    imported_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                );
-            ");
+            // Ensure base tables
+            $db->exec("CREATE TABLE IF NOT EXISTS faz_raw_events (
+                ip TEXT NOT NULL, timestamp DATETIME NOT NULL,
+                devname TEXT DEFAULT 'Unknown', faz_name TEXT DEFAULT 'Unknown',
+                user TEXT DEFAULT 'Unknown', UNIQUE(ip, timestamp, devname)
+            )");
+            $db->exec("CREATE TABLE IF NOT EXISTS faz_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL,
+                ip TEXT NOT NULL, count INTEGER NOT NULL,
+                first_seen TEXT NOT NULL, last_seen TEXT NOT NULL,
+                imported_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )");
+            // Add missing columns gracefully
+            $cols = [];
+            foreach ($db->query("PRAGMA table_info(faz_raw_events)")->fetchAll(PDO::FETCH_ASSOC) as $c) {
+                $cols[] = $c['name'];
+            }
+            foreach (['devname' => "TEXT DEFAULT 'Unknown'", 'faz_name' => "TEXT DEFAULT 'Unknown'", 'user' => "TEXT DEFAULT 'Unknown'"] as $col => $def) {
+                if (!in_array($col, $cols)) {
+                    $db->exec("ALTER TABLE faz_raw_events ADD COLUMN {$col} {$def}");
+                }
+            }
+            // Ensure ad_users_cache
+            $db->exec("CREATE TABLE IF NOT EXISTS ad_users_cache (
+                username TEXT PRIMARY KEY, exists_in_ad INTEGER DEFAULT 0,
+                locked_out INTEGER DEFAULT 0, lockout_time TEXT,
+                password_expired INTEGER DEFAULT 0, pwd_last_set TEXT,
+                last_logon TEXT, department TEXT, ad_site TEXT, office_phone TEXT
+            )");
         } else {
-            $db->exec("
-                CREATE TABLE IF NOT EXISTS faz_raw_events (
-                    ip VARCHAR(45) NOT NULL,
-                    timestamp DATETIME NOT NULL,
-                    UNIQUE KEY unique_ip_ts (ip, timestamp),
-                    INDEX idx_ts (timestamp)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-            ");
-            $db->exec("
-                CREATE TABLE IF NOT EXISTS faz_logs (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    run_id VARCHAR(50) NOT NULL,
-                    ip VARCHAR(45) NOT NULL,
-                    count INT NOT NULL,
-                    first_seen DATETIME NOT NULL,
-                    last_seen DATETIME NOT NULL,
-                    imported_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    INDEX idx_run_id (run_id),
-                    INDEX idx_ip (ip)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-            ");
+            // MySQL: ensure base tables
+            $db->exec("CREATE TABLE IF NOT EXISTS faz_raw_events (
+                ip VARCHAR(45) NOT NULL, timestamp DATETIME NOT NULL,
+                devname VARCHAR(255) DEFAULT 'Unknown',
+                faz_name VARCHAR(255) DEFAULT 'Unknown',
+                user VARCHAR(255) DEFAULT 'Unknown',
+                UNIQUE KEY unique_ip_ts_dev (ip, timestamp, devname),
+                INDEX idx_ts (timestamp), INDEX idx_devname (devname)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            $db->exec("CREATE TABLE IF NOT EXISTS faz_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY, run_id VARCHAR(50) NOT NULL,
+                ip VARCHAR(45) NOT NULL, count INT NOT NULL,
+                first_seen DATETIME NOT NULL, last_seen DATETIME NOT NULL,
+                imported_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_run_id (run_id), INDEX idx_ip (ip)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            // Add missing columns via INFORMATION_SCHEMA
+            $cols = $db->query("
+                SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'faz_raw_events'
+            ")->fetchAll(PDO::FETCH_COLUMN);
+            foreach (['devname' => "VARCHAR(255) DEFAULT 'Unknown'", 'faz_name' => "VARCHAR(255) DEFAULT 'Unknown'", 'user' => "VARCHAR(255) DEFAULT 'Unknown'"] as $col => $def) {
+                if (!in_array($col, $cols)) {
+                    $db->exec("ALTER TABLE faz_raw_events ADD COLUMN {$col} {$def}");
+                }
+            }
+            // Ensure ad_users_cache
+            $db->exec("CREATE TABLE IF NOT EXISTS ad_users_cache (
+                username VARCHAR(255) PRIMARY KEY,
+                exists_in_ad TINYINT DEFAULT 0, locked_out TINYINT DEFAULT 0,
+                lockout_time DATETIME DEFAULT NULL, password_expired TINYINT DEFAULT 0,
+                pwd_last_set DATETIME DEFAULT NULL, last_logon DATETIME DEFAULT NULL,
+                department VARCHAR(255), ad_site VARCHAR(255), office_phone VARCHAR(100)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
         }
-        $checked = true;
     } catch (Exception $e) {
-        // Silently ignore — tables may already exist
-        $checked = true;
+        // Non-fatal — individual queries will handle missing columns
     }
 }
 
@@ -517,70 +543,6 @@ function clearDashTestData()
     } catch (Exception $e) {
         if (isset($db) && $db->inTransaction()) $db->rollBack();
         return ['success' => false, 'error' => $e->getMessage()];
-    }
-}
-
-// ============================================================================
-// NEW DASHBOARD FUNCTIONS (Phase 2 - ported from Block_IP_20260305)
-// DB-agnostic: uses PDO, no SQLite3-specific API
-// ============================================================================
-
-/**
- * ensureFazTables() — Idempotent: auto-creates missing columns and tables.
- * Called before any query that relies on devname/faz_name/user/ad_users_cache.
- */
-function ensureFazTables() {
-    static $done = false;
-    if ($done) return;
-    $done = true;
-
-    $db = getDashDB();
-    if (!$db) return;
-
-    try {
-        if (DB_TYPE === 'sqlite') {
-            // Add missing columns to faz_raw_events
-            $cols = [];
-            foreach ($db->query("PRAGMA table_info(faz_raw_events)")->fetchAll(PDO::FETCH_ASSOC) as $c) {
-                $cols[] = $c['name'];
-            }
-            $wanted = ['devname' => "TEXT DEFAULT 'Unknown'", 'faz_name' => "TEXT DEFAULT 'Unknown'", 'user' => "TEXT DEFAULT 'Unknown'"];
-            foreach ($wanted as $col => $def) {
-                if (!in_array($col, $cols)) {
-                    $db->exec("ALTER TABLE faz_raw_events ADD COLUMN {$col} {$def}");
-                }
-            }
-            // Ensure ad_users_cache
-            $db->exec("CREATE TABLE IF NOT EXISTS ad_users_cache (
-                username TEXT PRIMARY KEY, exists_in_ad INTEGER DEFAULT 0,
-                locked_out INTEGER DEFAULT 0, lockout_time TEXT,
-                password_expired INTEGER DEFAULT 0, pwd_last_set TEXT,
-                last_logon TEXT, department TEXT, ad_site TEXT, office_phone TEXT
-            )");
-        } else {
-            // MySQL: check INFORMATION_SCHEMA
-            $stmt = $db->query("
-                SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
-                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'faz_raw_events'
-            ");
-            $cols = $stmt->fetchAll(PDO::FETCH_COLUMN);
-            $wanted = ['devname' => "VARCHAR(255) DEFAULT 'Unknown'", 'faz_name' => "VARCHAR(255) DEFAULT 'Unknown'", 'user' => "VARCHAR(255) DEFAULT 'Unknown'"];
-            foreach ($wanted as $col => $def) {
-                if (!in_array($col, $cols)) {
-                    $db->exec("ALTER TABLE faz_raw_events ADD COLUMN {$col} {$def}");
-                }
-            }
-            // Ensure ad_users_cache
-            $db->exec("CREATE TABLE IF NOT EXISTS ad_users_cache (
-                username VARCHAR(255) PRIMARY KEY,
-                exists_in_ad TINYINT DEFAULT 0, locked_out TINYINT DEFAULT 0,
-                lockout_time DATETIME DEFAULT NULL, password_expired TINYINT DEFAULT 0,
-                pwd_last_set DATETIME DEFAULT NULL, last_logon DATETIME DEFAULT NULL,
-                department VARCHAR(255), ad_site VARCHAR(255), office_phone VARCHAR(100)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-        }
-    } catch (Exception $e) {
-        // Non-fatal — queries will handle missing columns individually
     }
 }
 
