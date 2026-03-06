@@ -526,6 +526,65 @@ function clearDashTestData()
 // ============================================================================
 
 /**
+ * ensureFazTables() — Idempotent: auto-creates missing columns and tables.
+ * Called before any query that relies on devname/faz_name/user/ad_users_cache.
+ */
+function ensureFazTables() {
+    static $done = false;
+    if ($done) return;
+    $done = true;
+
+    $db = getDashDB();
+    if (!$db) return;
+
+    try {
+        if (DB_TYPE === 'sqlite') {
+            // Add missing columns to faz_raw_events
+            $cols = [];
+            foreach ($db->query("PRAGMA table_info(faz_raw_events)")->fetchAll(PDO::FETCH_ASSOC) as $c) {
+                $cols[] = $c['name'];
+            }
+            $wanted = ['devname' => "TEXT DEFAULT 'Unknown'", 'faz_name' => "TEXT DEFAULT 'Unknown'", 'user' => "TEXT DEFAULT 'Unknown'"];
+            foreach ($wanted as $col => $def) {
+                if (!in_array($col, $cols)) {
+                    $db->exec("ALTER TABLE faz_raw_events ADD COLUMN {$col} {$def}");
+                }
+            }
+            // Ensure ad_users_cache
+            $db->exec("CREATE TABLE IF NOT EXISTS ad_users_cache (
+                username TEXT PRIMARY KEY, exists_in_ad INTEGER DEFAULT 0,
+                locked_out INTEGER DEFAULT 0, lockout_time TEXT,
+                password_expired INTEGER DEFAULT 0, pwd_last_set TEXT,
+                last_logon TEXT, department TEXT, ad_site TEXT, office_phone TEXT
+            )");
+        } else {
+            // MySQL: check INFORMATION_SCHEMA
+            $stmt = $db->query("
+                SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+                WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'faz_raw_events'
+            ");
+            $cols = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            $wanted = ['devname' => "VARCHAR(255) DEFAULT 'Unknown'", 'faz_name' => "VARCHAR(255) DEFAULT 'Unknown'", 'user' => "VARCHAR(255) DEFAULT 'Unknown'"];
+            foreach ($wanted as $col => $def) {
+                if (!in_array($col, $cols)) {
+                    $db->exec("ALTER TABLE faz_raw_events ADD COLUMN {$col} {$def}");
+                }
+            }
+            // Ensure ad_users_cache
+            $db->exec("CREATE TABLE IF NOT EXISTS ad_users_cache (
+                username VARCHAR(255) PRIMARY KEY,
+                exists_in_ad TINYINT DEFAULT 0, locked_out TINYINT DEFAULT 0,
+                lockout_time DATETIME DEFAULT NULL, password_expired TINYINT DEFAULT 0,
+                pwd_last_set DATETIME DEFAULT NULL, last_logon DATETIME DEFAULT NULL,
+                department VARCHAR(255), ad_site VARCHAR(255), office_phone VARCHAR(100)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        }
+    } catch (Exception $e) {
+        // Non-fatal — queries will handle missing columns individually
+    }
+}
+
+/**
  * Helper: Build device name filter clause using fgt_mapping.
  * Returns [string $whereClause, array $bindParams] for existing PDO stmt.
  * If devname is null → no filter. If mapped → devname IN (...) clause.
@@ -652,6 +711,10 @@ function getDashDeviceStats($params) {
         $db = getDashDB();
         if (!$db) return [];
 
+        // Check devname column exists
+        try { $db->query("SELECT devname FROM faz_raw_events LIMIT 0"); }
+        catch (Exception $e) { return []; } // Column not yet migrated
+
         $cutoff = getCutoffDatetime($db, $days);
         [$devFilter, $devBinds] = getDashDeviceFilter($db, $devname);
         $allMappings = getDashAllMappings($db);
@@ -683,12 +746,16 @@ function getDashDeviceTimeline($params) {
         $db = getDashDB();
         if (!$db) return ['days' => [], 'devices' => []];
 
+        // Check devname column exists; if not return empty (migration pending)
+        try { $db->query("SELECT devname FROM faz_raw_events LIMIT 0"); }
+        catch (Exception $e) { return ['days' => [], 'devices' => []]; }
+
         $cutoff = getCutoffDatetime($db, $days);
         [$devFilter, $devBinds] = getDashDeviceFilter($db, $devname);
         $allMappings = getDashAllMappings($db);
 
         // DB-agnostic date extraction via PHP (substring of timestamp)
-        $sql = "SELECT devname, timestamp, COUNT(*) as count FROM faz_raw_events WHERE timestamp >= ? $devFilter GROUP BY devname, timestamp ORDER BY timestamp ASC";
+        $sql = "SELECT devname, timestamp, COUNT(*) as count FROM faz_raw_events WHERE timestamp >= ? $devFilter GROUP BY devname, DATE(timestamp) ORDER BY timestamp ASC";
         $stmt = $db->prepare($sql);
         $stmt->execute(array_merge([$cutoff], $devBinds));
 
@@ -790,22 +857,19 @@ function getDashUserTimeline($params) {
 // ----------------------------------------------------------------
 function getDashAdStatus($params) {
     try {
-        ensureFazTables();
+        ensureFazTables(); // will auto-create ad_users_cache if missing
         $days    = isset($params['days']) ? intval($params['days']) : 7;
         $devname = $params['devname'] ?? '';
         $db = getDashDB();
         if (!$db) return [];
 
+        // Check if user column exists in faz_raw_events
+        try { $db->query("SELECT user FROM faz_raw_events LIMIT 0"); }
+        catch (Exception $e) { return []; } // Column not migrated yet
+
         $cutoff = getCutoffDatetime($db, $days);
         [$devFilter, $devBinds] = getDashDeviceFilter($db, $devname);
         $allMappings = getDashAllMappings($db);
-
-        // Check if ad_users_cache table exists
-        try {
-            $db->query("SELECT 1 FROM ad_users_cache LIMIT 0");
-        } catch (Exception $e) {
-            return ['error' => 'ad_users_cache table not found - run AD sync first'];
-        }
 
         $sql = "
             SELECT f.user, COUNT(*) as fail_count, MIN(f.timestamp) as min_ts, MAX(f.timestamp) as last_seen,
@@ -855,20 +919,25 @@ function getDashAdStatus($params) {
 // ----------------------------------------------------------------
 function getDashNonAdStatus($params) {
     try {
-        ensureFazTables();
+        ensureFazTables(); // auto-migrates user column + creates ad_users_cache
         $days    = isset($params['days']) ? intval($params['days']) : 7;
         $devname = $params['devname'] ?? '';
         $db = getDashDB();
         if (!$db) return [];
 
+        // Check if user column exists in faz_raw_events
+        try { $db->query("SELECT user FROM faz_raw_events LIMIT 0"); }
+        catch (Exception $e) { return []; } // Column not migrated yet
+
         $cutoff = getCutoffDatetime($db, $days);
         [$devFilter, $devBinds] = getDashDeviceFilter($db, $devname);
         $allMappings = getDashAllMappings($db);
 
-        // Check if ad_users_cache table exists
-        $hasAdCache = true;
+        // Check if ad_users_cache table has any data to join against
+        $hasAdCache = false;
         try {
-            $db->query("SELECT 1 FROM ad_users_cache LIMIT 0");
+            $r = $db->query("SELECT COUNT(*) FROM ad_users_cache");
+            $hasAdCache = ((int)$r->fetchColumn() > 0);
         } catch (Exception $e) {
             $hasAdCache = false;
         }
@@ -892,7 +961,7 @@ function getDashNonAdStatus($params) {
                 LIMIT 10
             ";
         } else {
-            // No AD cache — just return top users
+            // No AD cache data — return top users without AD filter
             $sql = "
                 SELECT user, COUNT(*) as fail_count, MIN(timestamp) as min_ts, MAX(timestamp) as last_seen,
                        GROUP_CONCAT(DISTINCT devname) as target_devices

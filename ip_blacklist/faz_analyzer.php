@@ -122,14 +122,17 @@ if (!$dbInstance->isConnected()) {
 $db = $dbInstance->getPDO();
 logOutput("[DB] Connected to " . strtoupper(DB_TYPE) . " successfully.");
 
-// Ensure FAZ tables exist (DB-agnostic)
+// Ensure FAZ tables exist + migrate if needed (DB-agnostic)
 try {
     if (DB_TYPE === 'sqlite') {
         $db->exec("
             CREATE TABLE IF NOT EXISTS faz_raw_events (
                 ip TEXT NOT NULL,
                 timestamp DATETIME NOT NULL,
-                UNIQUE(ip, timestamp)
+                devname TEXT DEFAULT 'Unknown',
+                faz_name TEXT DEFAULT 'Unknown',
+                user TEXT DEFAULT 'Unknown',
+                UNIQUE(ip, timestamp, devname)
             );
         ");
         $db->exec("
@@ -143,13 +146,43 @@ try {
                 imported_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
         ");
+        // SQLite: add missing columns gracefully
+        $existingCols = [];
+        foreach ($db->query("PRAGMA table_info(faz_raw_events)")->fetchAll(PDO::FETCH_ASSOC) as $col) {
+            $existingCols[] = $col['name'];
+        }
+        foreach (['devname' => "TEXT DEFAULT 'Unknown'", 'faz_name' => "TEXT DEFAULT 'Unknown'", 'user' => "TEXT DEFAULT 'Unknown'"] as $col => $def) {
+            if (!in_array($col, $existingCols)) {
+                $db->exec("ALTER TABLE faz_raw_events ADD COLUMN {$col} {$def}");
+                logOutput("[DB] Migration: added '{$col}' to faz_raw_events.");
+            }
+        }
+        // ad_users_cache table
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS ad_users_cache (
+                username TEXT PRIMARY KEY,
+                exists_in_ad INTEGER DEFAULT 0,
+                locked_out INTEGER DEFAULT 0,
+                lockout_time TEXT,
+                password_expired INTEGER DEFAULT 0,
+                pwd_last_set TEXT,
+                last_logon TEXT,
+                department TEXT,
+                ad_site TEXT,
+                office_phone TEXT
+            );
+        ");
     } else {
         $db->exec("
             CREATE TABLE IF NOT EXISTS faz_raw_events (
                 ip VARCHAR(45) NOT NULL,
                 timestamp DATETIME NOT NULL,
-                UNIQUE KEY unique_ip_ts (ip, timestamp),
-                INDEX idx_ts (timestamp)
+                devname VARCHAR(255) DEFAULT 'Unknown',
+                faz_name VARCHAR(255) DEFAULT 'Unknown',
+                user VARCHAR(255) DEFAULT 'Unknown',
+                UNIQUE KEY unique_ip_ts_dev (ip, timestamp, devname),
+                INDEX idx_ts (timestamp),
+                INDEX idx_devname (devname)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         ");
         $db->exec("
@@ -165,8 +198,39 @@ try {
                 INDEX idx_ip (ip)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         ");
+        // MySQL: add missing columns gracefully via INFORMATION_SCHEMA
+        $existingCols = $db->query("
+            SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'faz_raw_events'
+        ")->fetchAll(PDO::FETCH_COLUMN);
+        $missingCols = [
+            'devname'  => "VARCHAR(255) DEFAULT 'Unknown'",
+            'faz_name' => "VARCHAR(255) DEFAULT 'Unknown'",
+            'user'     => "VARCHAR(255) DEFAULT 'Unknown'",
+        ];
+        foreach ($missingCols as $col => $def) {
+            if (!in_array($col, $existingCols)) {
+                $db->exec("ALTER TABLE faz_raw_events ADD COLUMN {$col} {$def}");
+                logOutput("[DB] Migration: added '{$col}' to faz_raw_events.");
+            }
+        }
+        // ad_users_cache table
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS ad_users_cache (
+                username VARCHAR(255) PRIMARY KEY,
+                exists_in_ad TINYINT DEFAULT 0,
+                locked_out TINYINT DEFAULT 0,
+                lockout_time DATETIME DEFAULT NULL,
+                password_expired TINYINT DEFAULT 0,
+                pwd_last_set DATETIME DEFAULT NULL,
+                last_logon DATETIME DEFAULT NULL,
+                department VARCHAR(255),
+                ad_site VARCHAR(255),
+                office_phone VARCHAR(100)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        ");
     }
-    logOutput("[DB] FAZ tables verified.");
+    logOutput("[DB] FAZ tables verified/migrated.");
 } catch (Exception $e) {
     logOutput("[DB Warning] Table creation check: " . $e->getMessage());
 }
@@ -358,7 +422,20 @@ function fetch_from_faz($days_back = 7) {
         if ($remip && !is_private_ip($remip)) {
             $ts = trim(($entry['date'] ?? '') . ' ' . ($entry['time'] ?? ''));
             $ts = str_replace('T', ' ', $ts);
-            $raw_db_args[] = [$remip, $ts];
+
+            // Extract devname (FGT device) - same logic as Block_IP_20260305
+            $devname = $entry['devname'] ?? '';
+            if (!$devname || strtolower($devname) === 'unknown') {
+                $devname = $entry['devid'] ?? '';
+            }
+            if (!$devname || strtolower($devname) === 'unknown') {
+                $devname = FAZ_IP; // fallback to FAZ IP (legacy default)
+            }
+
+            $faz_name = defined('FAZ_DISPLAY_NAME') ? FAZ_DISPLAY_NAME : FAZ_IP;
+            $user = $entry['user'] ?? $entry['xauthuser'] ?? $entry['unauthuser'] ?? 'Unknown';
+
+            $raw_db_args[] = [$remip, $ts, $devname, $faz_name, $user];
         }
     }
 
@@ -373,11 +450,11 @@ function fetch_from_faz($days_back = 7) {
         $db->beginTransaction();
         // DB-agnostic upsert: SQLite uses INSERT OR IGNORE, MySQL uses INSERT IGNORE
         $insertSQL = DB_TYPE === 'sqlite'
-            ? "INSERT OR IGNORE INTO faz_raw_events (ip, timestamp) VALUES (?, ?)"
-            : "INSERT IGNORE INTO faz_raw_events (ip, timestamp) VALUES (?, ?)";
+            ? "INSERT OR IGNORE INTO faz_raw_events (ip, timestamp, devname, faz_name, user) VALUES (?, ?, ?, ?, ?)"
+            : "INSERT IGNORE INTO faz_raw_events (ip, timestamp, devname, faz_name, user) VALUES (?, ?, ?, ?, ?)";
         $stmt = $db->prepare($insertSQL);
         foreach ($raw_db_args as $arg) {
-            $stmt->execute([$arg[0], $arg[1]]);
+            $stmt->execute([$arg[0], $arg[1], $arg[2], $arg[3], $arg[4]]);
             if ($stmt->rowCount() > 0) $inserted++;
         }
         $db->commit();

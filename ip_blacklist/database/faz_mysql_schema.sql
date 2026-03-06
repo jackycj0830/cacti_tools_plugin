@@ -109,13 +109,39 @@ CREATE TABLE IF NOT EXISTS ip_database (
 
 -- 4. FAZ Raw Events (replaces faz_raw_events from vt_cache.db SQLite)
 --    Stores individual SSLVPN failed login events from FortiAnalyzer
+--    devname = FortiGate device name, faz_name = display name of the FAZ device, user = login username
 CREATE TABLE IF NOT EXISTS faz_raw_events (
     ip VARCHAR(45) NOT NULL,
     timestamp DATETIME NOT NULL,
-    UNIQUE KEY unique_ip_ts (ip, timestamp),
+    devname VARCHAR(255) DEFAULT 'Unknown',
+    faz_name VARCHAR(255) DEFAULT 'Unknown',
+    user VARCHAR(255) DEFAULT 'Unknown',
+    UNIQUE KEY unique_ip_ts_dev (ip, timestamp, devname),
     INDEX idx_ts (timestamp),
-    INDEX idx_ip (ip)
+    INDEX idx_ip (ip),
+    INDEX idx_devname (devname)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Migration: Add missing columns to existing faz_raw_events tables
+-- Run these only if upgrading from an older schema:
+-- ALTER TABLE faz_raw_events ADD COLUMN IF NOT EXISTS devname VARCHAR(255) DEFAULT 'Unknown';
+-- ALTER TABLE faz_raw_events ADD COLUMN IF NOT EXISTS faz_name VARCHAR(255) DEFAULT 'Unknown';
+-- ALTER TABLE faz_raw_events ADD COLUMN IF NOT EXISTS user VARCHAR(255) DEFAULT 'Unknown';
+
+-- 4b. AD Users Cache (populated by AD sync script or faz_devices_api.php)
+CREATE TABLE IF NOT EXISTS ad_users_cache (
+    username VARCHAR(255) PRIMARY KEY,
+    exists_in_ad TINYINT DEFAULT 0,
+    locked_out TINYINT DEFAULT 0,
+    lockout_time DATETIME DEFAULT NULL,
+    password_expired TINYINT DEFAULT 0,
+    pwd_last_set DATETIME DEFAULT NULL,
+    last_logon DATETIME DEFAULT NULL,
+    department VARCHAR(255),
+    ad_site VARCHAR(255),
+    office_phone VARCHAR(100)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 -- 5. FAZ Logs (replaces faz_logs from vt_cache.db SQLite)
 --    Stores aggregated run summaries
