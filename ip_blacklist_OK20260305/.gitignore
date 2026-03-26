@@ -1,0 +1,15 @@
+# Local development config overrides
+database/db_config_local.php
+
+# SQLite database files
+database/*.db
+
+# Cache logs
+database/cache_log.txt
+
+# Test files
+test_*.php
+
+# Python cache
+__pycache__/
+*.pyc
